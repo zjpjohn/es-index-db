@@ -2,6 +2,8 @@ package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.conf.ds.DataSourceBean;
 import com.wxingyl.es.jdal.FilterMapListHandler;
+import com.wxingyl.es.jdal.PrepareSqlQuery;
+import com.wxingyl.es.jdal.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.sql.SQLException;
@@ -35,7 +37,7 @@ public class IndexTypeBean {
 
     public static class TableQuery {
 
-        private DataSourceBean dataSource;
+        private SqlQueryHandle queryHandler;
 
         private String keyField;
 
@@ -43,13 +45,13 @@ public class IndexTypeBean {
         /**
          * filter {@link DbTableConfigInfo#forbidFields}
          */
-        private FilterMapListHandler queryHandler;
+        private FilterMapListHandler rsh;
         /**
          * key: field, value: salve table
          */
         private Map<String, TableQuery> salveQuery;
 
-        private String querySql;
+        private PrepareSqlQuery commonSql;
 
         List<Map<String, Object>> query() throws SQLException {
             return null;
@@ -87,11 +89,12 @@ public class IndexTypeBean {
 
         private TableQuery createTableQuery(DataSourceBean dataSource, DbTableConfigInfo tableInfo) {
             TableQuery query = new TableQuery();
-            query.dataSource = dataSource;
+            query.queryHandler = dataSource.getQueryHandle();
             query.tableName = tableInfo.getTableName();
             query.keyField = tableInfo.getRelationField();
+            query.commonSql = query.queryHandler.createPrepareSqlQuery(tableInfo);
             if (!CommonUtils.isEmpty(tableInfo.getForbidFields())) {
-                query.queryHandler = new FilterMapListHandler(tableInfo.getForbidFields());
+                query.rsh = new FilterMapListHandler(tableInfo.getForbidFields());
             }
             return query;
         }

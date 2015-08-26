@@ -1,7 +1,6 @@
 package com.wxingyl.es.jdal;
 
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.elasticsearch.common.cache.CacheBuilder;
 import org.elasticsearch.common.cache.CacheLoader;
@@ -9,9 +8,6 @@ import org.elasticsearch.common.cache.LoadingCache;
 import org.elasticsearch.common.collect.Tuple;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -48,11 +44,6 @@ public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
                         return loadAllFields(tuple.v1(), tuple.v2());
                     }
                 });
-    }
-
-    @Override
-    public List<Map<String, Object>> query(String sql, ResultSetHandler<List<Map<String, Object>>> handler) throws SQLException {
-        return queryRunner.query(sql, handler == null ? DEFAULT_MAP_LIST_HANDLER : handler);
     }
 
     protected abstract Set<String> loadAllTables(String schema) throws Exception;

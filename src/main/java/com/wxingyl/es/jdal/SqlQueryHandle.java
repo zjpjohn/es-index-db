@@ -14,9 +14,10 @@ import java.util.Set;
  */
 public interface SqlQueryHandle {
 
-    String buildQuerySql(DbTableConfigInfo tableInfo);
+    PrepareSqlQuery createPrepareSqlQuery(DbTableConfigInfo tableInfo);
 
-    List<Map<String, Object>> query(String sql, ResultSetHandler<List<Map<String, Object>>> handler) throws SQLException;
+    List<Map<String, Object>> query(SqlQueryParam param,
+                                    ResultSetHandler<List<Map<String, Object>>> handler) throws SQLException;
 
     /**
      * get all tables in the schema

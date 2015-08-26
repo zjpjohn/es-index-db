@@ -17,7 +17,7 @@ import static com.wxingyl.es.conf.ConfigKeyName.*;
  */
 public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
 
-    private ThreadLocal<DefaultValueParser<String>> defaultValueParser = new ThreadLocal<DefaultValueParser<String>>() {
+    private ThreadLocal<DefaultValueParser<String>> stringDefaultValueParser = new ThreadLocal<DefaultValueParser<String>>() {
         @Override
         protected DefaultValueParser<String> initialValue() {
             return new DefaultValueParser<String>((defaultValue, keyMap) -> {
@@ -45,7 +45,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
         Set<TypeConfigInfo> typeList = new HashSet<>();
         map.forEach((index, t) -> {
             Map<String, Object> allTypes = (Map<String, Object>) t;
-            defaultValueParser.get().addDefaultValue(allTypes, 0);
+            stringDefaultValueParser.get().addDefaultValue(allTypes, 0);
             allTypes.forEach((type, v) -> {
                 Map<String, Object> conf = (Map<String, Object>) v;
                 String masterTable = CommonUtils.getStringVal(conf, INDEX_MASTER_TABLE);
@@ -56,7 +56,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
                 if (tablesConf == null) {
                     throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_INCLUDE_TABLE + " config");
                 }
-                defaultValueParser.get().addDefaultValue(conf, 1);
+                stringDefaultValueParser.get().addDefaultValue(conf, 1);
                 TypeConfigInfo typeParse = new TypeConfigInfo();
                 typeParse.index = index;
                 typeParse.type = type;
@@ -75,7 +75,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
         typeParse.dependedTable = new HashMap<>();
         for (Map<String, Object> conf : tablesConf) {
             DbTableConfigInfo info = new DbTableConfigInfo();
-            defaultValueParser.get().getDefaultValue(conf).forEach(info::setDefaultValue);
+            stringDefaultValueParser.get().getDefaultValue(conf).forEach(info::setDefaultValue);
             String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE_NAME);
             if (tableName == null) {
                 throw new IndexConfigException("table_name conf is null of " + typeParse);
