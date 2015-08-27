@@ -92,11 +92,13 @@ public class IndexDbConfigManager {
     }
 
     public void parseIndexType(Map<String, Object> confMap) {
-        Set<TypeConfigInfo> beanSet = indexConfParser.parse(confMap);
-        if (CommonUtils.isEmpty(beanSet)) return;
-        for (final TypeConfigInfo type : beanSet) {
+        Set<TypeConfigInfo> typeSet = indexConfParser.parse(confMap);
+        if (CommonUtils.isEmpty(typeSet)) return;
+        for (final TypeConfigInfo type : typeSet) {
             type.getTables().forEach(v -> verifyTypeTableConfig(type, v));
+
         }
+
         //TODO init IndexTypeBean
 //        final ImmutableSetMultimap.Builder<String, IndexTypeBean> builder = ImmutableSetMultimap.builder();
 //        if (indexTypeMap != null) builder.putAll(indexTypeMap);

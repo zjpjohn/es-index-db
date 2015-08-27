@@ -35,4 +35,32 @@ public class PrepareSqlQuery {
     public String formatSql(Object... args) {
         return String.format(commonFormatSql, args);
     }
+
+    public static Build build() {
+        return new Build();
+    }
+
+    public static class Build {
+
+        private String commonFormatSql;
+
+        private boolean containWhere;
+
+        public Build commonFormatSql(String commonFormatSql) {
+            this.commonFormatSql = commonFormatSql;
+            return this;
+        }
+
+        public Build containWhere() {
+            this.containWhere = true;
+            return this;
+        }
+
+        public PrepareSqlQuery build() {
+            PrepareSqlQuery prepareSqlQuery = new PrepareSqlQuery();
+            prepareSqlQuery.commonFormatSql = commonFormatSql;
+            prepareSqlQuery.containWhere = containWhere;
+            return prepareSqlQuery;
+        }
+    }
 }

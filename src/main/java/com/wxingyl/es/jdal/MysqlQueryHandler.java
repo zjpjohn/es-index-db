@@ -38,7 +38,25 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
 
     @Override
     public PrepareSqlQuery createPrepareSqlQuery(DbTableConfigInfo tableInfo) {
-        return null;
+        final StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ");
+        if (tableInfo.getFields() != null) {
+            for (String s : tableInfo.getFields()) {
+                sb.append(s).append(", ");
+            }
+            sb.delete(sb.length() - 2, sb.length());
+        } else {
+            sb.append('*');
+        }
+        sb.append(" FROM ").append(tableInfo.getSchema()).append('.').append(tableInfo.getTableName());
+        PrepareSqlQuery.Build build = PrepareSqlQuery.build();
+        if (tableInfo.getDeleteField() != null) {
+            sb.append(" WHERE ").append(tableInfo.getDeleteField()).append(" = ").append('\'')
+                    .append(tableInfo.getDeleteValidValue()).append('\'');
+            build.containWhere();
+        }
+        build.commonFormatSql(sb.toString());
+        return build.build();
     }
 
     @Override
