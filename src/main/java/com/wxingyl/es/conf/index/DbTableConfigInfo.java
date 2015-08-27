@@ -34,6 +34,10 @@ public class DbTableConfigInfo {
     private String relationField;
 
     public void setMasterField(DbTableFieldDesc masterField) {
+        if (masterField.newDbTableDesc().equals(table)) {
+            throw new IndexConfigException("Index type config: " + toString() + ", " + INDEX_MASTER_FIELD
+                    + " value can't local table");
+        }
         this.masterField = masterField;
     }
 

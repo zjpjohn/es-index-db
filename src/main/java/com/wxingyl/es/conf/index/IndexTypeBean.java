@@ -81,7 +81,13 @@ public class IndexTypeBean {
             bean.index = index;
             bean.type = type;
             bean.tableQuery = queryMap.get(masterTable).v1();
-            //TODO deal depend
+            queryMap.forEach((k, v) -> {
+                DbTableFieldDesc masterField = v.v2();
+                if (masterField == null) return;
+                TableQuery master = queryMap.get(masterField.newDbTableDesc()).v1();
+                if (master.salveQuery == null) master.salveQuery = new HashMap<>();
+                master.salveQuery.put(masterField.getField(), v.v1());
+            });
             return bean;
         }
     }
