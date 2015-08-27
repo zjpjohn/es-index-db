@@ -1,4 +1,4 @@
-package com.wxingyl.es.jdal;
+package com.wxingyl.es.jdal.handle;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapListHandler;

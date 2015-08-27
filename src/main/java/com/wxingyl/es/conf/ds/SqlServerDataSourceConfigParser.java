@@ -1,11 +1,8 @@
 package com.wxingyl.es.conf.ds;
 
-import com.wxingyl.es.jdal.SqlQueryHandle;
+import com.wxingyl.es.jdal.handle.SqlQueryHandle;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.elasticsearch.common.collect.Tuple;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by xing on 15/8/24.

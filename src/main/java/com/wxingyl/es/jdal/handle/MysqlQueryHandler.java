@@ -1,6 +1,8 @@
-package com.wxingyl.es.jdal;
+package com.wxingyl.es.jdal.handle;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
+import com.wxingyl.es.jdal.PrepareSqlQuery;
+import com.wxingyl.es.jdal.SqlQueryParam;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import javax.sql.DataSource;

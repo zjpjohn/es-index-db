@@ -1,6 +1,8 @@
 package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.jdal.*;
+import com.wxingyl.es.jdal.handle.FilterMapListHandler;
+import com.wxingyl.es.jdal.handle.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.common.collect.Tuple;
 

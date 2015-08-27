@@ -2,7 +2,7 @@ package com.wxingyl.es.conf.ds;
 
 import com.wxingyl.es.conf.ConfigKeyName;
 import com.wxingyl.es.exception.DataSourceConfigException;
-import com.wxingyl.es.jdal.SqlQueryHandle;
+import com.wxingyl.es.jdal.handle.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.elasticsearch.common.collect.Tuple;

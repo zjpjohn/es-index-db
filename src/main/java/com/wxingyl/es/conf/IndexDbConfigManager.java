@@ -9,7 +9,7 @@ import com.wxingyl.es.conf.index.IndexTypeBean;
 import com.wxingyl.es.conf.index.IndexTypeConfigParser;
 import com.wxingyl.es.conf.index.TypeConfigInfo;
 import com.wxingyl.es.exception.IndexConfigException;
-import com.wxingyl.es.jdal.SqlQueryHandle;
+import com.wxingyl.es.jdal.handle.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.common.collect.ImmutableMultimap;
 import org.elasticsearch.common.collect.ImmutableSetMultimap;
