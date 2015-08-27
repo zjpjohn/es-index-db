@@ -4,9 +4,8 @@ import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.DbTableFieldDesc;
 import com.wxingyl.es.util.CommonUtils;
-import org.elasticsearch.common.collect.Tuple;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.wxingyl.es.conf.ConfigKeyName.*;
@@ -19,24 +18,20 @@ public class DbTableConfigInfo {
 
     private DbTableDesc table;
 
-    String dbAddress;
+    private String dbAddress;
 
     // null is all fields
-    Set<String> fields;
+    private Set<String> fields;
 
-    Set<String> forbidFields;
+    private Set<String> forbidFields;
 
-    String deleteField;
+    private String deleteField;
 
-    String deleteValidValue;
+    private String deleteValidValue;
     // v1: table v2: field
     private DbTableFieldDesc masterField;
 
-    String relationField;
-
-    public void setTable(String schema, String tableName) {
-        table = DbTableDesc.build(schema, tableName);
-    }
+    private String relationField;
 
     public void setMasterField(DbTableFieldDesc masterField) {
         this.masterField = masterField;
@@ -87,7 +82,7 @@ public class DbTableConfigInfo {
         return relationField;
     }
 
-    void setDefaultValue(String key, String val) {
+    private void setDefaultValue(String key, String val) {
         switch (key) {
             case INDEX_DB_ADDRESS:
                 dbAddress = val;
@@ -101,7 +96,27 @@ public class DbTableConfigInfo {
         }
     }
 
-    void formatFields() {
+    void initValue(TypeConfigInfo typeInfo, Map<String, Object> conf, Map<String, String> defaultVal) {
+        String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE_NAME);
+        if (tableName == null) {
+            throw new IndexConfigException("table_name conf is null of " + typeInfo);
+        }
+        table = DbTableDesc.build(defaultVal.remove(INDEX_SCHEMA), tableName);
+        if (table.getSchema() == null) {
+            throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " can't find schema");
+        }
+        defaultVal.forEach(this::setDefaultValue);
+        if (deleteField != null && deleteValidValue == null) {
+            throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " delete_field: "
+                    + deleteField + ", but delete_valid_value is null");
+        }
+        relationField = CommonUtils.getStringVal(conf, INDEX_RELATION_FIELD);
+        if (relationField == null) {
+            throw new IndexConfigException(typeInfo + ", table_name: " + tableName
+                    + " need " + INDEX_RELATION_FIELD + " config");
+        }
+        forbidFields = CommonUtils.getSet(conf, INDEX_FORBID_FIELDS);
+        fields = CommonUtils.getSet(conf, INDEX_FIELDS);
         if (CommonUtils.isEmpty(fields) || fields.contains("*")) {
             fields = null;
         } else if (!CommonUtils.isEmpty(forbidFields)) {

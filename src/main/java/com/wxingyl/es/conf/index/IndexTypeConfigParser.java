@@ -59,9 +59,8 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
                 }
                 stringDefaultValueParser.get().addDefaultValue(conf, 1);
                 TypeConfigInfo typeInfo = new TypeConfigInfo();
-                typeInfo.index = index;
-                typeInfo.type = type;
-                typeInfo.masterTable = masterTable;
+                typeInfo.setIndexType(index, type);
+                typeInfo.setMasterTable(masterTable);
                 parseTableInfo(typeInfo, tablesConf);
                 typeList.add(typeInfo);
             });
@@ -69,52 +68,25 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
         return typeList;
     }
 
-    private DbTableConfigInfo getDbTableConfigInfo(TypeConfigInfo typeInfo, Map<String, Object> conf) {
-        DbTableConfigInfo info = new DbTableConfigInfo();
-        Map<String, String> defaultVal = stringDefaultValueParser.get().getDefaultValue(conf);
-        String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE_NAME);
-        if (tableName == null) {
-            throw new IndexConfigException("table_name conf is null of " + typeInfo);
-        }
-        info.setTable(defaultVal.remove(INDEX_SCHEMA), tableName);
-        if (info.getSchema() == null) {
-            throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " can't find schema");
-        }
-        defaultVal.forEach(info::setDefaultValue);
-        if (info.deleteField != null && info.deleteValidValue == null) {
-            throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " delete_field: "
-                    + info.deleteField + ", but delete_valid_value is null");
-        }
-        String relationField = CommonUtils.getStringVal(conf, INDEX_RELATION_FIELD);
-        if (relationField == null) {
-            throw new IndexConfigException(typeInfo + ", table_name: " + tableName
-                    + " need " + INDEX_RELATION_FIELD + " config");
-        }
-        info.relationField = relationField;
-        info.forbidFields = CommonUtils.getSet(conf, INDEX_FORBID_FIELDS);
-        info.fields = CommonUtils.getSet(conf, INDEX_FIELDS);
-        info.formatFields();
-        return info;
-    }
-
     private void parseTableInfo(TypeConfigInfo typeInfo, List<Map<String, Object>> tablesConf) {
         Map<DbTableDesc, DbTableConfigInfo> tableInfoMap = new HashMap<>();
         DbTableConfigInfo masterTableInfo = null;
-        final String masterTableName = typeInfo.masterTable.getTable();
-        String masterSchemaName = typeInfo.masterTable.getSchema();
+        final String masterTableName = typeInfo.getMasterTable().getTable();
+        String masterSchemaName = typeInfo.getMasterTable().getSchema();
         Map<DbTableConfigInfo, String> masterFiledMap = new HashMap<>();
-        typeInfo.dependedTable = new HashMap<>();
         for (Map<String, Object> conf : tablesConf) {
-            DbTableConfigInfo info = getDbTableConfigInfo(typeInfo, conf);
+            DbTableConfigInfo info = new DbTableConfigInfo();
+            Map<String, String> defaultVal = stringDefaultValueParser.get().getDefaultValue(conf);
+            info.initValue(typeInfo, conf, defaultVal);
             if ((masterSchemaName == null && masterTableName.equals(info.getTableName()))
-                    || info.getTable().equals(typeInfo.masterTable)) {
+                    || info.getTable().equals(typeInfo.getMasterTable())) {
                 if (masterTableInfo != null) {
                     throw new IndexConfigException(info + " config find other master table");
                 }
                 masterTableInfo = info;
                 if (masterSchemaName == null) {
                     masterSchemaName = info.getSchema();
-                    typeInfo.masterTable = DbTableDesc.build(masterSchemaName, masterTableName);
+                    typeInfo.setMasterTable(DbTableDesc.build(masterSchemaName, masterTableName));
                 }
             } else {
                 masterFiledMap.put(info, CommonUtils.getStringVal(conf, INDEX_MASTER_FIELD));
@@ -129,7 +101,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
         masterFiledMap.forEach((k, v) -> {
             DbTableFieldDesc masterField;
             if (v == null) {
-                masterField = DbTableFieldDesc.build(finalMasterSchemaName, masterTableName, finalMasterTableInfo.relationField);
+                masterField = DbTableFieldDesc.build(finalMasterSchemaName, masterTableName, finalMasterTableInfo.getRelationField());
             } else {
                 masterField = CommonUtils.getDbTableField(v, finalMasterSchemaName, masterTableName);
                 DbTableConfigInfo info = tableInfoMap.get(masterField.newDbTableDesc());
@@ -141,7 +113,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
             }
             k.setMasterField(masterField);
         });
-        typeInfo.tables = new HashSet<>(tableInfoMap.values());
+        typeInfo.setTables(new HashSet<>(tableInfoMap.values()));
     }
 
 }

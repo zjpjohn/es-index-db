@@ -2,7 +2,6 @@ package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.jdal.DbTableDesc;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -11,17 +10,26 @@ import java.util.Set;
  */
 public class TypeConfigInfo {
 
-    String index;
+    private String index;
 
-    String type;
+    private String type;
 
-    DbTableDesc masterTable;
-    /**
-     * key: table name, value: table info
-     */
-    Set<DbTableConfigInfo> tables;
-    //key: master table, value: slave table set
-    Map<String, Set<String>> dependedTable;
+    private DbTableDesc masterTable;
+
+    private Set<DbTableConfigInfo> tables;
+
+    public void setIndexType(String index, String type) {
+        this.index = index;
+        this.type = type;
+    }
+
+    public void setMasterTable(DbTableDesc masterTable) {
+        this.masterTable = masterTable;
+    }
+
+    public void setTables(Set<DbTableConfigInfo> tables) {
+        this.tables = tables;
+    }
 
     public String getIndex() {
         return index;
@@ -37,10 +45,6 @@ public class TypeConfigInfo {
 
     public Set<DbTableConfigInfo> getTables() {
         return tables;
-    }
-
-    public Map<String, Set<String>> getDependedTable() {
-        return dependedTable;
     }
 
     @Override
