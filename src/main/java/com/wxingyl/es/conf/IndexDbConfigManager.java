@@ -18,7 +18,6 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -94,19 +93,18 @@ public class IndexDbConfigManager {
     public void parseIndexType(Map<String, Object> confMap) {
         Set<TypeConfigInfo> typeSet = indexConfParser.parse(confMap);
         if (CommonUtils.isEmpty(typeSet)) return;
+        final ImmutableSetMultimap.Builder<String, IndexTypeBean> mapBuilder = ImmutableSetMultimap.builder();
         for (final TypeConfigInfo type : typeSet) {
-            type.getTables().forEach(v -> verifyTypeTableConfig(type, v));
-
+            final IndexTypeBean.Build build = IndexTypeBean.build(type.getIndex(), type.getType());
+            type.getTables().forEach(v -> build.addTableQuery(verifyTypeTableConfig(type, v), v));
+            mapBuilder.put(type.getIndex(), build.build(type.getMasterTable()));
         }
-
-        //TODO init IndexTypeBean
-//        final ImmutableSetMultimap.Builder<String, IndexTypeBean> builder = ImmutableSetMultimap.builder();
-//        if (indexTypeMap != null) builder.putAll(indexTypeMap);
-//        beanSet.forEach(k -> builder.put(k.getIndex(), k));
-//        indexTypeMap = builder.build();
+        if (indexTypeMap != null) mapBuilder.putAll(indexTypeMap);
+        indexTypeMap = mapBuilder.build();
+        //TODO index type config change, should notify some registers
     }
 
-    private void verifyTypeTableConfig(TypeConfigInfo type, DbTableConfigInfo info) {
+    private SqlQueryHandle verifyTypeTableConfig(TypeConfigInfo type, DbTableConfigInfo info) {
         String schema = info.getSchema();
         DataSourceBean dataSourceBean = findDataSourceBean(schema, info.getDbAddress());
         if (dataSourceBean == null) {
@@ -135,6 +133,7 @@ public class IndexDbConfigManager {
         if (info.getDeleteField() != null && !allFields.contains(info.getDeleteField())) {
             info.clearDeleteField();
         }
+        return handle;
     }
 
     private DataSourceBean findDataSourceBean(String schemaName, final String dbAddress) {

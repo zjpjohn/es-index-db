@@ -1,15 +1,15 @@
 package com.wxingyl.es.util;
 
-import org.apache.commons.dbutils.handlers.MapListHandler;
+import com.wxingyl.es.jdal.DbTableDesc;
+import com.wxingyl.es.jdal.DbTableFieldDesc;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 
 /**
  * Created by xing on 15/8/17.
  * 常用的工具类
  */
-public class CommonUtils {
+public abstract class CommonUtils {
 
     public static boolean isEmpty(String s) {
         return s == null || s.isEmpty() || s.trim().isEmpty();
@@ -57,6 +57,32 @@ public class CommonUtils {
         } else {
             return list;
         }
+    }
+
+    public static DbTableDesc getDbTable(Map<String, Object> map, String key, String defaultSchema) {
+        String value = getStringVal(map, key);
+        if (value == null) return null;
+        int index;
+        if ((index = value.indexOf('.')) > 0) {
+            return DbTableDesc.build(value.substring(0, index), value.substring(index+1));
+        } else {
+            return DbTableDesc.build(defaultSchema, value);
+        }
+    }
+
+    public static DbTableFieldDesc getDbTableField(String value, String defaultSchema, String defaultTable) {
+        int index;
+        String field = null;
+        if ((index = value.lastIndexOf('.')) > 0) {
+            field = value.substring(index+1);
+            value = value.substring(0, index);
+            defaultTable = value;
+        }
+        if ((index = value.lastIndexOf('.')) > 0) {
+            defaultTable = value.substring(index+1);
+            defaultSchema = value.substring(0, index);
+        }
+        return DbTableFieldDesc.build(defaultSchema, defaultTable, field);
     }
 
     public static String getStringVal(Map<String, Object> map, String key) {

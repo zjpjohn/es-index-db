@@ -1,5 +1,9 @@
 package com.wxingyl.es.conf.index;
 
+import com.wxingyl.es.exception.IndexConfigException;
+import com.wxingyl.es.jdal.DbTableDesc;
+import com.wxingyl.es.jdal.DbTableFieldDesc;
+import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.common.collect.Tuple;
 
 import java.util.List;
@@ -12,12 +16,11 @@ import static com.wxingyl.es.conf.ConfigKeyName.*;
  * parse config file, get table info
  */
 public class DbTableConfigInfo {
-    
-    String schema;
+
+    private DbTableDesc table;
 
     String dbAddress;
 
-    String tableName;
     // null is all fields
     Set<String> fields;
 
@@ -27,12 +30,20 @@ public class DbTableConfigInfo {
 
     String deleteValidValue;
     // v1: table v2: field
-    Tuple<String, String> masterField;
+    private DbTableFieldDesc masterField;
 
     String relationField;
 
+    public void setTable(String schema, String tableName) {
+        table = DbTableDesc.build(schema, tableName);
+    }
+
+    public void setMasterField(DbTableFieldDesc masterField) {
+        this.masterField = masterField;
+    }
+
     public String getSchema() {
-        return schema;
+        return table.getSchema();
     }
 
     public String getDbAddress() {
@@ -40,7 +51,11 @@ public class DbTableConfigInfo {
     }
 
     public String getTableName() {
-        return tableName;
+        return table.getTable();
+    }
+
+    public DbTableDesc getTable() {
+        return table;
     }
 
     public Set<String> getFields() {
@@ -64,7 +79,7 @@ public class DbTableConfigInfo {
         return deleteValidValue;
     }
 
-    public Tuple<String, String> getMasterField() {
+    public DbTableFieldDesc getMasterField() {
         return masterField;
     }
 
@@ -74,9 +89,6 @@ public class DbTableConfigInfo {
 
     void setDefaultValue(String key, String val) {
         switch (key) {
-            case INDEX_SCHEMA:
-                schema = val;
-                break;
             case INDEX_DB_ADDRESS:
                 dbAddress = val;
                 break;
@@ -89,6 +101,35 @@ public class DbTableConfigInfo {
         }
     }
 
+    void formatFields() {
+        if (CommonUtils.isEmpty(fields) || fields.contains("*")) {
+            fields = null;
+        } else if (!CommonUtils.isEmpty(forbidFields)) {
+            fields.removeAll(forbidFields);
+            if (fields.isEmpty()) {
+                throw new IndexConfigException(toString() + " fields retain forbid_fields is empty, forbid_fields: "
+                        + forbidFields);
+            }
+            //fields is not empty, so forbidFields it useless
+            forbidFields = null;
+        }
+        if (fields != null && !fields.contains(relationField)) {
+            fields.add(relationField);
+        }
+        if (forbidFields != null && forbidFields.contains(relationField)) {
+            forbidFields.remove(relationField);
+        }
+    }
+
+    void addFiled(String filed) {
+        if (fields != null && !fields.contains(filed)) {
+            fields.add(filed);
+        }
+        if (forbidFields != null && forbidFields.contains(filed)) {
+            forbidFields.remove(filed);
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -96,22 +137,22 @@ public class DbTableConfigInfo {
 
         DbTableConfigInfo that = (DbTableConfigInfo) o;
 
-        if (!schema.equals(that.schema)) return false;
         if (dbAddress != null ? !dbAddress.equals(that.dbAddress) : that.dbAddress != null) return false;
-        return tableName.equals(that.tableName);
+        return table.equals(that.table);
 
     }
 
     @Override
     public int hashCode() {
-        int result = schema.hashCode();
+        int result = table.hashCode();
         result = 31 * result + (dbAddress != null ? dbAddress.hashCode() : 0);
-        result = 31 * result + tableName.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
-        return String.format("DbTableConfigInfo[schemaName: %s, dbAddress: %s, tableName: %s]", schema, dbAddress, tableName);
+        return String.format("DbTableConfigInfo[schemaName: %s, dbAddress: %s, tableName: %s]", table.getSchema(),
+                dbAddress, table.getTable());
     }
+
 }

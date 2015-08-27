@@ -2,9 +2,10 @@ package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.conf.ConfigParse;
 import com.wxingyl.es.exception.IndexConfigException;
+import com.wxingyl.es.jdal.DbTableDesc;
+import com.wxingyl.es.jdal.DbTableFieldDesc;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
-import org.elasticsearch.common.collect.Tuple;
 
 import java.util.*;
 
@@ -48,7 +49,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
             stringDefaultValueParser.get().addDefaultValue(allTypes, 0);
             allTypes.forEach((type, v) -> {
                 Map<String, Object> conf = (Map<String, Object>) v;
-                String masterTable = CommonUtils.getStringVal(conf, INDEX_MASTER_TABLE);
+                DbTableDesc masterTable = CommonUtils.getDbTable(conf, INDEX_MASTER_TABLE, null);
                 if (masterTable == null) {
                     throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_MASTER_TABLE + " config");
                 }
@@ -57,100 +58,90 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
                     throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_INCLUDE_TABLE + " config");
                 }
                 stringDefaultValueParser.get().addDefaultValue(conf, 1);
-                TypeConfigInfo typeParse = new TypeConfigInfo();
-                typeParse.index = index;
-                typeParse.type = type;
-                typeParse.masterTable = masterTable;
-                parseTableInfo(typeParse, tablesConf);
-                typeList.add(typeParse);
+                TypeConfigInfo typeInfo = new TypeConfigInfo();
+                typeInfo.index = index;
+                typeInfo.type = type;
+                typeInfo.masterTable = masterTable;
+                parseTableInfo(typeInfo, tablesConf);
+                typeList.add(typeInfo);
             });
         });
         return typeList;
     }
 
-    private void parseTableInfo(TypeConfigInfo typeParse, List<Map<String, Object>> tablesConf) {
-        Set<DbTableConfigInfo> tableInfoParseSet = new HashSet<>();
-        DbTableConfigInfo masterTable = null;
-        final Map<String, List<String>> tableDependFields = new HashMap<>();
-        typeParse.dependedTable = new HashMap<>();
+    private DbTableConfigInfo getDbTableConfigInfo(TypeConfigInfo typeInfo, Map<String, Object> conf) {
+        DbTableConfigInfo info = new DbTableConfigInfo();
+        Map<String, String> defaultVal = stringDefaultValueParser.get().getDefaultValue(conf);
+        String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE_NAME);
+        if (tableName == null) {
+            throw new IndexConfigException("table_name conf is null of " + typeInfo);
+        }
+        info.setTable(defaultVal.remove(INDEX_SCHEMA), tableName);
+        if (info.getSchema() == null) {
+            throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " can't find schema");
+        }
+        defaultVal.forEach(info::setDefaultValue);
+        if (info.deleteField != null && info.deleteValidValue == null) {
+            throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " delete_field: "
+                    + info.deleteField + ", but delete_valid_value is null");
+        }
+        String relationField = CommonUtils.getStringVal(conf, INDEX_RELATION_FIELD);
+        if (relationField == null) {
+            throw new IndexConfigException(typeInfo + ", table_name: " + tableName
+                    + " need " + INDEX_RELATION_FIELD + " config");
+        }
+        info.relationField = relationField;
+        info.forbidFields = CommonUtils.getSet(conf, INDEX_FORBID_FIELDS);
+        info.fields = CommonUtils.getSet(conf, INDEX_FIELDS);
+        info.formatFields();
+        return info;
+    }
+
+    private void parseTableInfo(TypeConfigInfo typeInfo, List<Map<String, Object>> tablesConf) {
+        Map<DbTableDesc, DbTableConfigInfo> tableInfoMap = new HashMap<>();
+        DbTableConfigInfo masterTableInfo = null;
+        final String masterTableName = typeInfo.masterTable.getTable();
+        String masterSchemaName = typeInfo.masterTable.getSchema();
+        Map<DbTableConfigInfo, String> masterFiledMap = new HashMap<>();
+        typeInfo.dependedTable = new HashMap<>();
         for (Map<String, Object> conf : tablesConf) {
-            DbTableConfigInfo info = new DbTableConfigInfo();
-            stringDefaultValueParser.get().getDefaultValue(conf).forEach(info::setDefaultValue);
-            String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE_NAME);
-            if (tableName == null) {
-                throw new IndexConfigException("table_name conf is null of " + typeParse);
-            }
-            info.tableName = tableName;
-            if (info.schema == null) {
-                throw new IndexConfigException(typeParse + " conf, table_name: " + tableName + " can't find schema");
-            }
-            if (info.deleteField != null && info.deleteValidValue == null) {
-                throw new IndexConfigException(typeParse + " conf, table_name: " + tableName + " delete_field: "
-                        + info.deleteField + ", but delete_valid_value is null");
-            }
-            String relationField = CommonUtils.getStringVal(conf, INDEX_RELATION_FIELD);
-            if (relationField == null) {
-                throw new IndexConfigException(typeParse + ", table_name: " + tableName
-                        + " need " + INDEX_RELATION_FIELD + " config");
-            }
-            info.relationField = relationField;
-            info.forbidFields = CommonUtils.getSet(conf, INDEX_FORBID_FIELDS);
-            info.fields = CommonUtils.getSet(conf, INDEX_FIELDS);
-            boolean isMasterTable = false;
-            if (tableName.equals(typeParse.masterTable)) {
-                masterTable = info;
-                isMasterTable = true;
-            }
-            String masterField = CommonUtils.getStringVal(conf, INDEX_MASTER_FIELD);
-            String dependTable = typeParse.masterTable;
-            if (!isMasterTable && masterField != null) {
-                if (masterField.indexOf(',') > 0) {
-                    String[] arr = masterField.split(",");
-                    info.masterField = Tuple.tuple(arr[0], arr[1]);
-                    dependTable = info.masterField.v1();
-                } else {
-                    info.masterField = Tuple.tuple(typeParse.masterTable, masterField);
+            DbTableConfigInfo info = getDbTableConfigInfo(typeInfo, conf);
+            if ((masterSchemaName == null && masterTableName.equals(info.getTableName()))
+                    || info.getTable().equals(typeInfo.masterTable)) {
+                if (masterTableInfo != null) {
+                    throw new IndexConfigException(info + " config find other master table");
                 }
-                List<String> list = tableDependFields.get(info.masterField.v1());
-                if (list == null) {
-                    tableDependFields.put(info.masterField.v1(), list = new ArrayList<>());
+                masterTableInfo = info;
+                if (masterSchemaName == null) {
+                    masterSchemaName = info.getSchema();
+                    typeInfo.masterTable = DbTableDesc.build(masterSchemaName, masterTableName);
                 }
-                list.add(info.masterField.v2());
+            } else {
+                masterFiledMap.put(info, CommonUtils.getStringVal(conf, INDEX_MASTER_FIELD));
             }
-            if (!isMasterTable) {
-                Set<String> set = typeParse.dependedTable.get(dependTable);
-                if (set == null) {
-                    typeParse.dependedTable.put(dependTable, set = new HashSet<>());
-                }
-                set.add(tableName);
-            }
-            tableInfoParseSet.add(info);
+            tableInfoMap.put(info.getTable(), info);
         }
-        if (masterTable == null) {
-            throw new IndexConfigException(typeParse + " config, can't find a master-table");
+        if (masterTableInfo == null) {
+            throw new IndexConfigException(typeInfo + " config, can't find a master-table");
         }
-        tableInfoParseSet.forEach(info -> {
-            List<String> dependFields = tableDependFields.get(info.tableName);
-            if (CommonUtils.isEmpty(info.fields) || info.fields.contains("*")) {
-                info.fields = null;
-            } else if (!CommonUtils.isEmpty(info.forbidFields)) {
-                info.fields.removeAll(info.forbidFields);
-                if (info.fields.isEmpty()) {
-                    throw new IndexConfigException(typeParse + " fields retain forbid_fields is empty, forbid_fields: "
-                            + info.forbidFields);
+        final String finalMasterSchemaName = masterSchemaName;
+        final DbTableConfigInfo finalMasterTableInfo = masterTableInfo;
+        masterFiledMap.forEach((k, v) -> {
+            DbTableFieldDesc masterField;
+            if (v == null) {
+                masterField = DbTableFieldDesc.build(finalMasterSchemaName, masterTableName, finalMasterTableInfo.relationField);
+            } else {
+                masterField = CommonUtils.getDbTableField(v, finalMasterSchemaName, masterTableName);
+                DbTableConfigInfo info = tableInfoMap.get(masterField.newDbTableDesc());
+                if (info == null) {
+                    throw new IndexConfigException("In table: " + k + ", " + INDEX_MASTER_FIELD
+                            + " config, can not find table: " + k.getMasterField());
                 }
-                //fields is not empty, so forbidFields it useless
-                info.forbidFields = null;
+                info.addFiled(masterField.getField());
             }
-            if (info.fields != null) {
-                info.fields.add(info.relationField);
-                if (dependFields != null) info.fields.addAll(dependFields);
-            } else if (info.forbidFields != null) {
-                info.forbidFields.remove(info.relationField);
-                if (dependFields != null) info.forbidFields.removeAll(dependFields);
-            }
+            k.setMasterField(masterField);
         });
-        typeParse.tables = tableInfoParseSet;
+        typeInfo.tables = new HashSet<>(tableInfoMap.values());
     }
 
 }

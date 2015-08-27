@@ -1,14 +1,10 @@
 package com.wxingyl.es.conf.index;
 
-import com.wxingyl.es.conf.ds.DataSourceBean;
-import com.wxingyl.es.jdal.FilterMapListHandler;
-import com.wxingyl.es.jdal.PrepareSqlQuery;
-import com.wxingyl.es.jdal.SqlQueryHandle;
+import com.wxingyl.es.jdal.*;
 import com.wxingyl.es.util.CommonUtils;
+import org.elasticsearch.common.collect.Tuple;
 
-import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,10 +27,6 @@ public class IndexTypeBean {
         return type;
     }
 
-    public List<Map<String, Object>> dbQuery() throws SQLException {
-        return tableQuery.query();
-    }
-
     public static class TableQuery {
 
         private SqlQueryHandle queryHandler;
@@ -52,10 +44,6 @@ public class IndexTypeBean {
         private Map<String, TableQuery> salveQuery;
 
         private PrepareSqlQuery commonSql;
-
-        List<Map<String, Object>> query() throws SQLException {
-            return null;
-        }
     }
 
     public static Build build(String index, String type) {
@@ -66,44 +54,32 @@ public class IndexTypeBean {
 
         private String index, type;
 
-        private TableQuery dbQuery;
+        private Map<DbTableDesc, Tuple<TableQuery, DbTableFieldDesc>> queryMap = new HashMap<>();
 
         public Build(String index, String type) {
             this.index = index;
             this.type = type;
         }
 
-        public Build addMasterTable(DataSourceBean dataSource, DbTableConfigInfo masterTable) {
-            dbQuery = createTableQuery(dataSource, masterTable);
-            return this;
-        }
-
-        public Build addSalveQuery(DataSourceBean dataSource, DbTableConfigInfo tableInfo) {
-            if (dbQuery.salveQuery == null) {
-                dbQuery.salveQuery = new HashMap<>();
-            }
-            TableQuery salveQuery = createTableQuery(dataSource, tableInfo);
-            dbQuery.salveQuery.put(tableInfo.getMasterField().v2(), salveQuery);
-            return this;
-        }
-
-        private TableQuery createTableQuery(DataSourceBean dataSource, DbTableConfigInfo tableInfo) {
+        public Build addTableQuery(SqlQueryHandle queryHandler, DbTableConfigInfo tableInfo) {
             TableQuery query = new TableQuery();
-            query.queryHandler = dataSource.getQueryHandle();
+            query.queryHandler = queryHandler;
             query.tableName = tableInfo.getTableName();
             query.keyField = tableInfo.getRelationField();
             query.commonSql = query.queryHandler.createPrepareSqlQuery(tableInfo);
             if (!CommonUtils.isEmpty(tableInfo.getForbidFields())) {
                 query.rsh = new FilterMapListHandler(tableInfo.getForbidFields());
             }
-            return query;
+            queryMap.put(tableInfo.getTable(), Tuple.tuple(query, tableInfo.getMasterField()));
+            return this;
         }
 
-        public IndexTypeBean build() {
+        public IndexTypeBean build(DbTableDesc masterTable) {
             IndexTypeBean bean = new IndexTypeBean();
             bean.index = index;
             bean.type = type;
-            bean.tableQuery = dbQuery;
+            bean.tableQuery = queryMap.get(masterTable).v1();
+            //TODO deal depend
             return bean;
         }
     }

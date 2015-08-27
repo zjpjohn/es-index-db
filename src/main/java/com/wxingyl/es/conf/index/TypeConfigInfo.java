@@ -1,5 +1,7 @@
 package com.wxingyl.es.conf.index;
 
+import com.wxingyl.es.jdal.DbTableDesc;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -13,7 +15,7 @@ public class TypeConfigInfo {
 
     String type;
 
-    String masterTable;
+    DbTableDesc masterTable;
     /**
      * key: table name, value: table info
      */
@@ -29,7 +31,7 @@ public class TypeConfigInfo {
         return type;
     }
 
-    public String getMasterTable() {
+    public DbTableDesc getMasterTable() {
         return masterTable;
     }
 
