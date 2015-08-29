@@ -72,7 +72,7 @@ public abstract class CommonUtils {
 
     public static DbTableFieldDesc getDbTableField(String value, String defaultSchema, String defaultTable) {
         int index;
-        String field = null;
+        String field = value;
         if ((index = value.lastIndexOf('.')) > 0) {
             field = value.substring(index+1);
             value = value.substring(0, index);

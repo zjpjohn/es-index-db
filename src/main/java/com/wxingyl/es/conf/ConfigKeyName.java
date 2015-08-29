@@ -40,7 +40,7 @@ public interface ConfigKeyName {
 
     String INDEX_MASTER_TABLE = "master_table";
 
-    String INDEX_TABLE_NAME = "table_name";
+    String INDEX_TABLE = "table";
 
     String INDEX_FIELDS = "fields";
 

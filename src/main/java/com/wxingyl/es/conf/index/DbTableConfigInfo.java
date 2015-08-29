@@ -101,7 +101,7 @@ public class DbTableConfigInfo {
     }
 
     void initValue(TypeConfigInfo typeInfo, Map<String, Object> conf, Map<String, String> defaultVal) {
-        String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE_NAME);
+        String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE);
         if (tableName == null) {
             throw new IndexConfigException("table_name conf is null of " + typeInfo);
         }

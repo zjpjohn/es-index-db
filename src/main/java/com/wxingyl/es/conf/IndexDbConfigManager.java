@@ -34,7 +34,7 @@ public class IndexDbConfigManager {
 
     private ConfigParse<TypeConfigInfo> indexConfParser;
 
-    private DataSourceConfigParse dsConfParser;
+    private DataSourceConfigParse dataSourceConfParser;
 
     /**
      * key: schema name, value: list DataSourceBean
@@ -50,12 +50,12 @@ public class IndexDbConfigManager {
      */
     public IndexDbConfigManager() {
         indexConfParser = new IndexTypeConfigParser();
-        dsConfParser = new DataSourceParseFactory();
-        dsConfParser.addDataSourceConfigParser(new MysqlDataSourceConfigParser());
+        dataSourceConfParser = new DataSourceParseFactory();
+        dataSourceConfParser.addDataSourceConfigParser(new MysqlDataSourceConfigParser());
     }
 
-    public DataSourceConfigParse getDsConfParser() {
-        return dsConfParser;
+    public DataSourceConfigParse getDataSourceConfParser() {
+        return dataSourceConfParser;
     }
 
     @SuppressWarnings("unchecked")
@@ -67,11 +67,11 @@ public class IndexDbConfigManager {
         } catch (IOException e) {
             throw new IndexConfigException("load config file: " + yamlFileName + " have IOException", e);
         }
-        addDataSourceBean(dsConfParser.parse(map.values()));
+        addDataSourceBean(dataSourceConfParser.parse(map.values()));
     }
 
     public void parseDataSource(Map<String, Object> confMap) {
-        addDataSourceBean(dsConfParser.parse(confMap));
+        addDataSourceBean(dataSourceConfParser.parse(confMap));
     }
 
     @SuppressWarnings("unchecked")
@@ -113,15 +113,13 @@ public class IndexDbConfigManager {
         }
         SqlQueryHandle handle = dataSourceBean.getQueryHandle();
         String table = info.getTableName();
-        Set<String> allTables, allFields;
+        Set<String> allFields;
         try {
-            allTables = handle.getAllTables(schema);
+            //to verify every table is really exist
+            handle.getAllTables(schema);
             allFields = handle.getAllFields(schema, table);
         } catch (Exception e) {
             throw new IndexConfigException("get " + info + " tables and fields have crash: " + e.getMessage(), e);
-        }
-        if (!allTables.contains(table)) {
-            throw new IndexConfigException("can't find table: " + info);
         }
         if (info.getFields() != null) {
             for (String s : info.getFields()) {
