@@ -1,6 +1,7 @@
 package com.wxingyl.es.jdal.handle;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
+import com.wxingyl.es.jdal.DbQueryResult;
 import com.wxingyl.es.jdal.PrepareSqlQuery;
 import com.wxingyl.es.jdal.SqlQueryParam;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -18,8 +19,7 @@ public interface SqlQueryHandle {
 
     PrepareSqlQuery createPrepareSqlQuery(DbTableConfigInfo tableInfo);
 
-    List<Map<String, Object>> query(SqlQueryParam param,
-                                    ResultSetHandler<List<Map<String, Object>>> handler) throws SQLException;
+    DbQueryResult query(SqlQueryParam param) throws SQLException;
 
     /**
      * get all tables in the schema

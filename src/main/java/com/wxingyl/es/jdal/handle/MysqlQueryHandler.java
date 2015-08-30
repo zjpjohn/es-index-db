@@ -1,6 +1,7 @@
 package com.wxingyl.es.jdal.handle;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
+import com.wxingyl.es.jdal.DbQueryResult;
 import com.wxingyl.es.jdal.PrepareSqlQuery;
 import com.wxingyl.es.jdal.SqlQueryParam;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -57,12 +58,14 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
                     .append(tableInfo.getDeleteValidValue()).append('\'');
             build.containWhere();
         }
-        build.commonFormatSql(sb.toString());
+        build.commonFormatSql(sb.toString())
+                .pageSize(tableInfo.getPageSize());
         return build.build();
     }
 
     @Override
-    public List<Map<String, Object>> query(SqlQueryParam param, ResultSetHandler<List<Map<String, Object>>> handler) throws SQLException {
+    public DbQueryResult query(SqlQueryParam param) throws SQLException {
         return null;
     }
+
 }

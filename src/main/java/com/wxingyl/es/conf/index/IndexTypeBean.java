@@ -22,10 +22,6 @@ public class IndexTypeBean {
 
     private TableQuery masterTable;
 
-    public DbQueryResult query(int page) {
-        return null;
-    }
-
     public String getIndex() {
         return index;
     }
@@ -45,10 +41,6 @@ public class IndexTypeBean {
         private String keyField;
 
         private String tableName;
-        /**
-         * query db batch size
-         */
-        private int pageSize;
         /**
          * filter {@link DbTableConfigInfo#forbidFields}
          * nullable
@@ -72,10 +64,6 @@ public class IndexTypeBean {
 
         public String getTableName() {
             return tableName;
-        }
-
-        public int getPageSize() {
-            return pageSize;
         }
 
         public FilterMapListHandler getRsh() {
@@ -111,7 +99,6 @@ public class IndexTypeBean {
             query.queryHandler = queryHandler;
             query.tableName = tableInfo.getTableName();
             query.keyField = tableInfo.getRelationField();
-            query.pageSize = tableInfo.getPageSize();
             query.commonSql = query.queryHandler.createPrepareSqlQuery(tableInfo);
             if (!CommonUtils.isEmpty(tableInfo.getForbidFields())) {
                 query.rsh = new FilterMapListHandler(tableInfo.getForbidFields());

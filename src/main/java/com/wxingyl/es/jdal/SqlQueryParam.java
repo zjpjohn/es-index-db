@@ -1,5 +1,6 @@
 package com.wxingyl.es.jdal;
 
+import com.wxingyl.es.conf.index.IndexTypeBean;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import java.util.Collection;
@@ -24,28 +25,12 @@ public class SqlQueryParam<T> {
 
     private ResultSetHandler<List<Map<String, Object>>> handler;
 
-    public void setPrepareSql(PrepareSqlQuery prepareSql) {
-        this.prepareSql = prepareSql;
+    public PrepareSqlQuery getPrepareSql() {
+        return prepareSql;
     }
 
     public void setStart(int start) {
         this.start = start;
-    }
-
-    public void setWhereField(String whereField) {
-        this.whereField = whereField;
-    }
-
-    public void setCls(Class<T> cls) {
-        this.cls = cls;
-    }
-
-    public void setWhereList(Collection<T> whereList) {
-        this.whereList = whereList;
-    }
-
-    public PrepareSqlQuery getPrepareSql() {
-        return prepareSql;
     }
 
     public int getStart() {
@@ -62,5 +47,22 @@ public class SqlQueryParam<T> {
 
     public Collection<T> getWhereList() {
         return whereList;
+    }
+
+    @Override
+    public String toString() {
+        return "SqlQueryParam{" +
+                "prepareSql=" + prepareSql +
+                ", start=" + start +
+                ", whereField='" + whereField + '\'' +
+                ", whereList=" + whereList +
+                '}';
+    }
+
+    public static SqlQueryParam<Void> createMasterQueryParam(IndexTypeBean.TableQuery tableQuery) {
+        SqlQueryParam<Void> param = new SqlQueryParam<>();
+        param.prepareSql = tableQuery.getCommonSql();
+        param.handler = tableQuery.getRsh();
+        return param;
     }
 }

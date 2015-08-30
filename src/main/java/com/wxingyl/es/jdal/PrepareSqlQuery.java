@@ -12,7 +12,7 @@ public class PrepareSqlQuery {
 
     private boolean containWhere;
 
-    private int limit;
+    private int pageSize;
 
     private String orderBy;
 
@@ -20,8 +20,8 @@ public class PrepareSqlQuery {
         return orderBy;
     }
 
-    public int getLimit() {
-        return limit;
+    public int getPageSize() {
+        return pageSize;
     }
 
     public String getCommonFormatSql() {
@@ -36,6 +36,15 @@ public class PrepareSqlQuery {
         return String.format(commonFormatSql, args);
     }
 
+    @Override
+    public String toString() {
+        return "PrepareSqlQuery{" +
+                "commonFormatSql='" + commonFormatSql + '\'' +
+                ", orderBy='" + orderBy + '\'' +
+                ", limit=" + pageSize +
+                '}';
+    }
+
     public static Build build() {
         return new Build();
     }
@@ -45,6 +54,8 @@ public class PrepareSqlQuery {
         private String commonFormatSql;
 
         private boolean containWhere;
+
+        private int pageSize;
 
         public Build commonFormatSql(String commonFormatSql) {
             this.commonFormatSql = commonFormatSql;
@@ -56,10 +67,16 @@ public class PrepareSqlQuery {
             return this;
         }
 
+        public Build pageSize(int pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
         public PrepareSqlQuery build() {
             PrepareSqlQuery prepareSqlQuery = new PrepareSqlQuery();
             prepareSqlQuery.commonFormatSql = commonFormatSql;
             prepareSqlQuery.containWhere = containWhere;
+            prepareSqlQuery.pageSize = pageSize;
             return prepareSqlQuery;
         }
     }
