@@ -4,17 +4,11 @@ import com.wxingyl.es.conf.index.IndexTypeBean;
 
 /**
  * Created by xing on 15/8/28.
- * define create index interface
+ * fill data from db
  */
-public interface FullIndexCreate {
-    /**
-     * if index don't exist, create
-     */
-    void create(IndexSetting setting);
-
+public interface IndexFill {
     /**
      * fill data from db
      */
     void fill(IndexTypeBean typeBean);
-
 }

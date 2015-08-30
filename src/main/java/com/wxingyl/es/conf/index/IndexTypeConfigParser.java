@@ -49,13 +49,13 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
             stringDefaultValueParser.get().addDefaultValue(allTypes, 0);
             allTypes.forEach((type, v) -> {
                 Map<String, Object> conf = (Map<String, Object>) v;
-                DbTableDesc masterTable = CommonUtils.getDbTable(conf, INDEX_MASTER_TABLE, null);
-                if (masterTable == null) {
-                    throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_MASTER_TABLE + " config");
-                }
                 List<Map<String, Object>> tablesConf = CommonUtils.getList(conf, INDEX_INCLUDE_TABLE);
                 if (tablesConf == null) {
                     throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_INCLUDE_TABLE + " config");
+                }
+                DbTableDesc masterTable = CommonUtils.getDbTable(conf, INDEX_MASTER_TABLE, null);
+                if (tablesConf.size() > 1 && masterTable == null) {
+                    throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_MASTER_TABLE + " config");
                 }
                 stringDefaultValueParser.get().addDefaultValue(conf, 1);
                 TypeConfigInfo typeInfo = new TypeConfigInfo();
@@ -71,22 +71,24 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
     private void parseTableInfo(TypeConfigInfo typeInfo, List<Map<String, Object>> tablesConf) {
         Map<DbTableDesc, DbTableConfigInfo> tableInfoMap = new HashMap<>();
         DbTableConfigInfo masterTableInfo = null;
-        final String masterTableName = typeInfo.getMasterTable().getTable();
-        String masterSchemaName = typeInfo.getMasterTable().getSchema();
+        DbTableDesc masterTable = typeInfo.getMasterTable();
         Map<DbTableConfigInfo, String> masterFiledMap = new HashMap<>();
         for (Map<String, Object> conf : tablesConf) {
             DbTableConfigInfo info = new DbTableConfigInfo();
             Map<String, String> defaultVal = stringDefaultValueParser.get().getDefaultValue(conf);
             info.initValue(typeInfo, conf, defaultVal);
-            if ((masterSchemaName == null && masterTableName.equals(info.getTableName()))
+            if (masterTable == null) {
+                masterTable = info.getTable();
+            }
+            if ((masterTable.getSchema() == null && masterTable.getTable().equals(info.getTableName()))
                     || info.getTable().equals(typeInfo.getMasterTable())) {
                 if (masterTableInfo != null) {
                     throw new IndexConfigException(info + " config find other master table");
                 }
                 masterTableInfo = info;
-                if (masterSchemaName == null) {
-                    masterSchemaName = info.getSchema();
-                    typeInfo.setMasterTable(DbTableDesc.build(masterSchemaName, masterTableName));
+                if (masterTable.getSchema() == null) {
+                    typeInfo.setMasterTable(DbTableDesc.build(info.getSchema(), masterTable.getTable()));
+                    masterTable = typeInfo.getMasterTable();
                 }
             } else {
                 masterFiledMap.put(info, CommonUtils.getStringVal(conf, INDEX_MASTER_FIELD));
@@ -96,14 +98,16 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
         if (masterTableInfo == null) {
             throw new IndexConfigException(typeInfo + " config, can't find a master-table");
         }
-        final String finalMasterSchemaName = masterSchemaName;
+        final String finalMasterSchemaName = masterTable.getSchema();
+        final String finalMasterTableName = masterTable.getTable();
         final DbTableConfigInfo finalMasterTableInfo = masterTableInfo;
         masterFiledMap.forEach((k, v) -> {
             DbTableFieldDesc masterField;
             if (v == null) {
-                masterField = DbTableFieldDesc.build(finalMasterSchemaName, masterTableName, finalMasterTableInfo.getRelationField());
+                masterField = DbTableFieldDesc.build(finalMasterSchemaName, finalMasterTableName,
+                        finalMasterTableInfo.getRelationField());
             } else {
-                masterField = CommonUtils.getDbTableField(v, finalMasterSchemaName, masterTableName);
+                masterField = CommonUtils.getDbTableField(v, finalMasterSchemaName, finalMasterTableName);
                 DbTableConfigInfo info = tableInfoMap.get(masterField.newDbTableDesc());
                 if (info == null) {
                     throw new IndexConfigException("In table: " + k + ", " + INDEX_MASTER_FIELD
