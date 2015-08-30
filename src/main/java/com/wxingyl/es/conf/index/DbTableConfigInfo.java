@@ -33,9 +33,11 @@ public class DbTableConfigInfo {
 
     private String relationField;
 
+    private Integer pageSize;
+
     public void setMasterField(DbTableFieldDesc masterField) {
         if (masterField.newDbTableDesc().equals(table)) {
-            throw new IndexConfigException("Index type config: " + toString() + ", " + INDEX_MASTER_FIELD
+            throw new IndexConfigException("Index type config: " + toString() + ", " + INDEX_TABLE_MASTER_FIELD
                     + " value can't local table");
         }
         this.masterField = masterField;
@@ -86,26 +88,30 @@ public class DbTableConfigInfo {
         return relationField;
     }
 
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
     private void setDefaultValue(String key, String val) {
         switch (key) {
-            case INDEX_DB_ADDRESS:
+            case INDEX_TABLE_DB_ADDRESS:
                 dbAddress = val;
                 break;
-            case INDEX_DELETE_FIELD:
+            case INDEX_TABLE_DELETE_FIELD:
                 deleteField = val;
                 break;
-            case INDEX_DELETE_VALID_VALUE:
+            case INDEX_TABLE_DELETE_VALID_VALUE:
                 deleteValidValue = val;
                 break;
         }
     }
 
     void initValue(TypeConfigInfo typeInfo, Map<String, Object> conf, Map<String, String> defaultVal) {
-        String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE);
+        String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE_TABLE);
         if (tableName == null) {
             throw new IndexConfigException("table_name conf is null of " + typeInfo);
         }
-        table = DbTableDesc.build(defaultVal.remove(INDEX_SCHEMA), tableName);
+        table = DbTableDesc.build(defaultVal.remove(INDEX_TABLE_SCHEMA), tableName);
         if (table.getSchema() == null) {
             throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " can't find schema");
         }
@@ -114,13 +120,14 @@ public class DbTableConfigInfo {
             throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " delete_field: "
                     + deleteField + ", but delete_valid_value is null");
         }
-        relationField = CommonUtils.getStringVal(conf, INDEX_RELATION_FIELD);
+        relationField = CommonUtils.getStringVal(conf, INDEX_TABLE_RELATION_FIELD);
         if (relationField == null) {
             throw new IndexConfigException(typeInfo + ", table_name: " + tableName
-                    + " need " + INDEX_RELATION_FIELD + " config");
+                    + " need " + INDEX_TABLE_RELATION_FIELD + " config");
         }
-        forbidFields = CommonUtils.getSet(conf, INDEX_FORBID_FIELDS);
-        fields = CommonUtils.getSet(conf, INDEX_FIELDS);
+        pageSize = (Integer) conf.getOrDefault(INDEX_TABLE_PAGE_SIZE, 2500);
+        forbidFields = CommonUtils.getSet(conf, INDEX_TABLE_FORBID_FIELDS);
+        fields = CommonUtils.getSet(conf, INDEX_TABLE_FIELDS);
         if (CommonUtils.isEmpty(fields) || fields.contains("*")) {
             fields = null;
         } else if (!CommonUtils.isEmpty(forbidFields)) {

@@ -27,10 +27,10 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
                 defaultValue.put(INDEX_DEFAULT_DELETE_FIELD, new String[2]);
                 defaultValue.put(INDEX_DEFAULT_DELETE_VALID_VALUE, new String[2]);
 
-                keyMap.put(INDEX_DEFAULT_SCHEMA, INDEX_SCHEMA);
-                keyMap.put(INDEX_DEFAULT_DB_ADDRESS, INDEX_DB_ADDRESS);
-                keyMap.put(INDEX_DEFAULT_DELETE_FIELD, INDEX_DELETE_FIELD);
-                keyMap.put(INDEX_DEFAULT_DELETE_VALID_VALUE, INDEX_DELETE_VALID_VALUE);
+                keyMap.put(INDEX_DEFAULT_SCHEMA, INDEX_TABLE_SCHEMA);
+                keyMap.put(INDEX_DEFAULT_DB_ADDRESS, INDEX_TABLE_DB_ADDRESS);
+                keyMap.put(INDEX_DEFAULT_DELETE_FIELD, INDEX_TABLE_DELETE_FIELD);
+                keyMap.put(INDEX_DEFAULT_DELETE_VALID_VALUE, INDEX_TABLE_DELETE_VALID_VALUE);
             }) {
                 @Override
                 protected String getVal(Map<String, Object> confMap, String key) {
@@ -49,13 +49,13 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
             stringDefaultValueParser.get().addDefaultValue(allTypes, 0);
             allTypes.forEach((type, v) -> {
                 Map<String, Object> conf = (Map<String, Object>) v;
-                List<Map<String, Object>> tablesConf = CommonUtils.getList(conf, INDEX_INCLUDE_TABLE);
+                List<Map<String, Object>> tablesConf = CommonUtils.getList(conf, INDEX_TYPE_INCLUDE_TABLE);
                 if (tablesConf == null) {
-                    throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_INCLUDE_TABLE + " config");
+                    throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_TYPE_INCLUDE_TABLE + " config");
                 }
-                DbTableDesc masterTable = CommonUtils.getDbTable(conf, INDEX_MASTER_TABLE, null);
+                DbTableDesc masterTable = CommonUtils.getDbTable(conf, INDEX_TYPE_MASTER_TABLE, null);
                 if (tablesConf.size() > 1 && masterTable == null) {
-                    throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_MASTER_TABLE + " config");
+                    throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_TYPE_MASTER_TABLE + " config");
                 }
                 stringDefaultValueParser.get().addDefaultValue(conf, 1);
                 TypeConfigInfo typeInfo = new TypeConfigInfo();
@@ -91,7 +91,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
                     masterTable = typeInfo.getMasterTable();
                 }
             } else {
-                masterFiledMap.put(info, CommonUtils.getStringVal(conf, INDEX_MASTER_FIELD));
+                masterFiledMap.put(info, CommonUtils.getStringVal(conf, INDEX_TABLE_MASTER_FIELD));
             }
             tableInfoMap.put(info.getTable(), info);
         }
@@ -110,7 +110,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
                 masterField = CommonUtils.getDbTableField(v, finalMasterSchemaName, finalMasterTableName);
                 DbTableConfigInfo info = tableInfoMap.get(masterField.newDbTableDesc());
                 if (info == null) {
-                    throw new IndexConfigException("In table: " + k + ", " + INDEX_MASTER_FIELD
+                    throw new IndexConfigException("In table: " + k + ", " + INDEX_TABLE_MASTER_FIELD
                             + " config, can not find table: " + k.getMasterField());
                 }
                 info.addFiled(masterField.getField());

@@ -1,11 +1,12 @@
 package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.jdal.*;
-import com.wxingyl.es.jdal.handle.FilterMapListHandler;
+import com.wxingyl.es.jdal.FilterMapListHandler;
 import com.wxingyl.es.jdal.handle.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.common.collect.Tuple;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,11 @@ public class IndexTypeBean {
 
     private String type;
 
-    private TableQuery tableQuery;
+    private TableQuery masterTable;
+
+    public DbQueryResult query(int page) {
+        return null;
+    }
 
     public String getIndex() {
         return index;
@@ -27,6 +32,10 @@ public class IndexTypeBean {
 
     public String getType() {
         return type;
+    }
+
+    public TableQuery getMasterTable() {
+        return masterTable;
     }
 
     public static class TableQuery {
@@ -37,15 +46,49 @@ public class IndexTypeBean {
 
         private String tableName;
         /**
+         * query db batch size
+         */
+        private int pageSize;
+        /**
          * filter {@link DbTableConfigInfo#forbidFields}
+         * nullable
          */
         private FilterMapListHandler rsh;
         /**
          * key: field, value: salve table
+         * unmodifiableMap
          */
         private Map<String, TableQuery> salveQuery;
 
         private PrepareSqlQuery commonSql;
+
+        public SqlQueryHandle getQueryHandler() {
+            return queryHandler;
+        }
+
+        public String getKeyField() {
+            return keyField;
+        }
+
+        public String getTableName() {
+            return tableName;
+        }
+
+        public int getPageSize() {
+            return pageSize;
+        }
+
+        public FilterMapListHandler getRsh() {
+            return rsh;
+        }
+
+        public Map<String, TableQuery> getSalveQuery() {
+            return salveQuery;
+        }
+
+        public PrepareSqlQuery getCommonSql() {
+            return commonSql;
+        }
     }
 
     public static Build build(String index, String type) {
@@ -68,6 +111,7 @@ public class IndexTypeBean {
             query.queryHandler = queryHandler;
             query.tableName = tableInfo.getTableName();
             query.keyField = tableInfo.getRelationField();
+            query.pageSize = tableInfo.getPageSize();
             query.commonSql = query.queryHandler.createPrepareSqlQuery(tableInfo);
             if (!CommonUtils.isEmpty(tableInfo.getForbidFields())) {
                 query.rsh = new FilterMapListHandler(tableInfo.getForbidFields());
@@ -80,14 +124,19 @@ public class IndexTypeBean {
             IndexTypeBean bean = new IndexTypeBean();
             bean.index = index;
             bean.type = type;
-            bean.tableQuery = queryMap.get(masterTable).v1();
+            bean.masterTable = queryMap.get(masterTable).v1();
+            Map<TableQuery, Map<String, TableQuery>> salveQueryBuild = new HashMap<>();
             queryMap.forEach((k, v) -> {
                 DbTableFieldDesc masterField = v.v2();
                 if (masterField == null) return;
                 TableQuery master = queryMap.get(masterField.newDbTableDesc()).v1();
-                if (master.salveQuery == null) master.salveQuery = new HashMap<>();
-                master.salveQuery.put(masterField.getField(), v.v1());
+                Map<String, TableQuery> map = salveQueryBuild.get(master);
+                if (map == null) {
+                    salveQueryBuild.put(master, map = new HashMap<>());
+                }
+                map.put(masterField.getField(), v.v1());
             });
+            salveQueryBuild.forEach((k, v) -> k.salveQuery = Collections.unmodifiableMap(v));
             return bean;
         }
     }

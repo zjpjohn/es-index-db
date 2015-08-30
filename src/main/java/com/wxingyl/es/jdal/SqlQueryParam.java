@@ -1,6 +1,10 @@
 package com.wxingyl.es.jdal;
 
+import org.apache.commons.dbutils.ResultSetHandler;
+
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by xing on 15/8/27.
@@ -17,6 +21,8 @@ public class SqlQueryParam<T> {
     private Class<T> cls;
 
     private Collection<T> whereList;
+
+    private ResultSetHandler<List<Map<String, Object>>> handler;
 
     public void setPrepareSql(PrepareSqlQuery prepareSql) {
         this.prepareSql = prepareSql;

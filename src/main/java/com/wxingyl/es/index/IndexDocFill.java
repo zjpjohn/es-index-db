@@ -4,9 +4,9 @@ import com.wxingyl.es.conf.index.IndexTypeBean;
 
 /**
  * Created by xing on 15/8/28.
- * fill data from db
+ * fill document from db
  */
-public interface IndexFill {
+public interface IndexDocFill {
     /**
      * fill data from db
      */

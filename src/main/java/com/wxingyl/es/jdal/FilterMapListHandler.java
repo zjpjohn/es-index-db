@@ -1,4 +1,4 @@
-package com.wxingyl.es.jdal.handle;
+package com.wxingyl.es.jdal;
 
 import org.apache.commons.dbutils.handlers.AbstractListHandler;
 
