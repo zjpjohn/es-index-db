@@ -111,7 +111,7 @@ public class DbTableConfigInfo {
                 dbAddress = val;
                 break;
             case INDEX_TABLE_DELETE_FIELD:
-                deleteField = val.toLowerCase();
+                deleteField = val == null ? null : val.toLowerCase();
                 break;
             case INDEX_TABLE_DELETE_VALID_VALUE:
                 deleteValidValue = val;
