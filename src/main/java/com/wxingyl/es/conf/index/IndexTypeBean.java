@@ -4,11 +4,12 @@ import com.wxingyl.es.jdal.*;
 import com.wxingyl.es.jdal.FilterMapListHandler;
 import com.wxingyl.es.jdal.handle.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.Tuple;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * Created by xing on 15/8/24.
@@ -38,19 +39,16 @@ public class IndexTypeBean {
 
         private SqlQueryHandle queryHandler;
 
-        private String keyField;
-
-        private String tableName;
         /**
          * filter {@link DbTableConfigInfo#forbidFields}
          * nullable
          */
         private FilterMapListHandler rsh;
         /**
-         * key: field, value: salve table
+         * key: salve table, value: field
          * unmodifiableMap
          */
-        private Map<String, TableQuery> salveQuery;
+        private Map<TableQuery, String> slaveQuery;
 
         private PrepareSqlQuery commonSql;
 
@@ -58,20 +56,12 @@ public class IndexTypeBean {
             return queryHandler;
         }
 
-        public String getKeyField() {
-            return keyField;
-        }
-
-        public String getTableName() {
-            return tableName;
-        }
-
         public FilterMapListHandler getRsh() {
             return rsh;
         }
 
-        public Map<String, TableQuery> getSalveQuery() {
-            return salveQuery;
+        public Map<TableQuery, String> getSlaveQuery() {
+            return slaveQuery;
         }
 
         public PrepareSqlQuery getCommonSql() {
@@ -87,7 +77,7 @@ public class IndexTypeBean {
 
         private String index, type;
 
-        private Map<DbTableDesc, Tuple<TableQuery, DbTableFieldDesc>> queryMap = new HashMap<>();
+        private Map<DbTableDesc, Tuple<TableQuery, DbTableFieldDesc>> tableMap = new HashMap<>();
 
         public Build(String index, String type) {
             this.index = index;
@@ -97,33 +87,43 @@ public class IndexTypeBean {
         public Build addTableQuery(SqlQueryHandle queryHandler, DbTableConfigInfo tableInfo) {
             TableQuery query = new TableQuery();
             query.queryHandler = queryHandler;
-            query.tableName = tableInfo.getTableName();
-            query.keyField = tableInfo.getRelationField();
             query.commonSql = query.queryHandler.createPrepareSqlQuery(tableInfo);
-            if (!CommonUtils.isEmpty(tableInfo.getForbidFields())) {
+            if (CommonUtils.isEmpty(tableInfo.getForbidFields())) {
+                query.rsh = SqlQueryHandle.DEFAULT_MAP_LIST_HANDLER;
+            } else {
                 query.rsh = new FilterMapListHandler(tableInfo.getForbidFields());
             }
-            queryMap.put(tableInfo.getTable(), Tuple.tuple(query, tableInfo.getMasterField()));
+            tableMap.put(tableInfo.getTable(), Tuple.tuple(query, tableInfo.getMasterField()));
             return this;
         }
 
-        public IndexTypeBean build(DbTableDesc masterTable) {
+        public IndexTypeBean build(DbTableDesc masterTable,
+                                   BiConsumer<Tuple<DbTableDesc, SqlQueryHandle>, List<String>> masterAliasVerify) {
             IndexTypeBean bean = new IndexTypeBean();
             bean.index = index;
             bean.type = type;
-            bean.masterTable = queryMap.get(masterTable).v1();
-            Map<TableQuery, Map<String, TableQuery>> salveQueryBuild = new HashMap<>();
-            queryMap.forEach((k, v) -> {
+            bean.masterTable = tableMap.get(masterTable).v1();
+            // key: master table, value: v1.key: salve table v1.value: master field, v2: master alias list
+            Map<TableQuery, Tuple<Map<TableQuery, String>, List<String>>> salveQueryBuild = new HashMap<>();
+            Map<TableQuery, DbTableDesc> queryTableMap = new HashMap<>();
+            tableMap.forEach((table, v) -> {
                 DbTableFieldDesc masterField = v.v2();
                 if (masterField == null) return;
-                TableQuery master = queryMap.get(masterField.newDbTableDesc()).v1();
-                Map<String, TableQuery> map = salveQueryBuild.get(master);
-                if (map == null) {
-                    salveQueryBuild.put(master, map = new HashMap<>());
+                TableQuery masterQuery = tableMap.get(masterField.newDbTableDesc()).v1();
+                Tuple<Map<TableQuery, String>, List<String>> tuple = salveQueryBuild.get(masterQuery);
+                if (tuple == null) {
+                    salveQueryBuild.put(masterQuery, tuple = Tuple.tuple(new HashMap<>(), new ArrayList<>()));
+                    queryTableMap.put(masterQuery, masterField.newDbTableDesc());
                 }
-                map.put(masterField.getField(), v.v1());
+                TableQuery salveQuery = v.v1();
+                tuple.v1().put(salveQuery, masterField.getField());
+                tuple.v2().add(salveQuery.getCommonSql().getMasterAlias());
             });
-            salveQueryBuild.forEach((k, v) -> k.salveQuery = Collections.unmodifiableMap(v));
+
+            salveQueryBuild.forEach((masterQuery, tuple) -> {
+                masterQuery.slaveQuery = Collections.unmodifiableMap(tuple.v1());
+                masterAliasVerify.accept(Tuple.tuple(queryTableMap.get(masterQuery), masterQuery.getQueryHandler()), tuple.v2());
+            });
             return bean;
         }
     }

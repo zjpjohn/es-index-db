@@ -3,10 +3,11 @@ package com.wxingyl.es.exception;
 /**
  * Created by xing on 15/8/31.
  * fill index data have some runtime exception
+ * fill doc to index have crash
  */
-public class IndexRuntimeException extends RuntimeException {
+public class IndexDocException extends RuntimeException {
 
-    public IndexRuntimeException(String message, Throwable cause) {
+    public IndexDocException(String message, Throwable cause) {
         super(message, cause);
     }
 }

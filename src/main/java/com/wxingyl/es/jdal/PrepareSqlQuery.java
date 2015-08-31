@@ -1,5 +1,7 @@
 package com.wxingyl.es.jdal;
 
+import com.wxingyl.es.conf.index.DbTableConfigInfo;
+
 /**
  * Created by xing on 15/8/27.
  * query data from table, the sql has common part, eg:
@@ -8,6 +10,8 @@ package com.wxingyl.es.jdal;
  */
 public class PrepareSqlQuery {
 
+    private String tableName;
+
     private String commonFormatSql;
 
     private boolean containWhere;
@@ -15,6 +19,14 @@ public class PrepareSqlQuery {
     private int pageSize;
 
     private String orderBy;
+
+    private String keyField;
+
+    private String masterAlias;
+
+    public String getKeyField() {
+        return keyField;
+    }
 
     public String getOrderBy() {
         return orderBy;
@@ -32,8 +44,12 @@ public class PrepareSqlQuery {
         return containWhere;
     }
 
-    public String formatSql(Object... args) {
-        return String.format(commonFormatSql, args);
+    public String getTableName() {
+        return tableName;
+    }
+
+    public String getMasterAlias() {
+        return masterAlias;
     }
 
     @Override
@@ -41,7 +57,8 @@ public class PrepareSqlQuery {
         return "PrepareSqlQuery{" +
                 "commonFormatSql='" + commonFormatSql + '\'' +
                 ", orderBy='" + orderBy + '\'' +
-                ", limit=" + pageSize +
+                ", pageSize=" + pageSize +
+                ", keyField=" + keyField +
                 '}';
     }
 
@@ -55,7 +72,7 @@ public class PrepareSqlQuery {
 
         private boolean containWhere;
 
-        private int pageSize;
+        private String orderBy;
 
         public Build commonFormatSql(String commonFormatSql) {
             this.commonFormatSql = commonFormatSql;
@@ -67,16 +84,20 @@ public class PrepareSqlQuery {
             return this;
         }
 
-        public Build pageSize(int pageSize) {
-            this.pageSize = pageSize;
+        public Build orderBy(String orderBy) {
+            this.orderBy = orderBy;
             return this;
         }
 
-        public PrepareSqlQuery build() {
+        public PrepareSqlQuery build(DbTableConfigInfo tableInfo) {
             PrepareSqlQuery prepareSqlQuery = new PrepareSqlQuery();
             prepareSqlQuery.commonFormatSql = commonFormatSql;
             prepareSqlQuery.containWhere = containWhere;
-            prepareSqlQuery.pageSize = pageSize;
+            prepareSqlQuery.orderBy = orderBy;
+            prepareSqlQuery.pageSize = tableInfo.getPageSize();
+            prepareSqlQuery.tableName = tableInfo.getTableName();
+            prepareSqlQuery.keyField = tableInfo.getRelationField();
+            prepareSqlQuery.masterAlias = tableInfo.getMasterAlias();
             return prepareSqlQuery;
         }
     }

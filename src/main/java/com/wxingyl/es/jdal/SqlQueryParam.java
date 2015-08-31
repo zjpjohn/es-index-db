@@ -11,58 +11,55 @@ import java.util.Map;
  * Created by xing on 15/8/27.
  * sql query param
  */
-public class SqlQueryParam<T> {
+public class SqlQueryParam {
 
     private PrepareSqlQuery prepareSql;
+    /**
+     * Note: query db with pageSize, page start from 0
+     */
+    private int page;
 
-    private int start;
+    private Collection keyValueList;
 
-    private String whereField;
+    private ResultSetHandler<List<Map<String, Object>>> rsh;
 
-    private Class<T> cls;
+    public SqlQueryParam(IndexTypeBean.TableQuery tableQuery) {
+        this(tableQuery, null);
+    }
 
-    private Collection<T> whereList;
-
-    private ResultSetHandler<List<Map<String, Object>>> handler;
+    public SqlQueryParam(IndexTypeBean.TableQuery tableQuery, Collection list) {
+        prepareSql = tableQuery.getCommonSql();
+        rsh = tableQuery.getRsh();
+        keyValueList = list;
+    }
 
     public PrepareSqlQuery getPrepareSql() {
         return prepareSql;
     }
 
-    public void setStart(int start) {
-        this.start = start;
+    public void setPage(int page) {
+        this.page = page;
     }
 
-    public int getStart() {
-        return start;
+    public int getPage() {
+        return page;
     }
 
-    public String getWhereField() {
-        return whereField;
+    public Collection getKeyValueList() {
+        return keyValueList;
     }
 
-    public Class<T> getCls() {
-        return cls;
-    }
-
-    public Collection<T> getWhereList() {
-        return whereList;
+    public ResultSetHandler<List<Map<String, Object>>> getRsh() {
+        return rsh;
     }
 
     @Override
     public String toString() {
         return "SqlQueryParam{" +
                 "prepareSql=" + prepareSql +
-                ", start=" + start +
-                ", whereField='" + whereField + '\'' +
-                ", whereList=" + whereList +
+                ", start=" + page +
+                ", whereList=" + keyValueList +
                 '}';
     }
 
-    public static SqlQueryParam<Void> createMasterQueryParam(IndexTypeBean.TableQuery tableQuery) {
-        SqlQueryParam<Void> param = new SqlQueryParam<>();
-        param.prepareSql = tableQuery.getCommonSql();
-        param.handler = tableQuery.getRsh();
-        return param;
-    }
 }

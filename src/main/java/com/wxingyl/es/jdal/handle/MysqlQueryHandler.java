@@ -2,9 +2,10 @@ package com.wxingyl.es.jdal.handle;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.jdal.DbQueryResult;
+import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.PrepareSqlQuery;
 import com.wxingyl.es.jdal.SqlQueryParam;
-import org.apache.commons.dbutils.ResultSetHandler;
+import com.wxingyl.es.util.CommonUtils;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -32,10 +33,11 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     }
 
     @Override
-    protected Set<String> loadAllFields(String schema, String table) throws Exception {
-        List<Map<String, Object>> result = queryRunner.query("SHOW COLUMNS FROM " + schema + '.' + table, DEFAULT_MAP_LIST_HANDLER);
+    protected Set<String> loadAllFields(DbTableDesc table) throws Exception {
+        List<Map<String, Object>> result = queryRunner.query("SHOW COLUMNS FROM " + table.getSchema() + '.'
+                + table.getTable(), DEFAULT_MAP_LIST_HANDLER);
         final Set<String> fields = new HashSet<>();
-        result.forEach(m -> fields.add(m.get("Field").toString()));
+        result.forEach(m -> fields.add(m.get("field").toString()));
         return fields;
     }
 
@@ -58,14 +60,24 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
                     .append(tableInfo.getDeleteValidValue()).append('\'');
             build.containWhere();
         }
-        build.commonFormatSql(sb.toString())
-                .pageSize(tableInfo.getPageSize());
-        return build.build();
+
+        return build.commonFormatSql(sb.toString())
+                .orderBy("ORDER BY " + tableInfo.getRelationField())
+                .build(tableInfo);
     }
 
     @Override
     public DbQueryResult query(SqlQueryParam param) throws SQLException {
-        return null;
+        PrepareSqlQuery prepareSql = param.getPrepareSql();
+        StringBuilder sb = new StringBuilder(prepareSql.getCommonFormatSql());
+        if (!CommonUtils.isEmpty(param.getKeyValueList())) {
+            if (prepareSql.isContainWhere()) sb.append(" AND");
+            sb.append(' ').append(prepareSql.getKeyField()).append(" IN (");
+            sb.append(')');
+        }
+        sb.append(' ').append(prepareSql.getOrderBy()).append(" LIMIT ").append(param.getPage() * prepareSql.getPageSize())
+                .append(", ").append(prepareSql.getPageSize());
+        return new DbQueryResult(prepareSql, queryRunner.query(sb.toString(), param.getRsh()));
     }
 
 }

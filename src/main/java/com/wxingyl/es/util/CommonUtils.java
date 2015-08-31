@@ -28,12 +28,6 @@ public abstract class CommonUtils {
         src.addAll(adds);
     }
 
-    public static <T> Set<T> getSet(Map<String, Object> map, String key) {
-        List<T> list = getList(map, key);
-        if (list != null) return new HashSet<>(list);
-        else return null;
-    }
-
     @SuppressWarnings("unchecked")
     public static <T> List<T> getList(Map<String, Object> map, String key) {
         Object obj = map.get(key);

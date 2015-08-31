@@ -12,7 +12,7 @@ public class DbTableFieldDesc extends DbTableDesc {
 
     public DbTableFieldDesc(String schema, String table, String field) {
         super(schema, table);
-        this.field = field;
+        this.field = field.toLowerCase();
     }
 
     public String getField() {

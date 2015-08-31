@@ -9,18 +9,20 @@ import com.wxingyl.es.conf.index.IndexTypeBean;
 import com.wxingyl.es.conf.index.IndexTypeConfigParser;
 import com.wxingyl.es.conf.index.TypeConfigInfo;
 import com.wxingyl.es.exception.IndexConfigException;
+import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.handle.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.common.collect.ImmutableMultimap;
 import org.elasticsearch.common.collect.ImmutableSetMultimap;
+import org.elasticsearch.common.collect.Tuple;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.function.BiConsumer;
 
 /**
  * Created by xing on 15/8/24.
@@ -44,6 +46,8 @@ public class IndexDbConfigManager {
      * key: index name, value: list IndexTypeBean
      */
     private ImmutableMultimap<String, IndexTypeBean> indexTypeMap;
+
+    private BiConsumer<Tuple<DbTableDesc, SqlQueryHandle>, List<String>> masterAliasVerify = this::verifyMasterAliasRepeat;
 
     /**
      * default add mysql parser
@@ -93,11 +97,13 @@ public class IndexDbConfigManager {
     public void parseIndexType(Map<String, Object> confMap) {
         Set<TypeConfigInfo> typeSet = indexConfParser.parse(confMap);
         if (CommonUtils.isEmpty(typeSet)) return;
-        final ImmutableSetMultimap.Builder<String, IndexTypeBean> mapBuilder = ImmutableSetMultimap.builder();
+        ImmutableSetMultimap.Builder<String, IndexTypeBean> mapBuilder = ImmutableSetMultimap.builder();
         for (final TypeConfigInfo type : typeSet) {
             final IndexTypeBean.Build build = IndexTypeBean.build(type.getIndex(), type.getType());
-            type.getTables().forEach(v -> build.addTableQuery(verifyTypeTableConfig(type, v), v));
-            mapBuilder.put(type.getIndex(), build.build(type.getMasterTable()));
+            for (DbTableConfigInfo tableInfo : type.getTables()) {
+                build.addTableQuery(verifyTypeTableConfig(type, tableInfo), tableInfo);
+            }
+            mapBuilder.put(type.getIndex(), build.build(type.getMasterTable(), masterAliasVerify));
         }
         if (indexTypeMap != null) mapBuilder.putAll(indexTypeMap);
         indexTypeMap = mapBuilder.build();
@@ -112,13 +118,12 @@ public class IndexDbConfigManager {
                     + info.getDbAddress() + " can't find datasource config");
         }
         SqlQueryHandle handle = dataSourceBean.getQueryHandle();
-        String table = info.getTableName();
         Set<String> allFields;
         try {
             //to verify every table is really exist
             handle.getAllTables(schema);
-            allFields = handle.getAllFields(schema, table);
-        } catch (Exception e) {
+            allFields = handle.getAllFields(info.getTable());
+        } catch (ExecutionException e) {
             throw new IndexConfigException("get " + info + " tables and fields have crash: " + e.getMessage(), e);
         }
         if (info.getFields() != null) {
@@ -132,6 +137,33 @@ public class IndexDbConfigManager {
             info.clearDeleteField();
         }
         return handle;
+    }
+
+    private void verifyMasterAliasRepeat(final Tuple<DbTableDesc, SqlQueryHandle> tuple, List<String> aliasList) {
+        final Set<String> allField;
+        try {
+            allField = tuple.v2().getAllFields(tuple.v1());
+        } catch (ExecutionException e) {
+            throw new IndexConfigException("get table: " + tuple.v1() + " fields have crash: " + e.getMessage(), e);
+        }
+        final Map<String, Integer> countMap = new HashMap<>();
+        aliasList.forEach(v -> {
+            if (allField.contains(v)) {
+                throw new IndexConfigException(String.format("index table %s has exist %s, you need rename %s value",
+                        tuple.v1(), v, ConfigKeyName.INDEX_TABLE_MASTER_ALIAS));
+            }
+            countMap.put(v, countMap.getOrDefault(v, 0) + 1);
+        });
+        StringBuilder sb = new StringBuilder();
+        countMap.forEach((k, v) -> {
+            if (v > 1) {
+                sb.append(k).append(": ").append(v).append(' ');
+            }
+        });
+        if (sb.length() > 0) {
+            throw new IndexConfigException(String.format("index table %s config %s value has same value: %s",
+                    tuple.v1(), ConfigKeyName.INDEX_TABLE_MASTER_ALIAS, sb));
+        }
     }
 
     private DataSourceBean findDataSourceBean(String schemaName, final String dbAddress) {

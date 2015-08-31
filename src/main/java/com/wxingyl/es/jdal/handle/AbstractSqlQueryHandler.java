@@ -1,7 +1,7 @@
 package com.wxingyl.es.jdal.handle;
 
+import com.wxingyl.es.jdal.DbTableDesc;
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.elasticsearch.common.cache.CacheBuilder;
 import org.elasticsearch.common.cache.CacheLoader;
 import org.elasticsearch.common.cache.LoadingCache;
@@ -9,6 +9,7 @@ import org.elasticsearch.common.collect.Tuple;
 
 import javax.sql.DataSource;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by xing on 15/8/26.
@@ -16,13 +17,11 @@ import java.util.Set;
  */
 public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
 
-    protected static final MapListHandler DEFAULT_MAP_LIST_HANDLER = new MapListHandler();
-
     protected QueryRunner queryRunner;
 
     private LoadingCache<String, Set<String>> schemaTablesCache;
 
-    private LoadingCache<Tuple<String, String>, Set<String>> tableFieldsCache;
+    private LoadingCache<DbTableDesc, Set<String>> tableFieldsCache;
 
     public AbstractSqlQueryHandler(DataSource dataSource) {
         queryRunner = new QueryRunner(dataSource);
@@ -38,25 +37,25 @@ public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
         tableFieldsCache = CacheBuilder.newBuilder()
                 .weakKeys()
                 .weakValues()
-                .build(new CacheLoader<Tuple<String, String>, Set<String>>() {
+                .build(new CacheLoader<DbTableDesc, Set<String>>() {
                     @Override
-                    public Set<String> load(Tuple<String, String> tuple) throws Exception {
-                        return loadAllFields(tuple.v1(), tuple.v2());
+                    public Set<String> load(DbTableDesc table) throws Exception {
+                        return loadAllFields(table);
                     }
                 });
     }
 
     protected abstract Set<String> loadAllTables(String schema) throws Exception;
 
-    protected abstract Set<String> loadAllFields(String schema, String table) throws Exception;
+    protected abstract Set<String> loadAllFields(DbTableDesc table) throws Exception;
 
     @Override
-    public Set<String> getAllTables(String schema) throws Exception {
+    public Set<String> getAllTables(String schema) throws ExecutionException {
         return schemaTablesCache.get(schema);
     }
 
     @Override
-    public Set<String> getAllFields(String schema, String table) throws Exception {
-        return tableFieldsCache.get(Tuple.tuple(schema, table));
+    public Set<String> getAllFields(DbTableDesc table) throws ExecutionException {
+        return tableFieldsCache.get(table);
     }
 }

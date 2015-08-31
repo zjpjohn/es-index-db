@@ -5,6 +5,8 @@ import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.DbTableFieldDesc;
 import com.wxingyl.es.util.CommonUtils;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,8 +30,10 @@ public class DbTableConfigInfo {
     private String deleteField;
 
     private String deleteValidValue;
-    // v1: table v2: field
+
     private DbTableFieldDesc masterField;
+
+    private String masterAlias;
 
     private String relationField;
 
@@ -41,6 +45,11 @@ public class DbTableConfigInfo {
                     + " value can't local table");
         }
         this.masterField = masterField;
+        if (masterAlias == null) {
+            masterAlias = masterField.getField() + "_info";
+        } else {
+            masterAlias = masterAlias.toLowerCase();
+        }
     }
 
     public String getSchema() {
@@ -92,13 +101,17 @@ public class DbTableConfigInfo {
         return pageSize;
     }
 
+    public String getMasterAlias() {
+        return masterAlias;
+    }
+
     private void setDefaultValue(String key, String val) {
         switch (key) {
             case INDEX_TABLE_DB_ADDRESS:
                 dbAddress = val;
                 break;
             case INDEX_TABLE_DELETE_FIELD:
-                deleteField = val;
+                deleteField = val.toLowerCase();
                 break;
             case INDEX_TABLE_DELETE_VALID_VALUE:
                 deleteValidValue = val;
@@ -124,10 +137,13 @@ public class DbTableConfigInfo {
         if (relationField == null) {
             throw new IndexConfigException(typeInfo + ", table_name: " + tableName
                     + " need " + INDEX_TABLE_RELATION_FIELD + " config");
+        } else {
+            relationField = relationField.toLowerCase();
         }
         pageSize = (Integer) conf.getOrDefault(INDEX_TABLE_PAGE_SIZE, 2500);
-        forbidFields = CommonUtils.getSet(conf, INDEX_TABLE_FORBID_FIELDS);
-        fields = CommonUtils.getSet(conf, INDEX_TABLE_FIELDS);
+        masterAlias = CommonUtils.getStringVal(conf, INDEX_TABLE_MASTER_ALIAS);
+        forbidFields = getFields(conf, INDEX_TABLE_FORBID_FIELDS);
+        fields = getFields(conf, INDEX_TABLE_FIELDS);
         if (CommonUtils.isEmpty(fields) || fields.contains("*")) {
             fields = null;
         } else if (!CommonUtils.isEmpty(forbidFields)) {
@@ -145,6 +161,16 @@ public class DbTableConfigInfo {
         if (forbidFields != null && forbidFields.contains(relationField)) {
             forbidFields.remove(relationField);
         }
+    }
+
+    private Set<String> getFields(Map<String, Object> map, String key) {
+        List<String> list = CommonUtils.getList(map, key);
+        if (CommonUtils.isEmpty(list)) return null;
+        Set<String> set = new HashSet<>();
+        for (String s : list) {
+            set.add(s.toLowerCase());
+        }
+        return set;
     }
 
     void addFiled(String filed) {

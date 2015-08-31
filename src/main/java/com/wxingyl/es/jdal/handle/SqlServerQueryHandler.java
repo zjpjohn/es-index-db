@@ -1,6 +1,8 @@
 package com.wxingyl.es.jdal.handle;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
+import com.wxingyl.es.jdal.DbQueryResult;
+import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.PrepareSqlQuery;
 import com.wxingyl.es.jdal.SqlQueryParam;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -27,7 +29,7 @@ public class SqlServerQueryHandler extends AbstractSqlQueryHandler {
     }
 
     @Override
-    protected Set<String> loadAllFields(String schema, String table) throws Exception {
+    protected Set<String> loadAllFields(DbTableDesc table) throws Exception {
         return null;
     }
 
@@ -37,7 +39,8 @@ public class SqlServerQueryHandler extends AbstractSqlQueryHandler {
     }
 
     @Override
-    public List<Map<String, Object>> query(SqlQueryParam param, ResultSetHandler<List<Map<String, Object>>> handler) throws SQLException {
+    public DbQueryResult query(SqlQueryParam param) throws SQLException {
         return null;
     }
+
 }

@@ -1,21 +1,23 @@
 package com.wxingyl.es.jdal.handle;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
-import com.wxingyl.es.jdal.DbQueryResult;
-import com.wxingyl.es.jdal.PrepareSqlQuery;
-import com.wxingyl.es.jdal.SqlQueryParam;
+import com.wxingyl.es.jdal.*;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by xing on 15/8/26.
  * sql query handler: build query sql, run query
  */
 public interface SqlQueryHandle {
+
+    FilterMapListHandler DEFAULT_MAP_LIST_HANDLER = new FilterMapListHandler(null);
 
     PrepareSqlQuery createPrepareSqlQuery(DbTableConfigInfo tableInfo);
 
@@ -24,11 +26,11 @@ public interface SqlQueryHandle {
     /**
      * get all tables in the schema
      */
-    Set<String> getAllTables(String schema) throws Exception;
+    Set<String> getAllTables(String schema) throws ExecutionException;
 
     /**
      * get all fields in the schema.table
      */
-    Set<String> getAllFields(String schema, String table) throws Exception;
+    Set<String> getAllFields(DbTableDesc table) throws ExecutionException;
 
 }

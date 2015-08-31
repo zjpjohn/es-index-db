@@ -48,6 +48,8 @@ public interface ConfigKeyName {
 
     String INDEX_TABLE_MASTER_FIELD = "master_field";
 
+    String INDEX_TABLE_MASTER_ALIAS = "master_alias";
+
     String INDEX_TABLE_RELATION_FIELD = "relation_field";
 
     String INDEX_TABLE_PAGE_SIZE = "page_size";
