@@ -6,9 +6,17 @@ Create full index from db for elasticsearch, now support mysql. If work well for
 We use an index file which a yaml format config file to manager index data come from which database, this config file define 
 index name, type name, database info and so on. A config context as follow:
 
+    data_source:         
+      driver_class_name: com.mysql.jdbc.Driver
+      schemas:
+          url: 'jdbc:mysql://127.0.0.1:3306?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull'
+          username: xing
+          password: 12qaQA
+          db_names: [tqdb_base, sea]
+    
     order:
       order_info:
-        default_schema: qa_autoparts
+        default_schema: sea
         # When deleting some records, awalys do not physically delete, usually update a delete field to 'Y' or '1'
         # instead of physically delete. if you table have this field, you can config like it
         default_delete_field: is_deleted
@@ -19,38 +27,38 @@ index name, type name, database info and so on. A config context as follow:
         # Note: type config have many tables, every table can config schema, dbAddress. When we config master_field, if there are
         # some same name tables, it will bring about can't find right table. In the immediate future, will work a solution to the issue.
         include_table:
-          - table_name: db_order_info
+          - table: db_order_info
             fields: '*'
             forbid_fields: [admin_id, pay_url, city_id, bonus, money_paid]
             # relation_field which in local-table field relation with master_field of master-table
             # if this table is not a master-table, this config is indispensable
             relation_field: order_id
-          - table_name: db_order_goods
+          - table: db_order_goods
             # every table must be have master_field
-            fields: [order_id, goods_id, goods_name, new_goods_sn, goods_number, easure_unit, goods_price, sold_price,
+            fields: [order_id, goods_id, goods_name, new_goods_sn, goods_number, measure_unit, goods_price, sold_price,
             sold_price_amount, activity_id, activity_group_id, activity_name]
             relation_field: order_id
             # salve-table can be sub-master-table, like here: in table 'db_order_goods', the master field is order_id, but
             # we need goods info, we can query from 'db_goods', so 'db_order_goods' is master-table for 'db_goods'
-          - table_name: db_goods
+          - table: db_goods
             fields: [goods_id, cat_id, brand_id, packing_value, oe_num, goods_quality_type, goods_img]
             # in salve-table, master_field pair with relation_field, relation_field is local-table field, master_field is
             # one field in master-table, you can assign to any one field of master-table, it default master-table.master_field.
-            # if the master-table is a sub-master-table, it can be assigned by the format of 'table_name.field'
+            # if the master-table is a sub-master-table, it can be assigned by the format of 'table.field'
             master_field: db_order_goods.goods_id
             relation_field: goods_id
-          - table_name: db_order_info_ext
-            relation_field: id
-            forbid_fields: [creator, modifier]
-          - table_name: db_warehouse
+          - table: db_warehouse
+            schema: tqdb_base
             fields: [warehouse_id, warehouse_name]
             master_field: warehouse_id
             relation_field: warehouse_id
     
       user:
-        master_table: db_user
+        master_table: db_users
         include_table:
-          table_name: db_user
+          table: db_users
+          schema: tqdb_base
+          relation_field: user_id
           fields: '*'
         
 This config file will create a index named order, it contain two type: order_info, user.
