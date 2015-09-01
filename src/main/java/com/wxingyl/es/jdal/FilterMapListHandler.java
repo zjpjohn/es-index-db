@@ -1,7 +1,7 @@
 package com.wxingyl.es.jdal;
 
 import com.wxingyl.es.util.CommonUtils;
-import org.apache.commons.dbutils.handlers.AbstractListHandler;
+import org.apache.commons.dbutils.ResultSetHandler;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -14,7 +14,7 @@ import java.util.*;
  * In this class, most code copy from {@link org.apache.commons.dbutils.BasicRowProcessor#toMap(ResultSet)} and
  * {@link org.apache.commons.dbutils.BasicRowProcessor.CaseInsensitiveHashMap}
  */
-public class FilterMapListHandler extends AbstractListHandler<Map<String, Object>> {
+public class FilterMapListHandler implements ResultSetHandler<List<Map<String, Object>>> {
 
     private Set<String> filterFields;
 
@@ -24,7 +24,6 @@ public class FilterMapListHandler extends AbstractListHandler<Map<String, Object
         }
     }
 
-    @Override
     protected Map<String, Object> handleRow(ResultSet rs) throws SQLException {
         Map<String, Object> result = new HashMap<>();
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -43,4 +42,12 @@ public class FilterMapListHandler extends AbstractListHandler<Map<String, Object
         return result;
     }
 
+    @Override
+    public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+        List<Map<String, Object>> rows = new LinkedList<>();
+        while (rs.next()) {
+            rows.add(handleRow(rs));
+        }
+        return rows;
+    }
 }

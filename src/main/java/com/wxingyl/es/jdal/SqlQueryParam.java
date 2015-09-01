@@ -37,8 +37,8 @@ public class SqlQueryParam {
         return queryCommon;
     }
 
-    public void setPage(int page) {
-        this.page = page;
+    public void addPage() {
+        page++;
     }
 
     public int getPage() {

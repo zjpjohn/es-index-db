@@ -23,6 +23,23 @@ public abstract class CommonUtils {
         return map == null || map.isEmpty();
     }
 
+    public static <T> List<List<T>> groupList(Collection<T> collection, int pageSize) {
+        List<List<T>> ret = new ArrayList<>(collection.size() / pageSize + 1);
+        ArrayList<T> list = new ArrayList<>(pageSize);
+        for (T t : collection) {
+            list.add(t);
+            if (list.size() == pageSize) {
+                ret.add(list);
+                list = new ArrayList<>(pageSize);
+            }
+        }
+        if (!list.isEmpty()) {
+            list.trimToSize();
+            ret.add(list);
+        }
+        return ret;
+    }
+
     public static <E> void addAll(Collection<E> src, Collection<? extends E> adds) {
         if (isEmpty(adds)) return;
         src.addAll(adds);

@@ -9,7 +9,9 @@ import com.wxingyl.es.conf.index.DbTableConfigInfo;
  * so we can prepare create common part, no need to create every query
  */
 public class SqlQueryCommon {
-
+    /**
+     * query table, the field is primary key, its value should be unique in table
+     */
     private DbTableFieldDesc tableField;
 
     private String commonSql;
@@ -44,6 +46,22 @@ public class SqlQueryCommon {
 
     public String getMasterAlias() {
         return masterAlias;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SqlQueryCommon)) return false;
+
+        SqlQueryCommon that = (SqlQueryCommon) o;
+
+        return tableField.equals(that.tableField);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return tableField.hashCode();
     }
 
     @Override
@@ -89,7 +107,7 @@ public class SqlQueryCommon {
             sqlQueryCommon.containWhere = containWhere;
             sqlQueryCommon.orderBy = orderBy;
             sqlQueryCommon.pageSize = tableInfo.getPageSize();
-            sqlQueryCommon.tableField = DbTableFieldDesc.build(tableInfo.getTable(), tableInfo.getRelationField());
+            sqlQueryCommon.tableField = new DbTableFieldDesc(tableInfo.getTable(), tableInfo.getRelationField());
             sqlQueryCommon.masterAlias = tableInfo.getMasterAlias();
             return sqlQueryCommon;
         }

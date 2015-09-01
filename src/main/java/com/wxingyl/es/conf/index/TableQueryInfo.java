@@ -93,22 +93,21 @@ public class TableQueryInfo {
             return this;
         }
 
-        public TableQueryInfo build() {
-            if (obj == null) {
-                obj = new TableQueryInfo();
-                obj.queryCommon = queryCommon;
-                obj.queryHandler = queryHandler;
-                obj.rsh = rsh;
-                if (!slaveMap.isEmpty()) {
-                    final List<String> masterAlias = new ArrayList<>(slaveMap.size());
-                    final Map<TableQueryInfo, String> map = new HashMap<>();
-                    slaveMap.forEach((k, v) -> {
-                        map.put(k.build(), v);
-                        masterAlias.add(k.queryCommon.getMasterAlias());
-                    });
-                    obj.slaveQuery = Collections.unmodifiableMap(map);
-                    masterAliasVerify.accept(obj, masterAlias);
-                }
+        TableQueryInfo build() {
+            if (obj != null) return obj;
+            obj = new TableQueryInfo();
+            obj.queryCommon = queryCommon;
+            obj.queryHandler = queryHandler;
+            obj.rsh = rsh;
+            if (!slaveMap.isEmpty()) {
+                final List<String> masterAlias = new ArrayList<>(slaveMap.size());
+                final Map<TableQueryInfo, String> map = new HashMap<>();
+                slaveMap.forEach((k, v) -> {
+                    map.put(k.build(), v);
+                    masterAlias.add(k.queryCommon.getMasterAlias());
+                });
+                obj.slaveQuery = Collections.unmodifiableMap(map);
+                masterAliasVerify.accept(obj, masterAlias);
             }
             return obj;
         }
