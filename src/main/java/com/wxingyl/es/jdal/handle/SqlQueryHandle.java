@@ -2,12 +2,8 @@ package com.wxingyl.es.jdal.handle;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.jdal.*;
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.dbutils.handlers.MapListHandler;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -19,7 +15,7 @@ public interface SqlQueryHandle {
 
     FilterMapListHandler DEFAULT_MAP_LIST_HANDLER = new FilterMapListHandler(null);
 
-    PrepareSqlQuery createPrepareSqlQuery(DbTableConfigInfo tableInfo);
+    SqlQueryCommon createPrepareSqlQuery(DbTableConfigInfo tableInfo);
 
     DbQueryResult query(SqlQueryParam param) throws SQLException;
 

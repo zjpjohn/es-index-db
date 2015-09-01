@@ -53,30 +53,32 @@ public abstract class CommonUtils {
         }
     }
 
-    public static DbTableDesc getDbTable(Map<String, Object> map, String key, String defaultSchema) {
+    public static DbTableDesc getDbTable(Map<String, Object> map, String key) {
         String value = getStringVal(map, key);
         if (value == null) return null;
         int index;
         if ((index = value.indexOf('.')) > 0) {
-            return DbTableDesc.build(value.substring(0, index), value.substring(index+1));
+            return new DbTableDesc(null, value.substring(0, index), value.substring(index + 1));
         } else {
-            return DbTableDesc.build(defaultSchema, value);
+            return new DbTableDesc(null, null, value);
         }
     }
 
-    public static DbTableFieldDesc getDbTableField(String value, String defaultSchema, String defaultTable) {
+    public static DbTableFieldDesc getDbTableField(String value, DbTableDesc defaultTable) {
         int index;
         String field = value;
+        String defaultTableName = defaultTable.getTable();
         if ((index = value.lastIndexOf('.')) > 0) {
-            field = value.substring(index+1);
+            field = value.substring(index + 1);
             value = value.substring(0, index);
-            defaultTable = value;
+            defaultTableName = value;
         }
+        String defaultSchema = defaultTable.getSchema();
         if ((index = value.lastIndexOf('.')) > 0) {
-            defaultTable = value.substring(index+1);
+            defaultTableName = value.substring(index + 1);
             defaultSchema = value.substring(0, index);
         }
-        return DbTableFieldDesc.build(defaultSchema, defaultTable, field);
+        return new DbTableFieldDesc(new DbTableDesc(defaultTable.getUrlAddress(), defaultSchema, defaultTableName), field);
     }
 
     public static String getStringVal(Map<String, Object> map, String key) {

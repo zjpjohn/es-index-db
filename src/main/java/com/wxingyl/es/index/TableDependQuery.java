@@ -1,6 +1,6 @@
 package com.wxingyl.es.index;
 
-import com.wxingyl.es.conf.index.IndexTypeBean;
+import com.wxingyl.es.conf.index.TableQueryInfo;
 import com.wxingyl.es.exception.IndexDocException;
 import com.wxingyl.es.jdal.DbQueryResult;
 import com.wxingyl.es.jdal.SqlQueryParam;
@@ -23,13 +23,13 @@ public class TableDependQuery implements Iterator<DbQueryResult> {
 
     private SqlQueryHandle masterQueryHandler;
 
-    private Map<IndexTypeBean.TableQuery, String> slaveQuery;
+    private Map<TableQueryInfo, String> slaveQuery;
     /**
      * Note: page start 0
      */
     private int page;
 
-    public TableDependQuery(IndexTypeBean.TableQuery masterTable) {
+    public TableDependQuery(TableQueryInfo masterTable) {
         masterParam = new SqlQueryParam(masterTable);
         masterQueryHandler = masterTable.getQueryHandler();
         slaveQuery = masterTable.getSlaveQuery();
@@ -61,11 +61,11 @@ public class TableDependQuery implements Iterator<DbQueryResult> {
         slaveQuery(queryResult, slaveQuery);
     }
 
-    private void slaveQuery(DbQueryResult masterResult, Map<IndexTypeBean.TableQuery, String> slaveMap) throws SQLException {
-        for (Map.Entry<IndexTypeBean.TableQuery, String> e : slaveMap.entrySet()) {
+    private void slaveQuery(DbQueryResult masterResult, Map<TableQueryInfo, String> slaveMap) throws SQLException {
+        for (Map.Entry<TableQueryInfo, String> e : slaveMap.entrySet()) {
             Set<Object> set = masterResult.getValuesForField(e.getValue());
             if (set.isEmpty()) continue;
-            IndexTypeBean.TableQuery slaveTableQuery = e.getKey();
+            TableQueryInfo slaveTableQuery = e.getKey();
             SqlQueryParam param = new SqlQueryParam(slaveTableQuery, set);
             DbQueryResult slaveRet = slaveTableQuery.getQueryHandler().query(param);
             if (slaveRet.isEmpty()) continue;
@@ -75,9 +75,4 @@ public class TableDependQuery implements Iterator<DbQueryResult> {
             masterResult.addSlaveResult(e.getValue(), slaveRet);
         }
     }
-
-    public static TableDependQuery build(IndexTypeBean.TableQuery masterTable) {
-        return new TableDependQuery(masterTable);
-    }
-
 }

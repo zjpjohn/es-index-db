@@ -20,8 +20,6 @@ public class DbTableConfigInfo {
 
     private DbTableDesc table;
 
-    private String dbAddress;
-
     // null is all fields
     private Set<String> fields;
 
@@ -50,18 +48,6 @@ public class DbTableConfigInfo {
         } else {
             masterAlias = masterAlias.toLowerCase();
         }
-    }
-
-    public String getSchema() {
-        return table.getSchema();
-    }
-
-    public String getDbAddress() {
-        return dbAddress;
-    }
-
-    public String getTableName() {
-        return table.getTable();
     }
 
     public DbTableDesc getTable() {
@@ -105,33 +91,35 @@ public class DbTableConfigInfo {
         return masterAlias;
     }
 
-    private void setDefaultValue(String key, String val) {
-        switch (key) {
-            case INDEX_TABLE_DB_ADDRESS:
-                dbAddress = val;
-                break;
-            case INDEX_TABLE_DELETE_FIELD:
-                deleteField = val == null ? null : val.toLowerCase();
-                break;
-            case INDEX_TABLE_DELETE_VALID_VALUE:
-                deleteValidValue = val;
-                break;
-        }
-    }
-
     void initValue(TypeConfigInfo typeInfo, Map<String, Object> conf, Map<String, String> defaultVal) {
         String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE_TABLE);
         if (tableName == null) {
             throw new IndexConfigException("table_name conf is null of " + typeInfo);
         }
-        table = DbTableDesc.build(defaultVal.remove(INDEX_TABLE_SCHEMA), tableName);
-        if (table.getSchema() == null) {
-            throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " can't find schema");
+        String schema = null, dbAddress = null;
+        for (String key : defaultVal.keySet()) {
+            String val = defaultVal.get(key);
+            switch (key) {
+                case INDEX_TABLE_SCHEMA:
+                    schema = val;
+                    break;
+                case INDEX_TABLE_DB_ADDRESS:
+                    dbAddress = val;
+                    break;
+                case INDEX_TABLE_DELETE_FIELD:
+                    deleteField = val == null ? null : val.toLowerCase();
+                    break;
+                case INDEX_TABLE_DELETE_VALID_VALUE:
+                    deleteValidValue = val;
+                    break;
+            }
         }
-        defaultVal.forEach(this::setDefaultValue);
         if (deleteField != null && deleteValidValue == null) {
             throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " delete_field: "
                     + deleteField + ", but delete_valid_value is null");
+        }
+        if (schema == null) {
+            throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " can't find schema");
         }
         relationField = CommonUtils.getStringVal(conf, INDEX_TABLE_RELATION_FIELD);
         if (relationField == null) {
@@ -140,6 +128,9 @@ public class DbTableConfigInfo {
         } else {
             relationField = relationField.toLowerCase();
         }
+        table = new DbTableDesc(dbAddress, schema, tableName);
+
+
         pageSize = (Integer) conf.getOrDefault(INDEX_TABLE_PAGE_SIZE, 2500);
         masterAlias = CommonUtils.getStringVal(conf, INDEX_TABLE_MASTER_ALIAS);
         forbidFields = getFields(conf, INDEX_TABLE_FORBID_FIELDS);
@@ -189,21 +180,17 @@ public class DbTableConfigInfo {
 
         DbTableConfigInfo that = (DbTableConfigInfo) o;
 
-        if (dbAddress != null ? !dbAddress.equals(that.dbAddress) : that.dbAddress != null) return false;
         return table.equals(that.table);
     }
 
     @Override
     public int hashCode() {
-        int result = table.hashCode();
-        result = 31 * result + (dbAddress != null ? dbAddress.hashCode() : 0);
-        return result;
+        return table.hashCode();
     }
 
     @Override
     public String toString() {
-        return String.format("DbTableConfigInfo[schemaName: %s, dbAddress: %s, tableName: %s]", table.getSchema(),
-                dbAddress, table.getTable());
+        return String.format("DbTableConfigInfo[%s]", table);
     }
 
 }

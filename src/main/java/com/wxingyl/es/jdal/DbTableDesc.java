@@ -10,9 +10,12 @@ public class DbTableDesc {
 
     private String table;
 
-    public DbTableDesc(String schema, String table) {
+    private String urlAddress;
+
+    public DbTableDesc(String urlAddress, String schema, String table) {
         this.schema = schema;
         this.table = table;
+        this.urlAddress = urlAddress;
     }
 
     public String getSchema() {
@@ -23,8 +26,14 @@ public class DbTableDesc {
         return table;
     }
 
-    public static DbTableDesc build(String schema, String table) {
-        return new DbTableDesc(schema, table);
+    public String getUrlAddress() {
+        return urlAddress;
+    }
+
+    public boolean equalsIgnoreUrlAddress(DbTableDesc tableDesc) {
+        if (this == tableDesc) return true;
+        if (!schema.equals(tableDesc.schema)) return false;
+        return table.equals(tableDesc.table);
     }
 
     @Override
@@ -32,17 +41,18 @@ public class DbTableDesc {
         if (this == o) return true;
         if (!(o instanceof DbTableDesc)) return false;
 
-        DbTableDesc that = (DbTableDesc) o;
+        DbTableDesc tableDesc = (DbTableDesc) o;
 
-        if (schema != null ? !schema.equals(that.schema) : that.schema != null) return false;
-        return table.equals(that.table);
-
+        if (!schema.equals(tableDesc.schema)) return false;
+        if (!table.equals(tableDesc.table)) return false;
+        return !(urlAddress != null ? !urlAddress.equals(tableDesc.urlAddress) : tableDesc.urlAddress != null);
     }
 
     @Override
     public int hashCode() {
-        int result = schema != null ? schema.hashCode() : 0;
+        int result = schema.hashCode();
         result = 31 * result + table.hashCode();
+        result = 31 * result + (urlAddress != null ? urlAddress.hashCode() : 0);
         return result;
     }
 

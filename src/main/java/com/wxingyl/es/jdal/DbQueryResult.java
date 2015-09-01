@@ -8,11 +8,11 @@ import java.util.*;
  */
 public class DbQueryResult {
 
-    private PrepareSqlQuery sqlQuery;
+    private SqlQueryCommon sqlQuery;
 
     private List<Map<String, Object>> dbData;
 
-    public DbQueryResult(PrepareSqlQuery sqlQuery, List<Map<String, Object>> list) {
+    public DbQueryResult(SqlQueryCommon sqlQuery, List<Map<String, Object>> list) {
         this.sqlQuery = sqlQuery;
         dbData = list;
     }
@@ -37,7 +37,7 @@ public class DbQueryResult {
 
     private Map<Object, List<Map<String, Object>>> groupAndRemoveByKeyField() {
         final Map<Object, List<Map<String, Object>>> ret = new HashMap<>();
-        final String keyField = sqlQuery.getKeyField();
+        final String keyField = sqlQuery.getTableField().getField();
         dbData.forEach(v -> {
             Object obj = v.get(keyField);
             List<Map<String, Object>> list = ret.get(obj);

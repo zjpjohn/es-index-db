@@ -3,7 +3,7 @@ package com.wxingyl.es.jdal.handle;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.jdal.DbQueryResult;
 import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.PrepareSqlQuery;
+import com.wxingyl.es.jdal.SqlQueryCommon;
 import com.wxingyl.es.jdal.SqlQueryParam;
 import com.wxingyl.es.util.CommonUtils;
 
@@ -42,7 +42,7 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     }
 
     @Override
-    public PrepareSqlQuery createPrepareSqlQuery(DbTableConfigInfo tableInfo) {
+    public SqlQueryCommon createPrepareSqlQuery(DbTableConfigInfo tableInfo) {
         final StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
         if (tableInfo.getFields() != null) {
@@ -53,8 +53,8 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         } else {
             sb.append('*');
         }
-        sb.append(" FROM ").append(tableInfo.getSchema()).append('.').append(tableInfo.getTableName());
-        PrepareSqlQuery.Build build = PrepareSqlQuery.build();
+        sb.append(" FROM ").append(tableInfo.getTable().getSchema()).append('.').append(tableInfo.getTable().getTable());
+        SqlQueryCommon.Build build = SqlQueryCommon.build();
         if (tableInfo.getDeleteField() != null) {
             sb.append(" WHERE ").append(tableInfo.getDeleteField()).append(" = ").append('\'')
                     .append(tableInfo.getDeleteValidValue()).append('\'');
@@ -68,11 +68,14 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
 
     @Override
     public DbQueryResult query(SqlQueryParam param) throws SQLException {
-        PrepareSqlQuery prepareSql = param.getPrepareSql();
-        StringBuilder sb = new StringBuilder(prepareSql.getCommonFormatSql());
+        SqlQueryCommon prepareSql = param.getQueryCommon();
+        StringBuilder sb = new StringBuilder(prepareSql.getCommonSql());
         if (!CommonUtils.isEmpty(param.getKeyValueList())) {
             if (prepareSql.isContainWhere()) sb.append(" AND");
-            sb.append(' ').append(prepareSql.getKeyField()).append(" IN (");
+            sb.append(' ').append(prepareSql.getTableField().getField()).append(" IN (");
+            for (Object o : param.getKeyValueList()) {
+                sb.append('\'').append(o).append("' ");
+            }
             sb.append(')');
         }
         sb.append(' ').append(prepareSql.getOrderBy()).append(" LIMIT ").append(param.getPage() * prepareSql.getPageSize())

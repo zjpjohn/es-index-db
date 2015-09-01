@@ -8,11 +8,11 @@ import com.wxingyl.es.conf.index.DbTableConfigInfo;
  *  SELECT XX, YY, ZZ FROM TABLE_NAME
  * so we can prepare create common part, no need to create every query
  */
-public class PrepareSqlQuery {
+public class SqlQueryCommon {
 
-    private String tableName;
+    private DbTableFieldDesc tableField;
 
-    private String commonFormatSql;
+    private String commonSql;
 
     private boolean containWhere;
 
@@ -20,13 +20,7 @@ public class PrepareSqlQuery {
 
     private String orderBy;
 
-    private String keyField;
-
     private String masterAlias;
-
-    public String getKeyField() {
-        return keyField;
-    }
 
     public String getOrderBy() {
         return orderBy;
@@ -36,16 +30,16 @@ public class PrepareSqlQuery {
         return pageSize;
     }
 
-    public String getCommonFormatSql() {
-        return commonFormatSql;
+    public String getCommonSql() {
+        return commonSql;
     }
 
     public boolean isContainWhere() {
         return containWhere;
     }
 
-    public String getTableName() {
-        return tableName;
+    public DbTableFieldDesc getTableField() {
+        return tableField;
     }
 
     public String getMasterAlias() {
@@ -55,10 +49,10 @@ public class PrepareSqlQuery {
     @Override
     public String toString() {
         return "PrepareSqlQuery{" +
-                "commonFormatSql='" + commonFormatSql + '\'' +
+                "commonSql='" + commonSql + '\'' +
                 ", orderBy='" + orderBy + '\'' +
                 ", pageSize=" + pageSize +
-                ", keyField=" + keyField +
+                ", tableField=" + tableField +
                 '}';
     }
 
@@ -89,16 +83,15 @@ public class PrepareSqlQuery {
             return this;
         }
 
-        public PrepareSqlQuery build(DbTableConfigInfo tableInfo) {
-            PrepareSqlQuery prepareSqlQuery = new PrepareSqlQuery();
-            prepareSqlQuery.commonFormatSql = commonFormatSql;
-            prepareSqlQuery.containWhere = containWhere;
-            prepareSqlQuery.orderBy = orderBy;
-            prepareSqlQuery.pageSize = tableInfo.getPageSize();
-            prepareSqlQuery.tableName = tableInfo.getTableName();
-            prepareSqlQuery.keyField = tableInfo.getRelationField();
-            prepareSqlQuery.masterAlias = tableInfo.getMasterAlias();
-            return prepareSqlQuery;
+        public SqlQueryCommon build(DbTableConfigInfo tableInfo) {
+            SqlQueryCommon sqlQueryCommon = new SqlQueryCommon();
+            sqlQueryCommon.commonSql = commonFormatSql;
+            sqlQueryCommon.containWhere = containWhere;
+            sqlQueryCommon.orderBy = orderBy;
+            sqlQueryCommon.pageSize = tableInfo.getPageSize();
+            sqlQueryCommon.tableField = DbTableFieldDesc.build(tableInfo.getTable(), tableInfo.getRelationField());
+            sqlQueryCommon.masterAlias = tableInfo.getMasterAlias();
+            return sqlQueryCommon;
         }
     }
 }

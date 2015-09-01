@@ -10,8 +10,8 @@ public class DbTableFieldDesc extends DbTableDesc {
 
     private DbTableDesc newTableDesc;
 
-    public DbTableFieldDesc(String schema, String table, String field) {
-        super(schema, table);
+    public DbTableFieldDesc(DbTableDesc tableDesc, String field) {
+        super(tableDesc.getUrlAddress(), tableDesc.getSchema(), tableDesc.getTable());
         this.field = field.toLowerCase();
     }
 
@@ -21,9 +21,19 @@ public class DbTableFieldDesc extends DbTableDesc {
 
     public DbTableDesc newDbTableDesc() {
         if (newTableDesc == null) {
-            newTableDesc = new DbTableDesc(getSchema(), getTable());
+            newTableDesc = new DbTableDesc(getUrlAddress(), getSchema(), getTable());
         }
         return newTableDesc;
+    }
+
+    @Override
+    public boolean equalsIgnoreUrlAddress(DbTableDesc tableDesc) {
+        if (this == tableDesc) return true;
+        if (!(tableDesc instanceof DbTableFieldDesc)) return false;
+        if (!super.equals(tableDesc)) return false;
+        DbTableFieldDesc that = (DbTableFieldDesc) tableDesc;
+
+        return field.equals(that.field);
     }
 
     @Override
@@ -51,9 +61,5 @@ public class DbTableFieldDesc extends DbTableDesc {
                 "table='" + getTable() + '\'' +
                 "field='" + field + '\'' +
                 '}';
-    }
-
-    public static DbTableFieldDesc build(String schema, String table, String field) {
-        return new DbTableFieldDesc(schema, table, field);
     }
 }

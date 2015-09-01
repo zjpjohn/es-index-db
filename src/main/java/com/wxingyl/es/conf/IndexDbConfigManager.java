@@ -4,17 +4,13 @@ import com.wxingyl.es.conf.ds.DataSourceBean;
 import com.wxingyl.es.conf.ds.DataSourceConfigParse;
 import com.wxingyl.es.conf.ds.DataSourceParseFactory;
 import com.wxingyl.es.conf.ds.MysqlDataSourceConfigParser;
-import com.wxingyl.es.conf.index.DbTableConfigInfo;
-import com.wxingyl.es.conf.index.IndexTypeBean;
-import com.wxingyl.es.conf.index.IndexTypeConfigParser;
-import com.wxingyl.es.conf.index.TypeConfigInfo;
+import com.wxingyl.es.conf.index.*;
 import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.handle.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.common.collect.ImmutableMultimap;
 import org.elasticsearch.common.collect.ImmutableSetMultimap;
-import org.elasticsearch.common.collect.Tuple;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;
@@ -47,7 +43,7 @@ public class IndexDbConfigManager {
      */
     private ImmutableMultimap<String, IndexTypeBean> indexTypeMap;
 
-    private BiConsumer<Tuple<DbTableDesc, SqlQueryHandle>, List<String>> masterAliasVerify = this::verifyMasterAliasRepeat;
+    private BiConsumer<TableQueryInfo, List<String>> masterAliasVerify = this::verifyMasterAliasRepeat;
 
     /**
      * default add mysql parser
@@ -99,11 +95,11 @@ public class IndexDbConfigManager {
         if (CommonUtils.isEmpty(typeSet)) return;
         ImmutableSetMultimap.Builder<String, IndexTypeBean> mapBuilder = ImmutableSetMultimap.builder();
         for (final TypeConfigInfo type : typeSet) {
-            final IndexTypeBean.Build build = IndexTypeBean.build(type.getIndex(), type.getType());
+            final IndexTypeBean.Builder builder = IndexTypeBean.build(type.getIndex(), type.getType());
             for (DbTableConfigInfo tableInfo : type.getTables()) {
-                build.addTableQuery(verifyTypeTableConfig(type, tableInfo), tableInfo);
+                builder.addTableQuery(verifyTypeTableConfig(type, tableInfo), tableInfo);
             }
-            mapBuilder.put(type.getIndex(), build.build(type.getMasterTable(), masterAliasVerify));
+            mapBuilder.put(type.getIndex(), builder.build(type.getMasterTable(), masterAliasVerify));
         }
         if (indexTypeMap != null) mapBuilder.putAll(indexTypeMap);
         indexTypeMap = mapBuilder.build();
@@ -111,17 +107,16 @@ public class IndexDbConfigManager {
     }
 
     private SqlQueryHandle verifyTypeTableConfig(TypeConfigInfo type, DbTableConfigInfo info) {
-        String schema = info.getSchema();
-        DataSourceBean dataSourceBean = findDataSourceBean(schema, info.getDbAddress());
+        DbTableDesc table = info.getTable();
+        DataSourceBean dataSourceBean = findDataSourceBean(table);
         if (dataSourceBean == null) {
-            throw new IndexConfigException("Index config: " + type + ", schema: " + schema + ", dbAddress: "
-                    + info.getDbAddress() + " can't find datasource config");
+            throw new IndexConfigException("Index config: " + type + ", " + table + " can't find datasource config");
         }
         SqlQueryHandle handle = dataSourceBean.getQueryHandle();
         Set<String> allFields;
         try {
             //to verify every table is really exist
-            handle.getAllTables(schema);
+            handle.getAllTables(table.getSchema());
             allFields = handle.getAllFields(info.getTable());
         } catch (ExecutionException e) {
             throw new IndexConfigException("get " + info + " tables and fields have crash: " + e.getMessage(), e);
@@ -139,18 +134,19 @@ public class IndexDbConfigManager {
         return handle;
     }
 
-    private void verifyMasterAliasRepeat(final Tuple<DbTableDesc, SqlQueryHandle> tuple, List<String> aliasList) {
+    private void verifyMasterAliasRepeat(TableQueryInfo tableQueryInfo, List<String> aliasList) {
         final Set<String> allField;
+        DbTableDesc table = tableQueryInfo.getQueryCommon().getTableField();
         try {
-            allField = tuple.v2().getAllFields(tuple.v1());
+            allField = tableQueryInfo.getQueryHandler().getAllFields(table);
         } catch (ExecutionException e) {
-            throw new IndexConfigException("get table: " + tuple.v1() + " fields have crash: " + e.getMessage(), e);
+            throw new IndexConfigException("get table: " + table + " fields have crash: " + e.getMessage(), e);
         }
         final Map<String, Integer> countMap = new HashMap<>();
         aliasList.forEach(v -> {
             if (allField.contains(v)) {
                 throw new IndexConfigException(String.format("index table %s has exist %s, you need rename %s value",
-                        tuple.v1(), v, ConfigKeyName.INDEX_TABLE_MASTER_ALIAS));
+                        table, v, ConfigKeyName.INDEX_TABLE_MASTER_ALIAS));
             }
             countMap.put(v, countMap.getOrDefault(v, 0) + 1);
         });
@@ -162,15 +158,15 @@ public class IndexDbConfigManager {
         });
         if (sb.length() > 0) {
             throw new IndexConfigException(String.format("index table %s config %s value has same value: %s",
-                    tuple.v1(), ConfigKeyName.INDEX_TABLE_MASTER_ALIAS, sb));
+                    table, ConfigKeyName.INDEX_TABLE_MASTER_ALIAS, sb));
         }
     }
 
-    private DataSourceBean findDataSourceBean(String schemaName, final String dbAddress) {
-        Collection<DataSourceBean> collection = dataSourceMap.get(schemaName);
+    private DataSourceBean findDataSourceBean(DbTableDesc table) {
+        Collection<DataSourceBean> collection = dataSourceMap.get(table.getSchema());
         if (CommonUtils.isEmpty(collection)) return null;
         for (DataSourceBean ds : collection) {
-            if (dbAddress == null || dbAddress.equalsIgnoreCase(ds.getUrlAddress())) {
+            if (table.getUrlAddress() == null || table.getUrlAddress().equalsIgnoreCase(ds.getUrlAddress())) {
                 return ds;
             }
         }

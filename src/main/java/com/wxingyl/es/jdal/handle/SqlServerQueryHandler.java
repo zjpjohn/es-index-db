@@ -3,14 +3,11 @@ package com.wxingyl.es.jdal.handle;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.jdal.DbQueryResult;
 import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.PrepareSqlQuery;
+import com.wxingyl.es.jdal.SqlQueryCommon;
 import com.wxingyl.es.jdal.SqlQueryParam;
-import org.apache.commons.dbutils.ResultSetHandler;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,7 +31,7 @@ public class SqlServerQueryHandler extends AbstractSqlQueryHandler {
     }
 
     @Override
-    public PrepareSqlQuery createPrepareSqlQuery(DbTableConfigInfo tableInfo) {
+    public SqlQueryCommon createPrepareSqlQuery(DbTableConfigInfo tableInfo) {
         return null;
     }
 

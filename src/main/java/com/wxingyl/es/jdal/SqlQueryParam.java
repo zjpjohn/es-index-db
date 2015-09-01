@@ -1,6 +1,6 @@
 package com.wxingyl.es.jdal;
 
-import com.wxingyl.es.conf.index.IndexTypeBean;
+import com.wxingyl.es.conf.index.TableQueryInfo;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import java.util.Collection;
@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class SqlQueryParam {
 
-    private PrepareSqlQuery prepareSql;
+    private SqlQueryCommon queryCommon;
     /**
      * Note: query db with pageSize, page start from 0
      */
@@ -23,18 +23,18 @@ public class SqlQueryParam {
 
     private ResultSetHandler<List<Map<String, Object>>> rsh;
 
-    public SqlQueryParam(IndexTypeBean.TableQuery tableQuery) {
+    public SqlQueryParam(TableQueryInfo tableQuery) {
         this(tableQuery, null);
     }
 
-    public SqlQueryParam(IndexTypeBean.TableQuery tableQuery, Collection list) {
-        prepareSql = tableQuery.getCommonSql();
+    public SqlQueryParam(TableQueryInfo tableQuery, Collection list) {
+        queryCommon = tableQuery.getQueryCommon();
         rsh = tableQuery.getRsh();
         keyValueList = list;
     }
 
-    public PrepareSqlQuery getPrepareSql() {
-        return prepareSql;
+    public SqlQueryCommon getQueryCommon() {
+        return queryCommon;
     }
 
     public void setPage(int page) {
@@ -56,7 +56,7 @@ public class SqlQueryParam {
     @Override
     public String toString() {
         return "SqlQueryParam{" +
-                "prepareSql=" + prepareSql +
+                "queryCommon=" + queryCommon +
                 ", start=" + page +
                 ", whereList=" + keyValueList +
                 '}';
