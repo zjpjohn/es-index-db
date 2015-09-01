@@ -60,7 +60,7 @@ public class DbQueryResult {
             Object obj = v.get(masterField);
             List<Map<String, Object>> list = slaveMap.get(obj);
             if (list == null) continue;
-            v.put(keyAlias, list.size() == 1 ? list.get(0) : list);
+            v.put(keyAlias, list);
         }
     }
 

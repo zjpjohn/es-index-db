@@ -58,12 +58,21 @@ public class TableDependQuery implements Iterator<DbQueryResult> {
 
     private void fillSlaveData() throws SQLException {
         if (slaveQuery == null || queryResult.isEmpty()) return;
-        for (Map.Entry<IndexTypeBean.TableQuery, String> e : slaveQuery.entrySet()) {
-            Set<Object> set = queryResult.getValuesForField(e.getValue());
+        slaveQuery(queryResult, slaveQuery);
+    }
+
+    private void slaveQuery(DbQueryResult masterResult, Map<IndexTypeBean.TableQuery, String> slaveMap) throws SQLException {
+        for (Map.Entry<IndexTypeBean.TableQuery, String> e : slaveMap.entrySet()) {
+            Set<Object> set = masterResult.getValuesForField(e.getValue());
             if (set.isEmpty()) continue;
-            SqlQueryParam param = new SqlQueryParam(e.getKey(), set);
-            DbQueryResult slaveRet = e.getKey().getQueryHandler().query(param);
-            queryResult.addSlaveResult(e.getValue(), slaveRet);
+            IndexTypeBean.TableQuery slaveTableQuery = e.getKey();
+            SqlQueryParam param = new SqlQueryParam(slaveTableQuery, set);
+            DbQueryResult slaveRet = slaveTableQuery.getQueryHandler().query(param);
+            if (slaveRet.isEmpty()) continue;
+            if (slaveTableQuery.getSlaveQuery() != null ) {
+                slaveQuery(slaveRet, slaveTableQuery.getSlaveQuery());
+            }
+            masterResult.addSlaveResult(e.getValue(), slaveRet);
         }
     }
 

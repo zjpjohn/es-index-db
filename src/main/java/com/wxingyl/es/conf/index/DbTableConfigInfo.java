@@ -191,7 +191,6 @@ public class DbTableConfigInfo {
 
         if (dbAddress != null ? !dbAddress.equals(that.dbAddress) : that.dbAddress != null) return false;
         return table.equals(that.table);
-
     }
 
     @Override
