@@ -17,7 +17,7 @@ public interface SqlQueryHandle {
 
     SqlQueryCommon createPrepareSqlQuery(DbTableConfigInfo tableInfo);
 
-    DbQueryResult query(SqlQueryParam param) throws SQLException;
+    TableQueryResult query(SqlQueryParam param) throws SQLException;
 
     /**
      * get all tables in the schema

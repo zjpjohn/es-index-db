@@ -9,15 +9,15 @@ import java.util.*;
  * Created by xing on 15/8/30.
  * query db result
  */
-public class DbQueryResult {
+public class TableQueryResult {
 
     private SqlQueryCommon sqlQuery;
 
     private List<Map<String, Object>> dbData;
 
-    private Multimap<String, DbQueryResult> slaveResult;
+    private Multimap<String, TableQueryResult> slaveResult;
 
-    public DbQueryResult(SqlQueryCommon sqlQuery, List<Map<String, Object>> list) {
+    public TableQueryResult(SqlQueryCommon sqlQuery, List<Map<String, Object>> list) {
         this.sqlQuery = sqlQuery;
         dbData = list;
     }
@@ -48,13 +48,13 @@ public class DbQueryResult {
         return dbData;
     }
 
-    public Multimap<String, DbQueryResult> getSlaveResult() {
+    public Multimap<String, TableQueryResult> getSlaveResult() {
         return slaveResult;
     }
 
     private Map<Object, List<Map<String, Object>>> groupAndRemoveByKeyField() {
         final Map<Object, List<Map<String, Object>>> ret = new HashMap<>();
-        final String keyField = sqlQuery.getTableField().getField();
+        final String keyField = sqlQuery.getKeyField();
         dbData.forEach(v -> {
             Object obj = v.get(keyField);
             List<Map<String, Object>> list = ret.get(obj);
@@ -67,14 +67,14 @@ public class DbQueryResult {
         return ret;
     }
 
-    public DbQueryResult addPageResult(DbQueryResult slaveRet) {
+    public TableQueryResult addPageResult(TableQueryResult slaveRet) {
         if (!(slaveRet == null || this == slaveRet || slaveRet.isEmpty())) {
             dbData.addAll(slaveRet.dbData);
         }
         return this;
     }
 
-    public void addSlaveResult(String masterField, DbQueryResult slaveRet) {
+    public void addSlaveResult(String masterField, TableQueryResult slaveRet) {
         if (slaveRet == this) {
             throw new IllegalArgumentException("can not add self");
         }

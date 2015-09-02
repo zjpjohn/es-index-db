@@ -3,7 +3,6 @@ package com.wxingyl.es.conf.ds;
 import com.wxingyl.es.conf.ConfigKeyName;
 import com.wxingyl.es.exception.DataSourceConfigException;
 import com.wxingyl.es.util.CommonUtils;
-import com.wxingyl.es.util.RwLock;
 
 import java.util.*;
 
@@ -14,12 +13,7 @@ import java.util.*;
  */
 public class DataSourceParseFactory implements DataSourceConfigParse {
 
-    private RwLock<Set<DataSourceConfigParse>> parserListLock;
-
-    public DataSourceParseFactory() {
-        Set<DataSourceConfigParse> parserList = new HashSet<>();
-        parserListLock = CommonUtils.createRwLock(parserList);
-    }
+    private Set<DataSourceConfigParse> parserSet = new HashSet<>();
 
     @SuppressWarnings("unchecked")
     @Override
@@ -32,14 +26,13 @@ public class DataSourceParseFactory implements DataSourceConfigParse {
         if (schemaList == null) {
             throw new DataSourceConfigException("dataSource config don't have " + ConfigKeyName.DS_SCHEMA_LIST);
         }
-        DataSourceConfigParse parse = parserListLock.readOp(parserSet -> {
-            for (DataSourceConfigParse e : parserSet) {
-                if (e.supportParse(driverClassName)) {
-                    return e;
-                }
+        DataSourceConfigParse parse = null;
+        for (DataSourceConfigParse e : parserSet) {
+            if (e.supportParse(driverClassName)) {
+                parse = e;
+                break;
             }
-            return null;
-        });
+        }
         if (parse == null) {
             throw new DataSourceConfigException("There is not a support parser for driver_class_name: " + driverClassName);
         }
@@ -47,24 +40,22 @@ public class DataSourceParseFactory implements DataSourceConfigParse {
     }
 
     @Override
-    public boolean supportParse(final String driverClassName) {
-        return parserListLock.readOp(parserList -> {
-            for (DataSourceConfigParse e : parserList) {
-                if (e.supportParse(driverClassName)) {
-                    return true;
-                }
+    public boolean supportParse(String driverClassName) {
+        for (DataSourceConfigParse e : parserSet) {
+            if (e.supportParse(driverClassName)) {
+                return true;
             }
-            return false;
-        });
+        }
+        return false;
     }
 
     @Override
-    public boolean addDataSourceConfigParser(final DataSourceConfigParse parser) {
-        return parserListLock.writeOp(parserSet -> parserSet.add(parser));
+    public boolean addDataSourceConfigParser(DataSourceConfigParse parser) {
+        return parserSet.add(parser);
     }
 
     @Override
-    public boolean removeDataSourceConfigParser(final DataSourceConfigParse parser) {
-        return parserListLock.writeOp(parserSet -> parserSet.remove(parser));
+    public boolean removeDataSourceConfigParser(DataSourceConfigParse parser) {
+        return parserSet.remove(parser);
     }
 }

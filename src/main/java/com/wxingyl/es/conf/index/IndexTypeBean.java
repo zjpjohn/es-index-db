@@ -1,5 +1,6 @@
 package com.wxingyl.es.conf.index;
 
+import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.jdal.*;
 import com.wxingyl.es.jdal.FilterMapListHandler;
 import com.wxingyl.es.jdal.handle.SqlQueryHandle;
@@ -15,17 +16,13 @@ import java.util.function.BiConsumer;
  */
 public class IndexTypeBean {
 
-    private String index;
-
-    private String type;
+    private IndexTypeDesc type;
 
     private TableQueryInfo masterTable;
 
-    public String getIndex() {
-        return index;
-    }
+    private IndexTypeBean() {}
 
-    public String getType() {
+    public IndexTypeDesc getType() {
         return type;
     }
 
@@ -33,18 +30,17 @@ public class IndexTypeBean {
         return masterTable;
     }
 
-    public static Builder build(String index, String type) {
-        return new Builder(index, type);
+    public static Builder build(IndexTypeDesc type) {
+        return new Builder(type);
     }
 
     public static class Builder {
 
-        private String index, type;
+        private IndexTypeDesc type;
 
         private Map<DbTableDesc, Tuple<TableQueryInfo.Builder, DbTableFieldDesc>> tableMap = new HashMap<>();
 
-        public Builder(String index, String type) {
-            this.index = index;
+        public Builder(IndexTypeDesc type) {
             this.type = type;
         }
 
@@ -61,7 +57,6 @@ public class IndexTypeBean {
         public IndexTypeBean build(DbTableDesc masterTable,
                                    BiConsumer<TableQueryInfo, List<String>> masterAliasVerify) {
             IndexTypeBean bean = new IndexTypeBean();
-            bean.index = index;
             bean.type = type;
             tableMap.values().forEach(v -> {
                 v.v1().masterAliasVerify(masterAliasVerify);

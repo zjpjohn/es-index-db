@@ -1,7 +1,7 @@
 package com.wxingyl.es.jdal.handle;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
-import com.wxingyl.es.jdal.DbQueryResult;
+import com.wxingyl.es.jdal.TableQueryResult;
 import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.SqlQueryCommon;
 import com.wxingyl.es.jdal.SqlQueryParam;
@@ -67,12 +67,12 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     }
 
     @Override
-    public DbQueryResult query(SqlQueryParam param) throws SQLException {
+    public TableQueryResult query(SqlQueryParam param) throws SQLException {
         SqlQueryCommon prepareSql = param.getQueryCommon();
         StringBuilder sb = new StringBuilder(prepareSql.getCommonSql());
         if (!CommonUtils.isEmpty(param.getKeyValueList())) {
             if (prepareSql.isContainWhere()) sb.append(" AND");
-            sb.append(' ').append(prepareSql.getTableField().getField()).append(" IN (");
+            sb.append(' ').append(prepareSql.getKeyField()).append(" IN (");
             for (Object o : param.getKeyValueList()) {
                 sb.append('\'').append(o).append("' ");
             }
@@ -80,7 +80,7 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         }
         sb.append(' ').append(prepareSql.getOrderBy()).append(" LIMIT ").append(param.getPage() * prepareSql.getPageSize())
                 .append(", ").append(prepareSql.getPageSize());
-        return new DbQueryResult(prepareSql, queryRunner.query(sb.toString(), param.getRsh()));
+        return new TableQueryResult(prepareSql, queryRunner.query(sb.toString(), param.getRsh()));
     }
 
 }

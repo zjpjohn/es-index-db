@@ -10,9 +10,14 @@ import com.wxingyl.es.conf.index.DbTableConfigInfo;
  */
 public class SqlQueryCommon {
     /**
-     * query table, the field is primary key, its value should be unique in table
+     * query table
      */
-    private DbTableFieldDesc tableField;
+    private DbTableDesc table;
+
+    /**
+     * the field is primary key, its value should be unique in table
+     */
+    private String keyField;
 
     private String commonSql;
 
@@ -40,12 +45,16 @@ public class SqlQueryCommon {
         return containWhere;
     }
 
-    public DbTableFieldDesc getTableField() {
-        return tableField;
+    public DbTableDesc getTable() {
+        return table;
     }
 
     public String getMasterAlias() {
         return masterAlias;
+    }
+
+    public String getKeyField() {
+        return keyField;
     }
 
     @Override
@@ -55,13 +64,13 @@ public class SqlQueryCommon {
 
         SqlQueryCommon that = (SqlQueryCommon) o;
 
-        return tableField.equals(that.tableField);
+        return table.equals(that.table);
 
     }
 
     @Override
     public int hashCode() {
-        return tableField.hashCode();
+        return table.hashCode();
     }
 
     @Override
@@ -70,7 +79,7 @@ public class SqlQueryCommon {
                 "commonSql='" + commonSql + '\'' +
                 ", orderBy='" + orderBy + '\'' +
                 ", pageSize=" + pageSize +
-                ", tableField=" + tableField +
+                ", tableField=" + table +
                 '}';
     }
 
@@ -107,7 +116,8 @@ public class SqlQueryCommon {
             sqlQueryCommon.containWhere = containWhere;
             sqlQueryCommon.orderBy = orderBy;
             sqlQueryCommon.pageSize = tableInfo.getPageSize();
-            sqlQueryCommon.tableField = new DbTableFieldDesc(tableInfo.getTable(), tableInfo.getRelationField());
+            sqlQueryCommon.table = tableInfo.getTable();
+            sqlQueryCommon.keyField = tableInfo.getRelationField();
             sqlQueryCommon.masterAlias = tableInfo.getMasterAlias();
             return sqlQueryCommon;
         }

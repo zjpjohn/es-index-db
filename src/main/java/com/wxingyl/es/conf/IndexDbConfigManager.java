@@ -76,7 +76,7 @@ public class IndexDbConfigManager {
 
     @SuppressWarnings("unchecked")
     public void parseIndexType(String yamlFileName) {
-        Map<String, Object> map = null;
+        Map<String, Object> map;
         try (InputStream in = new FileInputStream(yamlFileName)) {
             Yaml yaml = new Yaml();
             map = (Map<String, Object>) yaml.load(in);
@@ -95,11 +95,11 @@ public class IndexDbConfigManager {
         if (CommonUtils.isEmpty(typeSet)) return;
         ImmutableSetMultimap.Builder<String, IndexTypeBean> mapBuilder = ImmutableSetMultimap.builder();
         for (final TypeConfigInfo type : typeSet) {
-            final IndexTypeBean.Builder builder = IndexTypeBean.build(type.getIndex(), type.getType());
+            final IndexTypeBean.Builder builder = IndexTypeBean.build(type.getTypeDesc());
             for (DbTableConfigInfo tableInfo : type.getTables()) {
                 builder.addTableQuery(verifyTypeTableConfig(type, tableInfo), tableInfo);
             }
-            mapBuilder.put(type.getIndex(), builder.build(type.getMasterTable(), masterAliasVerify));
+            mapBuilder.put(type.getTypeDesc().getIndex(), builder.build(type.getMasterTable(), masterAliasVerify));
         }
         if (indexTypeMap != null) mapBuilder.putAll(indexTypeMap);
         indexTypeMap = mapBuilder.build();
@@ -136,7 +136,7 @@ public class IndexDbConfigManager {
 
     private void verifyMasterAliasRepeat(TableQueryInfo tableQueryInfo, List<String> aliasList) {
         final Set<String> allField;
-        DbTableDesc table = tableQueryInfo.getQueryCommon().getTableField();
+        DbTableDesc table = tableQueryInfo.getQueryCommon().getTable();
         try {
             allField = tableQueryInfo.getQueryHandler().getAllFields(table);
         } catch (ExecutionException e) {

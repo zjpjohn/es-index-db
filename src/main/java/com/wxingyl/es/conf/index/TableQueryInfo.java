@@ -3,6 +3,8 @@ package com.wxingyl.es.conf.index;
 import com.wxingyl.es.jdal.FilterMapListHandler;
 import com.wxingyl.es.jdal.SqlQueryCommon;
 import com.wxingyl.es.jdal.handle.SqlQueryHandle;
+import org.elasticsearch.common.collect.ImmutableListMultimap;
+import org.elasticsearch.common.collect.ImmutableMultimap;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -27,7 +29,9 @@ public class TableQueryInfo {
      * key: salve table, value: field
      * unmodifiableMap
      */
-    private Map<TableQueryInfo, String> slaveQuery;
+    private ImmutableMultimap<String, TableQueryInfo> slaveQuery;
+
+    private TableQueryInfo() {}
 
     public SqlQueryHandle getQueryHandler() {
         return queryHandler;
@@ -40,7 +44,7 @@ public class TableQueryInfo {
     /**
      * @return unmodifiableMap
      */
-    public Map<TableQueryInfo, String> getSlaveQuery() {
+    public ImmutableMultimap<String, TableQueryInfo> getSlaveQuery() {
         return slaveQuery;
     }
 
@@ -52,7 +56,7 @@ public class TableQueryInfo {
         return new Builder();
     }
 
-    static class Builder {
+    public static class Builder {
 
         private SqlQueryHandle queryHandler;
 
@@ -66,34 +70,34 @@ public class TableQueryInfo {
 
         private TableQueryInfo obj;
 
-        Builder queryHandler(SqlQueryHandle handle) {
+        public Builder queryHandler(SqlQueryHandle handle) {
             this.queryHandler = handle;
             return this;
         }
 
-        Builder rsh(FilterMapListHandler rsh) {
+        public Builder rsh(FilterMapListHandler rsh) {
             this.rsh = rsh;
             return this;
         }
 
-        Builder queryCommon(SqlQueryCommon queryCommon) {
+        public Builder queryCommon(SqlQueryCommon queryCommon) {
             this.queryCommon = queryCommon;
             return this;
         }
 
-        Builder addSlave(Builder slave, String field) {
+        public Builder addSlave(Builder slave, String field) {
             if (slave != this) {
                 slaveMap.put(slave, field);
             }
             return this;
         }
 
-        Builder masterAliasVerify(BiConsumer<TableQueryInfo, List<String>> verify) {
+        public Builder masterAliasVerify(BiConsumer<TableQueryInfo, List<String>> verify) {
             masterAliasVerify = verify;
             return this;
         }
 
-        TableQueryInfo build() {
+        public TableQueryInfo build() {
             if (obj != null) return obj;
             obj = new TableQueryInfo();
             obj.queryCommon = queryCommon;
@@ -101,12 +105,12 @@ public class TableQueryInfo {
             obj.rsh = rsh;
             if (!slaveMap.isEmpty()) {
                 final List<String> masterAlias = new ArrayList<>(slaveMap.size());
-                final Map<TableQueryInfo, String> map = new HashMap<>();
+                final ImmutableListMultimap.Builder<String, TableQueryInfo> mapBuilder = ImmutableListMultimap.builder();
                 slaveMap.forEach((k, v) -> {
-                    map.put(k.build(), v);
+                    mapBuilder.put(v, k.build());
                     masterAlias.add(k.queryCommon.getMasterAlias());
                 });
-                obj.slaveQuery = Collections.unmodifiableMap(map);
+                obj.slaveQuery = mapBuilder.build();
                 masterAliasVerify.accept(obj, masterAlias);
             }
             return obj;

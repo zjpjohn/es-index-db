@@ -12,6 +12,9 @@ public class DbTableFieldDesc extends DbTableDesc {
 
     public DbTableFieldDesc(DbTableDesc tableDesc, String field) {
         super(tableDesc.getUrlAddress(), tableDesc.getSchema(), tableDesc.getTable());
+        if (tableDesc.getClass().equals(DbTableDesc.class)) {
+            newTableDesc = tableDesc;
+        }
         this.field = field.toLowerCase();
     }
 

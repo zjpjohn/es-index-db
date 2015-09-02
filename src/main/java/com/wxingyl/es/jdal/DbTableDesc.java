@@ -61,6 +61,7 @@ public class DbTableDesc {
         return "DbTableDesc{" +
                 "schema='" + schema + '\'' +
                 ", table='" + table + '\'' +
+                ", urlAddress='" + urlAddress + '\'' +
                 '}';
     }
 }

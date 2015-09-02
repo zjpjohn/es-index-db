@@ -11,5 +11,5 @@ public interface IndexDocFill {
     /**
      * fill data from db
      */
-    void fill(IndexTypeBean typeBean) throws IndexDocException;
+    void fill(IndexTypeBean typeBean);
 }

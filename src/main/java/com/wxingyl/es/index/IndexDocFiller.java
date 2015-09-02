@@ -1,8 +1,11 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.conf.index.IndexTypeBean;
-import com.wxingyl.es.exception.IndexDocException;
-import com.wxingyl.es.jdal.DbQueryResult;
+import com.wxingyl.es.jdal.TableQueryResult;
+import com.wxingyl.es.jdal.DbTableDesc;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by xing on 15/8/30.
@@ -10,11 +13,13 @@ import com.wxingyl.es.jdal.DbQueryResult;
  */
 public class IndexDocFiller implements IndexDocFill {
 
+    private Map<DbTableDesc, TableQueryResultListener> tableQueryResultListenerMap = new HashMap<>();
+
     @Override
-    public void fill(IndexTypeBean typeBean) throws IndexDocException {
+    public void fill(IndexTypeBean typeBean) {
         TableDependQuery query = new TableDependQuery(typeBean.getMasterTable());
         while (query.hasNext()) {
-            DbQueryResult ret = query.next();
+            TableQueryResult ret = query.next();
         }
     }
 }

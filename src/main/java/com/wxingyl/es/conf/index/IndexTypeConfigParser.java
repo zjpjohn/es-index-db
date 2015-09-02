@@ -2,6 +2,7 @@ package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.conf.ConfigParse;
 import com.wxingyl.es.exception.IndexConfigException;
+import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.DbTableFieldDesc;
 import com.wxingyl.es.util.CommonUtils;
@@ -48,18 +49,18 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
             Map<String, Object> allTypes = (Map<String, Object>) t;
             stringDefaultValueParser.get().addDefaultValue(allTypes, 0);
             allTypes.forEach((type, v) -> {
+                IndexTypeDesc typeDesc = new IndexTypeDesc(index, type);
                 Map<String, Object> conf = (Map<String, Object>) v;
                 List<Map<String, Object>> tablesConf = CommonUtils.getList(conf, INDEX_TYPE_INCLUDE_TABLE);
                 if (tablesConf == null) {
-                    throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_TYPE_INCLUDE_TABLE + " config");
+                    throw new IndexConfigException(typeDesc + " need " + INDEX_TYPE_INCLUDE_TABLE + " config");
                 }
                 DbTableDesc masterTable = CommonUtils.getDbTable(conf, INDEX_TYPE_MASTER_TABLE);
                 if (tablesConf.size() > 1 && masterTable == null) {
-                    throw new IndexConfigException("index: " + index + ", type: " + type + " need " + INDEX_TYPE_MASTER_TABLE + " config");
+                    throw new IndexConfigException(typeDesc + " need " + INDEX_TYPE_MASTER_TABLE + " config");
                 }
                 stringDefaultValueParser.get().addDefaultValue(conf, 1);
-                TypeConfigInfo typeInfo = new TypeConfigInfo();
-                typeInfo.setIndexType(index, type);
+                TypeConfigInfo typeInfo = new TypeConfigInfo(typeDesc);
                 typeInfo.setMasterTable(masterTable);
                 parseTableInfo(typeInfo, tablesConf);
                 typeList.add(typeInfo);
