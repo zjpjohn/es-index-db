@@ -19,7 +19,20 @@ public class IndexDocFiller implements IndexDocFill {
     public void fill(IndexTypeBean typeBean) {
         TableDependQuery query = new TableDependQuery(typeBean.getMasterTable());
         while (query.hasNext()) {
-            TableQueryResult ret = query.next();
+//            TableQueryResult ret = query.next();
         }
+    }
+
+    @Override
+    public boolean addTableQueryResultListener(TableQueryResultListener listener) {
+        for (DbTableDesc table : listener.supportTable()) {
+            if (tableQueryResultListenerMap.containsKey(table)) {
+                throw new IllegalArgumentException("table: " + table + " has TableQueryResultListener: "
+                        + tableQueryResultListenerMap.get(table) + ", support tables: " + tableQueryResultListenerMap.get(table).supportTable());
+            } else {
+                tableQueryResultListenerMap.put(table, listener);
+            }
+        }
+        return true;
     }
 }

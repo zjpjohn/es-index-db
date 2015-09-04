@@ -80,7 +80,8 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         }
         sb.append(' ').append(prepareSql.getOrderBy()).append(" LIMIT ").append(param.getPage() * prepareSql.getPageSize())
                 .append(", ").append(prepareSql.getPageSize());
-        return new TableQueryResult(prepareSql, queryRunner.query(sb.toString(), param.getRsh()));
+        return TableQueryResult.build().sqlQueryCommon(prepareSql)
+                .dbData(queryRunner.query(sb.toString(), param.getRsh())).build();
     }
 
 }

@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class TableDependQuery implements Iterator<DbQueryDependResult> {
 
-    private TableQueryResult queryResult;
+    private DbQueryDependResult masterResult;
 
     private SqlQueryParam masterParam;
 
@@ -33,7 +33,7 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
 
     @Override
     public boolean hasNext() {
-        return masterParam.getPage() == 0 || queryResult.needContinue();
+        return masterParam.getPage() == 0 || masterResult.needContinue();
     }
 
     /**
@@ -42,8 +42,9 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
     @Override
     public DbQueryDependResult next() {
         try {
-            queryResult = masterQueryHandler.query(masterParam);
-            slaveQuery(queryResult, slaveQuery);
+            TableQueryResult queryResult = masterQueryHandler.query(masterParam);
+            masterResult = new DbQueryDependResult(queryResult);
+            slaveQuery(masterResult, slaveQuery);
         } catch (SQLException e) {
             throw new IndexDocException("query data have sqlException from: " + masterParam, e);
         }
@@ -51,7 +52,7 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
         return null;
     }
 
-    private void slaveQuery(TableQueryResult masterResult, ImmutableMultimap<String, TableQueryInfo> slaveMap) throws SQLException {
+    private void slaveQuery(DbQueryDependResult masterResult, ImmutableMultimap<String, TableQueryInfo> slaveMap) throws SQLException {
         if (masterResult == null || masterResult.isEmpty() || slaveMap == null) return;
         for (String field : slaveMap.keys()) {
             Set<Object> set = masterResult.getValuesForField(field);
@@ -65,10 +66,11 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
                 }
 
                 if (slaveRet == null || slaveRet.isEmpty()) continue;
+                DbQueryDependResult slaveResult = new DbQueryDependResult(slaveRet);
 
-                slaveQuery(slaveRet, slaveTableQuery.getSlaveQuery());
+                slaveQuery(slaveResult, slaveTableQuery.getSlaveQuery());
 
-                masterResult.addSlaveResult(field, slaveRet);
+                masterResult.addSlaveResult(field, slaveResult);
             }
         }
     }

@@ -12,4 +12,6 @@ public interface IndexDocFill {
      * fill data from db
      */
     void fill(IndexTypeBean typeBean);
+
+    boolean addTableQueryResultListener(TableQueryResultListener listener);
 }
