@@ -5,8 +5,8 @@ import org.elasticsearch.common.collect.ArrayListMultimap;
 import org.elasticsearch.common.collect.Multimap;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by xing on 15/9/2.
@@ -22,10 +22,6 @@ public class DbQueryDependResult {
         this.tableQueryResult = tableQueryResult;
     }
 
-    public TableQueryResult getTableQueryResult() {
-        return tableQueryResult;
-    }
-
     public boolean isEmpty() {
         return tableQueryResult.isEmpty();
     }
@@ -34,18 +30,17 @@ public class DbQueryDependResult {
         return tableQueryResult.needContinue();
     }
 
+    public TableQueryResult getTableQueryResult() {
+        return tableQueryResult;
+    }
+
     public Multimap<String, DbQueryDependResult> getSlaveResult() {
         return slaveResult;
     }
 
     public Set<Object> getValuesForField(String field) {
-        Set<Object> set = new HashSet<>();
-        for (Map<String, Object> v : tableQueryResult.getDbData()) {
-            if (v.get(field) != null) {
-                set.add(v.get(field));
-            }
-        }
-        return set;
+        return tableQueryResult.getDbData().stream().filter(v -> v.get(field) != null)
+                .collect(HashSet::new, (c, v) -> c.add(v.get(field)), Set::addAll);
     }
 
     public void addSlaveResult(String masterField, DbQueryDependResult slaveRet) {

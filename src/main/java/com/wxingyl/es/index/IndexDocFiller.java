@@ -1,8 +1,8 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.conf.index.IndexTypeBean;
-import com.wxingyl.es.jdal.TableQueryResult;
 import com.wxingyl.es.jdal.DbTableDesc;
+import com.wxingyl.es.jdal.TableQueryResult;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +19,9 @@ public class IndexDocFiller implements IndexDocFill {
     public void fill(IndexTypeBean typeBean) {
         TableDependQuery query = new TableDependQuery(typeBean.getMasterTable());
         while (query.hasNext()) {
-//            TableQueryResult ret = query.next();
+            DbQueryDependResult ret = query.next();
+            TableQueryResult masterResult = ret.getTableQueryResult();
+
         }
     }
 
@@ -35,4 +37,5 @@ public class IndexDocFiller implements IndexDocFill {
         }
         return true;
     }
+
 }

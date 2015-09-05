@@ -19,6 +19,17 @@ import static com.wxingyl.es.conf.ConfigKeyName.*;
  */
 public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
 
+    private ThreadLocal<DefaultValueParser<Integer>> integerDefaultValueParser = new ThreadLocal<DefaultValueParser<Integer>>() {
+        @Override
+        protected DefaultValueParser<Integer> initialValue() {
+            return new DefaultValueParser<>((defaultValue, keyMap) -> {
+                defaultValue.put(INDEX_DEFAULT_PAGE_SIZE, new Integer[2]);
+
+                keyMap.put(INDEX_TABLE_PAGE_SIZE, INDEX_DEFAULT_PAGE_SIZE);
+            });
+        }
+    };
+
     private ThreadLocal<DefaultValueParser<String>> stringDefaultValueParser = new ThreadLocal<DefaultValueParser<String>>() {
         @Override
         protected DefaultValueParser<String> initialValue() {
@@ -48,6 +59,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
         map.forEach((index, t) -> {
             Map<String, Object> allTypes = (Map<String, Object>) t;
             stringDefaultValueParser.get().addDefaultValue(allTypes, 0);
+            integerDefaultValueParser.get().addDefaultValue(allTypes, 0);
             allTypes.forEach((type, v) -> {
                 IndexTypeDesc typeDesc = new IndexTypeDesc(index, type);
                 Map<String, Object> conf = (Map<String, Object>) v;
@@ -60,6 +72,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
                     throw new IndexConfigException(typeDesc + " need " + INDEX_TYPE_MASTER_TABLE + " config");
                 }
                 stringDefaultValueParser.get().addDefaultValue(conf, 1);
+                integerDefaultValueParser.get().addDefaultValue(conf, 1);
                 TypeConfigInfo typeInfo = new TypeConfigInfo(typeDesc);
                 typeInfo.setMasterTable(masterTable);
                 parseTableInfo(typeInfo, tablesConf);
@@ -76,8 +89,7 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
         Map<DbTableConfigInfo, String> masterFiledMap = new HashMap<>();
         for (Map<String, Object> conf : tablesConf) {
             DbTableConfigInfo info = new DbTableConfigInfo();
-            Map<String, String> defaultVal = stringDefaultValueParser.get().getDefaultValue(conf);
-            info.initValue(typeInfo, conf, defaultVal);
+            info.initValue(typeInfo, conf, stringDefaultValueParser.get(), integerDefaultValueParser.get());
             DbTableDesc tableDesc = info.getTable();
             if (masterTable == null) {
                 masterTable = tableDesc;

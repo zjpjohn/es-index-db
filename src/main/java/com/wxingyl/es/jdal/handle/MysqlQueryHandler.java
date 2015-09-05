@@ -55,10 +55,15 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         }
         sb.append(" FROM ").append(tableInfo.getTable().getSchema()).append('.').append(tableInfo.getTable().getTable());
         SqlQueryCommon.Build build = SqlQueryCommon.build();
+        boolean isContainWhere = false;
         if (tableInfo.getDeleteField() != null) {
             sb.append(" WHERE ").append(tableInfo.getDeleteField()).append(" = ").append('\'')
                     .append(tableInfo.getDeleteValidValue()).append('\'');
             build.containWhere();
+            isContainWhere = true;
+        }
+        if (tableInfo.getQueryCondition() != null) {
+            sb.append(isContainWhere ? " AND " : " WHERE ").append(tableInfo.getQueryCondition());
         }
 
         return build.commonFormatSql(sb.toString())

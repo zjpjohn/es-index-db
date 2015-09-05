@@ -4,11 +4,14 @@ import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.DbTableFieldDesc;
 import com.wxingyl.es.util.CommonUtils;
+import com.wxingyl.es.util.DefaultValueParser;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import static com.wxingyl.es.conf.ConfigKeyName.*;
 
@@ -36,6 +39,8 @@ public class DbTableConfigInfo {
     private String relationField;
 
     private Integer pageSize;
+
+    private String queryCondition;
 
     public void setMasterField(DbTableFieldDesc masterField) {
         if (masterField.newDbTableDesc().equals(table)) {
@@ -91,34 +96,38 @@ public class DbTableConfigInfo {
         return masterAlias;
     }
 
-    void initValue(TypeConfigInfo typeInfo, Map<String, Object> conf, Map<String, String> defaultVal) {
+    public String getQueryCondition() {
+        return queryCondition;
+    }
+
+    void initValue(TypeConfigInfo typeInfo, Map<String, Object> conf,
+                   DefaultValueParser<String> strDvp, DefaultValueParser<Integer> intDvp) {
         String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE_TABLE);
         if (tableName == null) {
             throw new IndexConfigException("table_name conf is null of " + typeInfo);
         }
-        String schema = null, dbAddress = null;
-        for (String key : defaultVal.keySet()) {
-            String val = defaultVal.get(key);
-            switch (key) {
+        String[] strArray = new String[2];
+        strDvp.getDefaultValue(conf).forEach((k, v) -> {
+            switch (k) {
                 case INDEX_TABLE_SCHEMA:
-                    schema = val;
+                    strArray[0] = v;
                     break;
                 case INDEX_TABLE_DB_ADDRESS:
-                    dbAddress = val;
+                    strArray[1] = v;
                     break;
                 case INDEX_TABLE_DELETE_FIELD:
-                    deleteField = val == null ? null : val.toLowerCase();
+                    deleteField = v == null ? null : v.toLowerCase();
                     break;
                 case INDEX_TABLE_DELETE_VALID_VALUE:
-                    deleteValidValue = val;
+                    deleteValidValue = v;
                     break;
             }
-        }
+        });
         if (deleteField != null && deleteValidValue == null) {
             throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " delete_field: "
                     + deleteField + ", but delete_valid_value is null");
         }
-        if (schema == null) {
+        if (strArray[0] == null) {
             throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " can't find schema");
         }
         relationField = CommonUtils.getStringVal(conf, INDEX_TABLE_RELATION_FIELD);
@@ -128,10 +137,8 @@ public class DbTableConfigInfo {
         } else {
             relationField = relationField.toLowerCase();
         }
-        table = new DbTableDesc(dbAddress, schema, tableName);
-
-
-        pageSize = (Integer) conf.getOrDefault(INDEX_TABLE_PAGE_SIZE, 2500);
+        table = new DbTableDesc(strArray[1], strArray[0], tableName);
+        pageSize = intDvp.getDefaultValue(conf).getOrDefault(INDEX_TABLE_PAGE_SIZE, 2500);
         masterAlias = CommonUtils.getStringVal(conf, INDEX_TABLE_MASTER_ALIAS);
         forbidFields = getFields(conf, INDEX_TABLE_FORBID_FIELDS);
         fields = getFields(conf, INDEX_TABLE_FIELDS);
@@ -152,16 +159,13 @@ public class DbTableConfigInfo {
         if (forbidFields != null && forbidFields.contains(relationField)) {
             forbidFields.remove(relationField);
         }
+        queryCondition = CommonUtils.getStringVal(conf, INDEX_TABLE_QUERY_CONDITION);
     }
 
     private Set<String> getFields(Map<String, Object> map, String key) {
         List<String> list = CommonUtils.getList(map, key);
         if (CommonUtils.isEmpty(list)) return null;
-        Set<String> set = new HashSet<>();
-        for (String s : list) {
-            set.add(s.toLowerCase());
-        }
-        return set;
+        return list.stream().collect(HashSet::new, (c, s) -> c.add(s.toLowerCase()), Set::addAll);
     }
 
     void addFiled(String filed) {

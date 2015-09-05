@@ -28,6 +28,8 @@ public interface ConfigKeyName {
 
     String INDEX_DEFAULT_DELETE_VALID_VALUE = "default_delete_valid_value";
 
+    String INDEX_DEFAULT_PAGE_SIZE = "default_page_size";
+
     String INDEX_TYPE_MASTER_TABLE = "master_table";
 
     String INDEX_TYPE_INCLUDE_TABLE = "include_table";
@@ -53,5 +55,7 @@ public interface ConfigKeyName {
     String INDEX_TABLE_RELATION_FIELD = "relation_field";
 
     String INDEX_TABLE_PAGE_SIZE = "page_size";
+
+    String INDEX_TABLE_QUERY_CONDITION = "query_condition";
 
 }

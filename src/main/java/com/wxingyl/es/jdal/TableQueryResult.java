@@ -20,6 +20,9 @@ public class TableQueryResult {
      */
     private String keyField;
 
+    /**
+     * can not null
+     */
     private List<Map<String, Object>> dbData;
 
     private TableQueryResult() {}
