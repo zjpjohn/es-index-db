@@ -22,7 +22,7 @@ public class DefaultDocPostProcessor implements DocPostProcessor<DocFields> {
 
     @Override
     public PageDocument<DocFields> initMasterPageDoc(TableQueryResult masterResult) {
-        PageDocument<DocFields> masterPageDoc = new PageDocument<>(masterResult.getKeyField(), masterResult.getMasterAlias());
+        PageDocument<DocFields> masterPageDoc = new PageDocument<>(masterResult.getBaseInfo());
         masterPageDoc.addAll(DocFields.build(masterResult.getDbData()));
         return masterPageDoc;
     }
@@ -44,7 +44,7 @@ public class DefaultDocPostProcessor implements DocPostProcessor<DocFields> {
     @Override
     public <R extends DocFields> PageDocument<R> mergeChildPageDoc(PageDocument<R> masterPageDoc, String masterField, PageDocument<R> childPageDoc) {
         Map<Object, List<R>> group = childPageDoc.groupByKeyField(true);
-        String masterAlias = childPageDoc.getMasterAlias();
+        String masterAlias = childPageDoc.getBaseInfo().getMasterAlias();
         masterPageDoc.forEach(doc -> {
             Object val = doc.get(masterField);
             if (val != null && group.get(val) != null) {

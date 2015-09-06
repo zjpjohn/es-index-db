@@ -1,5 +1,7 @@
 package com.wxingyl.es.index;
 
+import com.wxingyl.es.jdal.TableQueryResult;
+
 import java.util.*;
 
 /**
@@ -7,39 +9,27 @@ import java.util.*;
  * document, have page
  */
 public class PageDocument<T extends DocFields> extends LinkedList<T> {
-    /**
-     * table key field
-     */
-    private String keyField;
 
-    private String masterAlias;
+    private TableQueryResult.BaseInfo baseInfo;
 
-    public PageDocument() {}
-
-    /**
-     * slave table query result
-     * @param keyField child document key field
-     * @param masterAlias child document add parent document key name
-     */
-    public PageDocument(String keyField, String masterAlias) {
+    public PageDocument(TableQueryResult.BaseInfo baseInfo) {
         super();
-        this.keyField = keyField;
-        this.masterAlias = masterAlias;
+        this.baseInfo = baseInfo;
     }
 
-    public String getMasterAlias() {
-        return masterAlias;
+    public TableQueryResult.BaseInfo getBaseInfo() {
+        return baseInfo;
     }
 
     public Map<Object, List<T>> groupByKeyField(boolean removeKeyField) {
         Map<Object, List<T>> group = new HashMap<>();
         forEach(doc -> {
-            Object val = doc.get(keyField);
+            Object val = doc.get(baseInfo.getKeyField());
             List<T> list = group.get(val);
             if (list == null) {
                 group.put(val, list = new LinkedList<>());
             }
-            if (removeKeyField) doc.remove(keyField);
+            if (removeKeyField) doc.remove(baseInfo.getKeyField());
             list.add(doc);
         });
         return group;
