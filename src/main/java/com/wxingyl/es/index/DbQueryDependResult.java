@@ -4,8 +4,7 @@ import com.wxingyl.es.jdal.TableQueryResult;
 import org.elasticsearch.common.collect.ArrayListMultimap;
 import org.elasticsearch.common.collect.Multimap;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**

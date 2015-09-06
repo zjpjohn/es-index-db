@@ -98,6 +98,20 @@ public abstract class CommonUtils {
         return new DbTableFieldDesc(new DbTableDesc(defaultTable.getUrlAddress(), defaultSchema, defaultTableName), field);
     }
 
+    public static Map<Object, List<Map<String, Object>>> groupListMap(List<Map<String, Object>> data, String keyField, boolean removeKeyField) {
+        Map<Object, List<Map<String, Object>>> group = new HashMap<>();
+        data.forEach(map -> {
+            Object obj = map.get(keyField);
+            List<Map<String, Object>> list = group.get(obj);
+            if (list == null) {
+                group.put(obj, list = new LinkedList<>());
+            }
+            if (removeKeyField) map.remove(keyField);
+            list.add(map);
+        });
+        return group;
+    }
+
     public static String getStringVal(Map<String, Object> map, String key) {
         String str = (String) map.get(key);
         if (isEmpty(str)) {

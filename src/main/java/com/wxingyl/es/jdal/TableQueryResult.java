@@ -25,6 +25,8 @@ public class TableQueryResult {
      */
     private List<Map<String, Object>> dbData;
 
+    private String masterAlias;
+
     private TableQueryResult() {}
 
     public int getPageSize() {
@@ -39,6 +41,10 @@ public class TableQueryResult {
         return keyField;
     }
 
+    public String getMasterAlias() {
+        return masterAlias;
+    }
+
     public boolean isEmpty() {
         return dbData.isEmpty();
     }
@@ -50,21 +56,6 @@ public class TableQueryResult {
     public List<Map<String, Object>> getDbData() {
         return dbData;
     }
-
-//    private Map<Object, List<Map<String, Object>>> groupAndRemoveByKeyField() {
-//        final Map<Object, List<Map<String, Object>>> ret = new HashMap<>();
-//        final String keyField = sqlQuery.getKeyField();
-//        dbData.forEach(v -> {
-//            Object obj = v.get(keyField);
-//            List<Map<String, Object>> list = ret.get(obj);
-//            if (list == null) {
-//                ret.put(obj, list = new LinkedList<>());
-//            }
-//            v.remove(keyField);
-//            list.add(v);
-//        });
-//        return ret;
-//    }
 
     public TableQueryResult addPageResult(TableQueryResult slaveRet) {
         if (!(slaveRet == null || this == slaveRet || slaveRet.isEmpty())) {
@@ -85,12 +76,15 @@ public class TableQueryResult {
 
         private String keyField;
 
+        private String masterAlias;
+
         private List<Map<String, Object>> dbData;
 
         public Builder sqlQueryCommon(SqlQueryCommon common) {
             pageSize = common.getPageSize();
             table = common.getTable();
             keyField = common.getKeyField();
+            masterAlias = common.getMasterAlias();
             return this;
         }
 
@@ -103,6 +97,12 @@ public class TableQueryResult {
             this.keyField = keyField;
             return this;
         }
+
+        public Builder masterAlias(String masterAlias) {
+            this.masterAlias = masterAlias;
+            return this;
+        }
+
         public Builder table(DbTableDesc table) {
             this.table = table;
             return this;
@@ -119,6 +119,7 @@ public class TableQueryResult {
             ret.table = table;
             ret.keyField = keyField;
             ret.dbData = dbData;
+            ret.masterAlias = masterAlias;
             return ret;
         }
 
