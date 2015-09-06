@@ -1,11 +1,14 @@
 package com.wxingyl.es.index;
 
+import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.TableQueryResult;
 import org.elasticsearch.common.collect.ArrayListMultimap;
 import org.elasticsearch.common.collect.Multimap;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by xing on 15/9/2.
@@ -50,5 +53,18 @@ public class DbQueryDependResult {
             slaveResult = ArrayListMultimap.create();
         }
         slaveResult.put(masterField, slaveRet);
+    }
+
+    public List<TableQueryResult> getAllTableResult() {
+        List<TableQueryResult> list = new LinkedList<>();
+        addAllTableResult(list, this);
+        return list;
+    }
+
+    private void addAllTableResult(List<TableQueryResult> list, DbQueryDependResult result) {
+        list.add(result.tableQueryResult);
+        if (result.slaveResult != null) {
+            result.slaveResult.values().forEach(v -> addAllTableResult(list, v));
+        }
     }
 }

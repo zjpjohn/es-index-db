@@ -7,6 +7,10 @@ package com.wxingyl.es.exception;
  */
 public class IndexDocException extends RuntimeException {
 
+    public IndexDocException(String message) {
+        super(message);
+    }
+
     public IndexDocException(String message, Throwable cause) {
         super(message, cause);
     }

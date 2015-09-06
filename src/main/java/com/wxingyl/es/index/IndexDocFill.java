@@ -13,5 +13,8 @@ public interface IndexDocFill {
      */
     void fill(IndexTypeBean typeBean);
 
-    boolean addTableQueryResultListener(TableQueryResultListener listener);
+    void setIndexTypeManager(IndexTypeManager indexTypeManager);
+
+    void setDefaultDocPostProcessor(DocPostProcessor defaultDocPostProcessor);
+
 }

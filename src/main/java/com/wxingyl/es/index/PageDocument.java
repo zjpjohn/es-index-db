@@ -6,13 +6,7 @@ import java.util.*;
  * Created by xing on 15/9/6.
  * document, have page
  */
-public class PageDocument extends LinkedList<PageDocument.DocAllFields> {
-
-    /**
-     * key: db field, value: newName field
-     */
-    private Map<String, String> fieldMap = null;
-
+public class PageDocument<T extends DocFields> extends LinkedList<T> {
     /**
      * table key field
      */
@@ -33,29 +27,15 @@ public class PageDocument extends LinkedList<PageDocument.DocAllFields> {
         this.masterAlias = masterAlias;
     }
 
-    public void addDocs(List<Map<String, Object>> data) {
-        List<DocAllFields> list = new ArrayList<>(data.size());
-        data.forEach(map -> {
-            DocAllFields fields = new DocAllFields(map.size());
-            fields.putAll(map);
-            list.add(fields);
-        });
-        addAll(list);
-    }
-
     public String getMasterAlias() {
         return masterAlias;
     }
 
-    public void setFieldMap(Map<String, String> fieldMap) {
-        this.fieldMap = fieldMap;
-    }
-
-    public Map<Object, List<DocAllFields>> groupByKeyField(boolean removeKeyField) {
-        Map<Object, List<DocAllFields>> group = new HashMap<>();
+    public Map<Object, List<T>> groupByKeyField(boolean removeKeyField) {
+        Map<Object, List<T>> group = new HashMap<>();
         forEach(doc -> {
             Object val = doc.get(keyField);
-            List<DocAllFields> list = group.get(val);
+            List<T> list = group.get(val);
             if (list == null) {
                 group.put(val, list = new LinkedList<>());
             }
@@ -65,41 +45,4 @@ public class PageDocument extends LinkedList<PageDocument.DocAllFields> {
         return group;
     }
 
-    public class DocAllFields {
-
-        protected HashMap<String, Object> hashMap;
-
-        public DocAllFields() {
-            hashMap = new HashMap<>();
-        }
-
-        public DocAllFields(int initialCapacity) {
-            hashMap = new HashMap<>(initialCapacity);
-        }
-
-        protected String getRealKey(Object key) {
-            return fieldMap == null ? key.toString() : fieldMap.getOrDefault(key, key.toString());
-        }
-
-        public Object get(Object key) {
-            return hashMap.get(getRealKey(key));
-        }
-
-        public Object put(String key, Object value) {
-            return hashMap.put(getRealKey(key), value);
-        }
-
-        public void putAll(Map<? extends String, ?> m) {
-            m.forEach(this::put);
-        }
-
-        public boolean containsKey(Object key) {
-            return hashMap.containsKey(getRealKey(key));
-        }
-
-        public Object remove(Object key) {
-            return hashMap.remove(getRealKey(key));
-        }
-
-    }
 }
