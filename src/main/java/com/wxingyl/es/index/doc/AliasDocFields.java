@@ -1,4 +1,4 @@
-package com.wxingyl.es.index;
+package com.wxingyl.es.index.doc;
 
 import java.util.*;
 

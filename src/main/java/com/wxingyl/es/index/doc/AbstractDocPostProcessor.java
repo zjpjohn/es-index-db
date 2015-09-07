@@ -1,4 +1,6 @@
-package com.wxingyl.es.index;
+package com.wxingyl.es.index.doc;
+
+import com.wxingyl.es.index.IndexTypeDesc;
 
 /**
  * Created by xing on 15/9/7.

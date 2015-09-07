@@ -1,5 +1,7 @@
 package com.wxingyl.es.index;
 
+import com.wxingyl.es.index.doc.DocFields;
+import com.wxingyl.es.index.doc.DocumentBaseInfo;
 import com.wxingyl.es.util.DefaultDateConvert;
 
 import java.util.Set;

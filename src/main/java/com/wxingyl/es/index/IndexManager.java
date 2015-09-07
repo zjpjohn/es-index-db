@@ -1,6 +1,7 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.conf.index.IndexTypeBean;
+import com.wxingyl.es.index.doc.DocPostProcessor;
 
 /**
  * Created by xing on 15/9/7.

@@ -1,6 +1,7 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.exception.IndexIllegalArgumentException;
+import com.wxingyl.es.index.doc.DocPostProcessor;
 import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.TableQueryResult;
 import com.wxingyl.es.util.CommonUtils;

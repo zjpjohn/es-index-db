@@ -1,6 +1,4 @@
-package com.wxingyl.es.index;
-
-import com.wxingyl.es.jdal.TableQueryResult;
+package com.wxingyl.es.index.doc;
 
 import java.util.*;
 import java.util.function.Consumer;

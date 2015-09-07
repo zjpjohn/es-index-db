@@ -1,5 +1,7 @@
-package com.wxingyl.es.index;
+package com.wxingyl.es.index.doc;
 
+import com.wxingyl.es.index.DbQueryDependResult;
+import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.jdal.TableQueryResult;
 
 import java.util.Set;

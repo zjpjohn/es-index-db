@@ -1,6 +1,9 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.conf.index.IndexTypeBean;
+import com.wxingyl.es.index.doc.DefaultDocPostProcessor;
+import com.wxingyl.es.index.doc.DocPostProcessor;
+import com.wxingyl.es.index.doc.PageDocument;
 import com.wxingyl.es.jdal.TableQueryResult;
 import org.elasticsearch.client.Client;
 

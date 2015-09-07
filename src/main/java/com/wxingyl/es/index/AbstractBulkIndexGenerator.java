@@ -1,6 +1,9 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.exception.IndexDocException;
+import com.wxingyl.es.index.doc.DocFields;
+import com.wxingyl.es.index.doc.DocumentBaseInfo;
+import com.wxingyl.es.index.doc.PageDocument;
 import com.wxingyl.es.util.DateConvert;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;

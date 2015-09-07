@@ -1,5 +1,6 @@
 package com.wxingyl.es.index;
 
+import com.wxingyl.es.index.doc.PageDocument;
 import org.elasticsearch.client.Client;
 
 import java.util.Set;
