@@ -1,49 +1,24 @@
 package com.wxingyl.es.index;
 
-import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.TableQueryResult;
+import com.wxingyl.es.jdal.TableQueryBaseInfo;
 
 /**
  * Created by xing on 15/9/7.
  * document base info, such as index, type, table-name and so on
  */
-public class DocumentBaseInfo {
-
-    private DbTableDesc table;
+public class DocumentBaseInfo extends TableQueryBaseInfo {
 
     private IndexTypeDesc type;
-
-    /**
-     * the field is primary key, its value should be unique in table
-     */
-    private String keyField;
-
-    private String masterAlias;
-
-    private DocumentBaseInfo() {}
-
-    public DbTableDesc getTable() {
-        return table;
-    }
 
     public IndexTypeDesc getType() {
         return type;
     }
 
-    public String getKeyField() {
-        return keyField;
-    }
-
-    public String getMasterAlias() {
-        return masterAlias;
-    }
-
-    public static DocumentBaseInfo build(TableQueryResult tableResult, IndexTypeDesc type) {
+    public static DocumentBaseInfo build(TableQueryBaseInfo oldBaseInfo, IndexTypeDesc type) {
+        if (oldBaseInfo instanceof DocumentBaseInfo) return (DocumentBaseInfo) oldBaseInfo;
         DocumentBaseInfo baseInfo = new DocumentBaseInfo();
+        baseInfo.init(oldBaseInfo);
         baseInfo.type = type;
-        baseInfo.masterAlias = tableResult.getMasterAlias();
-        baseInfo.table = tableResult.getTable();
-        baseInfo.keyField = tableResult.getKeyField();
         return baseInfo;
     }
 }

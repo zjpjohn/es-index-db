@@ -19,8 +19,8 @@ public class DataSourceParseFactory implements DataSourceConfigParse {
     @Override
     public Set<DataSourceBean> parse(Map<String, Object> yamlConf) {
         final String driverClassName = CommonUtils.getStringVal(yamlConf, ConfigKeyName.DS_DRIVER_CLASS_NAME);
-        if (CommonUtils.isEmpty(driverClassName)) {
-            throw new DataSourceConfigException("dataSource config of driver_class_name is empty: " + driverClassName);
+        if (driverClassName == null) {
+            throw new DataSourceConfigException("dataSource config of driver_class_name is empty");
         }
         List<Map<String, Object>> schemaList = CommonUtils.getList(yamlConf, ConfigKeyName.DS_SCHEMA_LIST);
         if (schemaList == null) {

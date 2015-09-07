@@ -1,5 +1,6 @@
 package com.wxingyl.es.jdal;
 
+import com.wxingyl.es.conf.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 
 /**
@@ -29,6 +30,8 @@ public class SqlQueryCommon {
 
     private String masterAlias;
 
+    private IndexSlaveResultMergeEnum mergeType;
+
     public String getOrderBy() {
         return orderBy;
     }
@@ -51,6 +54,10 @@ public class SqlQueryCommon {
 
     public String getMasterAlias() {
         return masterAlias;
+    }
+
+    public IndexSlaveResultMergeEnum getMergeType() {
+        return mergeType;
     }
 
     public String getKeyField() {
@@ -119,6 +126,7 @@ public class SqlQueryCommon {
             sqlQueryCommon.table = tableInfo.getTable();
             sqlQueryCommon.keyField = tableInfo.getRelationField();
             sqlQueryCommon.masterAlias = tableInfo.getMasterAlias();
+            sqlQueryCommon.mergeType = tableInfo.getMergeType();
             return sqlQueryCommon;
         }
     }

@@ -12,7 +12,17 @@ import java.util.*;
 public abstract class CommonUtils {
 
     public static boolean isEmpty(String s) {
-        return s == null || s.isEmpty() || s.trim().isEmpty();
+        return s == null || s.isEmpty();
+    }
+
+    /**
+     * @return s.{@link CommonUtils#isEmpty(String)} = true, return null, and s.trim.{@link String#isEmpty()} = true, return null
+     * else return s.{@link String#trim()}
+     */
+    public static String emptyTrim(String s) {
+        if (isEmpty(s)) return null;
+        s = s.trim();
+        return s.isEmpty() ? null : s;
     }
 
     public static boolean isEmpty(Collection collection) {
@@ -61,8 +71,8 @@ public abstract class CommonUtils {
         } else if (list.get(0) instanceof String) {
             final List<T> ret = new ArrayList<>(list.size());
             list.forEach(v -> {
-                String val = v.toString();
-                if (!isEmpty(val)) ret.add((T) val.trim());
+                String val;
+                if ((val = emptyTrim(v.toString())) != null) ret.add((T) val);
             });
             return ret;
         } else {
@@ -113,12 +123,7 @@ public abstract class CommonUtils {
     }
 
     public static String getStringVal(Map<String, Object> map, String key) {
-        String str = (String) map.get(key);
-        if (isEmpty(str)) {
-            return null;
-        } else {
-            return str.trim();
-        }
+        return emptyTrim((String) map.get(key));
     }
 
     public static <T> RwLock<T> createRwLock(T lockObj) {

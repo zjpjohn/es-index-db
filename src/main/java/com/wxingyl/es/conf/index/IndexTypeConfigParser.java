@@ -57,22 +57,29 @@ public class IndexTypeConfigParser implements ConfigParse<TypeConfigInfo> {
     public Set<TypeConfigInfo> parse(Map<String, Object> map) {
         Set<TypeConfigInfo> typeList = new HashSet<>();
         map.forEach((index, t) -> {
-            Map<String, Object> allTypes = (Map<String, Object>) t;
-            stringDefaultValueParser.get().addDefaultValue(allTypes, 0);
-            integerDefaultValueParser.get().addDefaultValue(allTypes, 0);
-            allTypes.forEach((type, v) -> {
+            Map<String, Object> indexConf = (Map<String, Object>) t;
+            stringDefaultValueParser.get().addDefaultValue(indexConf, 0);
+            integerDefaultValueParser.get().addDefaultValue(indexConf, 0);
+            List<Map<String, Object>> types = CommonUtils.getList(indexConf, INDEX_INCLUDE_TYPE);
+            if (types == null) {
+                throw new IndexConfigException("index: " + index + " config there is no config value: " + INDEX_INCLUDE_TYPE);
+            }
+            types.forEach(typeConf -> {
+                String type = CommonUtils.getStringVal(typeConf, INDEX_TYPE_TYPE);
+                if (type == null) {
+                    throw new IndexConfigException("index: " + index + " type config there is a type no have " + INDEX_TYPE_TYPE + " value");
+                }
                 IndexTypeDesc typeDesc = new IndexTypeDesc(index, type);
-                Map<String, Object> conf = (Map<String, Object>) v;
-                List<Map<String, Object>> tablesConf = CommonUtils.getList(conf, INDEX_TYPE_INCLUDE_TABLE);
+                List<Map<String, Object>> tablesConf = CommonUtils.getList(typeConf, INDEX_TYPE_INCLUDE_TABLE);
                 if (tablesConf == null) {
                     throw new IndexConfigException(typeDesc + " need " + INDEX_TYPE_INCLUDE_TABLE + " config");
                 }
-                DbTableDesc masterTable = CommonUtils.getDbTable(conf, INDEX_TYPE_MASTER_TABLE);
+                DbTableDesc masterTable = CommonUtils.getDbTable(typeConf, INDEX_TYPE_MASTER_TABLE);
                 if (tablesConf.size() > 1 && masterTable == null) {
                     throw new IndexConfigException(typeDesc + " need " + INDEX_TYPE_MASTER_TABLE + " config");
                 }
-                stringDefaultValueParser.get().addDefaultValue(conf, 1);
-                integerDefaultValueParser.get().addDefaultValue(conf, 1);
+                stringDefaultValueParser.get().addDefaultValue(typeConf, 1);
+                integerDefaultValueParser.get().addDefaultValue(typeConf, 1);
                 TypeConfigInfo typeInfo = new TypeConfigInfo(typeDesc);
                 typeInfo.setMasterTable(masterTable);
                 parseTableInfo(typeInfo, tablesConf);

@@ -1,5 +1,7 @@
 package com.wxingyl.es.index;
 
+import com.wxingyl.es.conf.IndexSlaveResultMergeEnum;
+import com.wxingyl.es.jdal.TableQueryBaseInfo;
 import com.wxingyl.es.jdal.TableQueryResult;
 import com.wxingyl.es.util.CommonUtils;
 
@@ -20,20 +22,23 @@ public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
 
     @Override
     public PageDocument initMasterPageDoc(TableQueryResult masterResult) {
-        PageDocument masterPageDoc = new PageDocument(DocumentBaseInfo.build(masterResult, getPostEvn()));
+        PageDocument masterPageDoc = new PageDocument(DocumentBaseInfo.build(masterResult.getBaseInfo(), getPostEvn()));
         masterPageDoc.addAll(DocFields.build(masterResult.getDbData()));
         return masterPageDoc;
     }
 
     @Override
     public PageDocument applyTableQueryResult(PageDocument masterPageDoc, String masterField, TableQueryResult slaveResult) {
+        TableQueryBaseInfo slaveBaseInfo = slaveResult.getBaseInfo();
         Map<Object, List<Map<String, Object>>> group = CommonUtils.groupListMap(slaveResult.getDbData(),
-                slaveResult.getKeyField(), true);
-        String keyAlias = slaveResult.getMasterAlias();
+                slaveBaseInfo.getKeyField(), true);
+        String keyAlias = slaveBaseInfo.getMasterAlias();
+        IndexSlaveResultMergeEnum mergeType = slaveBaseInfo.getMergeType();
         masterPageDoc.forEach(doc -> {
             Object obj = doc.get(masterField);
-            if (obj != null && group.get(obj) != null) {
-                doc.put(keyAlias, group.get(obj));
+            if (obj != null) {
+                Object valObj = mergeType.function(group.get(obj));
+                if (valObj != null) doc.put(keyAlias, valObj);
             }
         });
         return masterPageDoc;
@@ -43,10 +48,12 @@ public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
     public PageDocument mergeChildPageDoc(PageDocument masterPageDoc, String masterField, PageDocument childPageDoc) {
         Map<Object, List<DocFields>> group = childPageDoc.groupByKeyField(true);
         String masterAlias = childPageDoc.getBaseInfo().getMasterAlias();
+        IndexSlaveResultMergeEnum mergeType = childPageDoc.getBaseInfo().getMergeType();
         masterPageDoc.forEach(doc -> {
             Object val = doc.get(masterField);
-            if (val != null && group.get(val) != null) {
-                doc.put(masterAlias, group.get(val));
+            if (val != null) {
+                Object obj = mergeType.function(group.get(val));
+                if (obj != null) doc.put(masterAlias, mergeType.function(group.get(val)));
             }
         });
         return masterPageDoc;

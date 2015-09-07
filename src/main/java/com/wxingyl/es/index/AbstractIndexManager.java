@@ -63,7 +63,7 @@ public abstract class AbstractIndexManager implements IndexManager {
 
     protected void notifyTableQueryResultListener(IndexTypeDesc type, List<TableQueryResult> queryResults) {
         queryResults.forEach(q -> {
-            TableQueryResultListener listener = tableQueryResultListenerMap.get(q.getTable());
+            TableQueryResultListener listener = tableQueryResultListenerMap.get(q.getBaseInfo().getTable());
             if (listener != null) {
                 listener.onHandle(type, q);
             }

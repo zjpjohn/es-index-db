@@ -1,17 +1,13 @@
 package com.wxingyl.es.conf.index;
 
+import com.wxingyl.es.conf.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.DbTableFieldDesc;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static com.wxingyl.es.conf.ConfigKeyName.*;
 
@@ -41,6 +37,8 @@ public class DbTableConfigInfo {
     private Integer pageSize;
 
     private String queryCondition;
+
+    private IndexSlaveResultMergeEnum mergeType;
 
     public void setMasterField(DbTableFieldDesc masterField) {
         if (masterField.newDbTableDesc().equals(table)) {
@@ -98,6 +96,10 @@ public class DbTableConfigInfo {
 
     public String getQueryCondition() {
         return queryCondition;
+    }
+
+    public IndexSlaveResultMergeEnum getMergeType() {
+        return mergeType;
     }
 
     void initValue(TypeConfigInfo typeInfo, Map<String, Object> conf,
@@ -160,6 +162,18 @@ public class DbTableConfigInfo {
             forbidFields.remove(relationField);
         }
         queryCondition = CommonUtils.getStringVal(conf, INDEX_TABLE_QUERY_CONDITION);
+        String tmpStr = CommonUtils.getStringVal(conf, INDEX_TABLE_MERGE_TYPE);
+        if (tmpStr == null) mergeType = IndexSlaveResultMergeEnum.LIST;
+        else {
+            try {
+                mergeType = IndexSlaveResultMergeEnum.valueOf(tmpStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                List<IndexSlaveResultMergeEnum> list = new ArrayList<>(3);
+                Collections.addAll(list, IndexSlaveResultMergeEnum.values());
+                throw new IndexConfigException(typeInfo + ", table_name: " + tableName + " config, " + INDEX_TABLE_MERGE_TYPE
+                        + " value: " + tmpStr + " is invalid, should in " + list, e);
+            }
+        }
     }
 
     private Set<String> getFields(Map<String, Object> map, String key) {

@@ -20,6 +20,8 @@ public interface ConfigKeyName {
 
     String DS_DB_NAMES = "db_names";
 
+    String INDEX_INCLUDE_TYPE = "include_type";
+
     String INDEX_DEFAULT_SCHEMA = "default_schema";
 
     String INDEX_DEFAULT_DB_ADDRESS = "default_db_address";
@@ -29,6 +31,8 @@ public interface ConfigKeyName {
     String INDEX_DEFAULT_DELETE_VALID_VALUE = "default_delete_valid_value";
 
     String INDEX_DEFAULT_PAGE_SIZE = "default_page_size";
+
+    String INDEX_TYPE_TYPE = "type";
 
     String INDEX_TYPE_MASTER_TABLE = "master_table";
 
@@ -57,5 +61,7 @@ public interface ConfigKeyName {
     String INDEX_TABLE_PAGE_SIZE = "page_size";
 
     String INDEX_TABLE_QUERY_CONDITION = "query_condition";
+
+    String INDEX_TABLE_MERGE_TYPE = "merge_type";
 
 }
