@@ -5,30 +5,28 @@ import com.wxingyl.es.util.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by xing on 15/9/6.
  * default DocPostProcessor
  */
-public class DefaultDocPostProcessor implements DocPostProcessor<DocFields> {
+public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
 
-    /**
-     * default postProcessor in {@link IndexDocFiller#document}
-     */
     @Override
-    public PageDocument<DocFields> postProcessor(DbQueryDependResult masterResult) {
+    public PageDocument postProcessor(DbQueryDependResult masterResult) {
         return null;
     }
 
     @Override
-    public PageDocument<DocFields> initMasterPageDoc(TableQueryResult masterResult) {
-        PageDocument<DocFields> masterPageDoc = new PageDocument<>(masterResult.getBaseInfo());
+    public PageDocument initMasterPageDoc(TableQueryResult masterResult) {
+        PageDocument masterPageDoc = new PageDocument(DocumentBaseInfo.build(masterResult, getPostEvn()));
         masterPageDoc.addAll(DocFields.build(masterResult.getDbData()));
         return masterPageDoc;
     }
 
     @Override
-    public <R extends DocFields> PageDocument<R> applyTableQueryResult(PageDocument<R> masterPageDoc, String masterField, TableQueryResult slaveResult) {
+    public PageDocument applyTableQueryResult(PageDocument masterPageDoc, String masterField, TableQueryResult slaveResult) {
         Map<Object, List<Map<String, Object>>> group = CommonUtils.groupListMap(slaveResult.getDbData(),
                 slaveResult.getKeyField(), true);
         String keyAlias = slaveResult.getMasterAlias();
@@ -42,8 +40,8 @@ public class DefaultDocPostProcessor implements DocPostProcessor<DocFields> {
     }
 
     @Override
-    public <R extends DocFields> PageDocument<R> mergeChildPageDoc(PageDocument<R> masterPageDoc, String masterField, PageDocument<R> childPageDoc) {
-        Map<Object, List<R>> group = childPageDoc.groupByKeyField(true);
+    public PageDocument mergeChildPageDoc(PageDocument masterPageDoc, String masterField, PageDocument childPageDoc) {
+        Map<Object, List<DocFields>> group = childPageDoc.groupByKeyField(true);
         String masterAlias = childPageDoc.getBaseInfo().getMasterAlias();
         masterPageDoc.forEach(doc -> {
             Object val = doc.get(masterField);
@@ -55,7 +53,7 @@ public class DefaultDocPostProcessor implements DocPostProcessor<DocFields> {
     }
 
     @Override
-    public IndexTypeDesc supportType() {
+    public Set<IndexTypeDesc> supportType() {
         return null;
     }
 }

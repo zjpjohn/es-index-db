@@ -1,9 +1,11 @@
 package com.wxingyl.es.index;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.wxingyl.es.util.DateConvert;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Created by xing on 15/9/6.
@@ -11,38 +13,55 @@ import java.util.Map;
  */
 public class DocFields {
 
-    private HashMap<String, Object> hashMap;
+    protected Map<String, Object> sourceMap;
 
     public DocFields() {
-        hashMap = new HashMap<>();
+        sourceMap = new HashMap<>();
     }
 
     public DocFields(int initialCapacity) {
-        hashMap = new HashMap<>(initialCapacity);
+        sourceMap = new HashMap<>(initialCapacity);
     }
 
     public Object get(String key) {
-        return hashMap.get(key);
+        return sourceMap.get(key);
     }
 
     public Object put(String key, Object value) {
-        return hashMap.put(key, value);
+        return sourceMap.put(key, value);
     }
 
     public void putAll(Map<? extends String, ?> m) {
-        hashMap.putAll(m);
+        sourceMap.putAll(m);
     }
 
     public Object remove(String key) {
-        return hashMap.remove(key);
+        return sourceMap.remove(key);
     }
 
     public boolean containsKey(String key) {
-        return hashMap.containsKey(key);
+        return sourceMap.containsKey(key);
     }
 
-    public HashMap<String, Object> getHashMap() {
-        return hashMap;
+    public XContentBuilder buildXContent(DateConvert dateConvert) throws IOException {
+        XContentBuilder xContentBuilder = XContentFactory.jsonBuilder().startObject();
+        fillXContentBuilder(xContentBuilder, sourceMap, dateConvert);
+        return xContentBuilder;
+    }
+
+    protected void fillXContentBuilder(XContentBuilder builder, Map<String, ?> map, DateConvert dateConvert) throws IOException {
+        builder.startObject();
+        for (Map.Entry<String, ?> e : map.entrySet()) {
+            Object v = e.getValue();
+            if (v instanceof Date) {
+                builder.field(e.getKey(), dateConvert.format((Date) v));
+            } else if (v instanceof Map) {
+                fillXContentBuilder(builder, (Map) v, dateConvert);
+            } else {
+                builder.field(e.getKey(), v);
+            }
+        }
+        builder.endObject();
     }
 
     public static List<DocFields> build(List<Map<String, Object>> data) {

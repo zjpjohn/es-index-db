@@ -27,10 +27,6 @@ public class TableQueryResult {
 
     private TableQueryResult() {}
 
-    public int getPageSize() {
-        return pageSize;
-    }
-
     public DbTableDesc getTable() {
         return table;
     }
@@ -123,42 +119,4 @@ public class TableQueryResult {
 
     }
 
-    private BaseInfo baseInfo;
-
-    public BaseInfo getBaseInfo() {
-        if (baseInfo == null) {
-            baseInfo = new BaseInfo();
-            baseInfo.table = table;
-            baseInfo.keyField = keyField;
-            baseInfo.masterAlias = masterAlias;
-        }
-        return baseInfo;
-    }
-
-    /**
-     * Created by xing on 15/9/7.
-     */
-    public static class BaseInfo {
-
-        private DbTableDesc table;
-
-        /**
-         * the field is primary key, its value should be unique in table
-         */
-        private String keyField;
-
-        private String masterAlias;
-
-        public DbTableDesc getTable() {
-            return table;
-        }
-
-        public String getKeyField() {
-            return keyField;
-        }
-
-        public String getMasterAlias() {
-            return masterAlias;
-        }
-    }
 }

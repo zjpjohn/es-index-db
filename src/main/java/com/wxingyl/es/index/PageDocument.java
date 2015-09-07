@@ -3,29 +3,41 @@ package com.wxingyl.es.index;
 import com.wxingyl.es.jdal.TableQueryResult;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Created by xing on 15/9/6.
  * document, have page
  */
-public class PageDocument<T extends DocFields> extends LinkedList<T> {
+public class PageDocument implements Iterable<DocFields> {
 
-    private TableQueryResult.BaseInfo baseInfo;
+    private DocumentBaseInfo baseInfo;
 
-    public PageDocument(TableQueryResult.BaseInfo baseInfo) {
+    private List<DocFields> docs;
+
+    public PageDocument(DocumentBaseInfo baseInfo) {
         super();
         this.baseInfo = baseInfo;
+        docs = new LinkedList<>();
     }
 
-    public TableQueryResult.BaseInfo getBaseInfo() {
+    public void add(DocFields doc) {
+        docs.add(doc);
+    }
+
+    public void addAll(Collection<? extends DocFields> collection) {
+        docs.addAll(collection);
+    }
+
+    public DocumentBaseInfo getBaseInfo() {
         return baseInfo;
     }
 
-    public Map<Object, List<T>> groupByKeyField(boolean removeKeyField) {
-        Map<Object, List<T>> group = new HashMap<>();
-        forEach(doc -> {
+    public Map<Object, List<DocFields>> groupByKeyField(boolean removeKeyField) {
+        Map<Object, List<DocFields>> group = new HashMap<>();
+        docs.forEach(doc -> {
             Object val = doc.get(baseInfo.getKeyField());
-            List<T> list = group.get(val);
+            List<DocFields> list = group.get(val);
             if (list == null) {
                 group.put(val, list = new LinkedList<>());
             }
@@ -35,4 +47,16 @@ public class PageDocument<T extends DocFields> extends LinkedList<T> {
         return group;
     }
 
+    @Override
+    public Iterator<DocFields> iterator() {
+        return docs.iterator();
+    }
+
+    @Override
+    public void forEach(Consumer<? super DocFields> action) {
+        Objects.requireNonNull(action);
+        for (DocFields doc : docs) {
+            action.accept(doc);
+        }
+    }
 }
