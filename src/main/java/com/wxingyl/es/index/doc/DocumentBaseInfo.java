@@ -15,6 +15,25 @@ public class DocumentBaseInfo extends TableQueryBaseInfo {
         return type;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DocumentBaseInfo)) return false;
+        if (!super.equals(o)) return false;
+
+        DocumentBaseInfo that = (DocumentBaseInfo) o;
+
+        return type.equals(that.type);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + type.hashCode();
+        return result;
+    }
+
     public static DocumentBaseInfo build(TableQueryBaseInfo oldBaseInfo, IndexTypeDesc type) {
         if (oldBaseInfo instanceof DocumentBaseInfo) return (DocumentBaseInfo) oldBaseInfo;
         DocumentBaseInfo baseInfo = new DocumentBaseInfo();
