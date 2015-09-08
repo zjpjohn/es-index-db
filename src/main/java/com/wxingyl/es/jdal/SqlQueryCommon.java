@@ -107,6 +107,10 @@ public class SqlQueryCommon {
             return this;
         }
 
+        public boolean isContainWhere() {
+            return containWhere;
+        }
+
         public Build containWhere() {
             this.containWhere = true;
             return this;

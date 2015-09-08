@@ -32,28 +32,19 @@ public class DefaultIndexManager extends AbstractIndexManager {
         for (Map.Entry<String, DbQueryDependResult> e : queryResult.getSlaveResult().entries()) {
             DbQueryDependResult result = e.getValue();
             if (pageDocument == null) {
-                if (docPostProcessor == null) {
-                    pageDocument = defaultDocPostProcessor.initMasterPageDoc(queryResult.getTableQueryResult());
-                } else {
-                    pageDocument = docPostProcessor.initMasterPageDoc(queryResult.getTableQueryResult());
-                }
+                pageDocument = docPostProcessor == null ? defaultDocPostProcessor.initMasterPageDoc(queryResult.getTableQueryResult())
+                        : docPostProcessor.initMasterPageDoc(queryResult.getTableQueryResult());
             }
             Objects.requireNonNull(pageDocument);
             String masterField = e.getKey();
             if (result.getSlaveResult() == null) {
-                if (docPostProcessor == null) {
-                    pageDocument = defaultDocPostProcessor.applyTableQueryResult(pageDocument, masterField, result.getTableQueryResult());
-                } else {
-                    pageDocument = docPostProcessor.applyTableQueryResult(pageDocument, masterField, result.getTableQueryResult());
-                }
+                pageDocument = docPostProcessor == null ? defaultDocPostProcessor.applyTableQueryResult(pageDocument, masterField, result.getTableQueryResult())
+                        : docPostProcessor.applyTableQueryResult(pageDocument, masterField, result.getTableQueryResult());
             } else {
                 PageDocument childDocument = document(docPostProcessor, null, result);
                 if (childDocument != null) {
-                    if (docPostProcessor == null) {
-                        pageDocument = defaultDocPostProcessor.mergeChildPageDoc(pageDocument, masterField, childDocument);
-                    } else {
-                        pageDocument = docPostProcessor.mergeChildPageDoc(pageDocument, masterField, childDocument);
-                    }
+                    pageDocument = docPostProcessor == null ? defaultDocPostProcessor.mergeChildPageDoc(pageDocument, masterField, childDocument)
+                            : docPostProcessor.mergeChildPageDoc(pageDocument, masterField, childDocument);
                 }
             }
         }
@@ -69,10 +60,10 @@ public class DefaultIndexManager extends AbstractIndexManager {
         if (bulkIndexGenerate == null) bulkIndexGenerate = defaultBulkIndexGenerator;
 
         DocPostProcessor docPostProcessor = getDocPostProcessor(type);
-        if (docPostProcessor != null) {
-            docPostProcessor.startPost(type);
-        } else {
+        if (docPostProcessor == null) {
             defaultDocPostProcessor.startPost(type);
+        } else {
+            docPostProcessor.startPost(type);
         }
 
         int docCount = 0;
@@ -85,17 +76,22 @@ public class DefaultIndexManager extends AbstractIndexManager {
                 pageDocument = docPostProcessor.postProcessor(ret);
             }
             if (pageDocument == null) {
-                pageDocument = document(docPostProcessor, null, ret);
+                if (ret.getSlaveResult() == null) {
+                    pageDocument = docPostProcessor == null ? defaultDocPostProcessor.initMasterPageDoc(ret.getTableQueryResult())
+                            : docPostProcessor.initMasterPageDoc(ret.getTableQueryResult());
+                } else {
+                    pageDocument = document(docPostProcessor, null, ret);
+                }
             }
             if (pageDocument != null) {
                 docCount += bulkIndexGenerate.bulkInsert(getClient(), pageDocument);
             }
         }
 
-        if (docPostProcessor != null) {
-            docPostProcessor.endPost(type);
-        } else {
+        if (docPostProcessor == null) {
             defaultDocPostProcessor.endPost(type);
+        } else {
+            docPostProcessor.endPost(type);
         }
         return docCount;
     }

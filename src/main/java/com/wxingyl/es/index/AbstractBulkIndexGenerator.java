@@ -5,10 +5,15 @@ import com.wxingyl.es.index.doc.DocFields;
 import com.wxingyl.es.index.doc.DocumentBaseInfo;
 import com.wxingyl.es.index.doc.PageDocument;
 import com.wxingyl.es.util.DateConvert;
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by xing on 15/9/7.
@@ -16,9 +21,11 @@ import java.io.IOException;
  */
 public abstract class AbstractBulkIndexGenerator implements BulkIndexGenerate {
 
+    protected static final int DEFAULT_BULK_BATCH_SIZE = 2000;
+
     private DateConvert dateConvert;
 
-    private int bulkRequestBatchSize = 5000;
+    private int bulkRequestBatchSize = DEFAULT_BULK_BATCH_SIZE;
 
     protected void setDateConvert(DateConvert dateConvert) {
         this.dateConvert = dateConvert;
@@ -53,17 +60,32 @@ public abstract class AbstractBulkIndexGenerator implements BulkIndexGenerate {
             }
             count++;
             if (count >= bulkRequestBatchSize) {
-                bulkRequest.execute().actionGet();
+                ret += executeIndexRequest(bulkRequest);
                 bulkRequest = client.prepareBulk();
                 count = 0;
-                ret += bulkRequest.numberOfActions();
             }
         }
         if (count > 0) {
-            bulkRequest.execute().actionGet();
-            ret += bulkRequest.numberOfActions();
+            ret += executeIndexRequest(bulkRequest);
         }
         return ret;
     }
+
+    /**
+     * @return return succeed request num
+     */
+    protected int executeIndexRequest(BulkRequestBuilder bulkRequest) {
+        BulkResponse response = bulkRequest.execute().actionGet();
+        if (response.hasFailures()) {
+            return bulkRequest.numberOfActions() - handleFailed(bulkRequest, response);
+        } else {
+            return bulkRequest.numberOfActions();
+        }
+    }
+
+    /**
+     * @return return failed number
+     */
+    protected abstract int handleFailed(BulkRequestBuilder bulkRequest, BulkResponse response);
 
 }

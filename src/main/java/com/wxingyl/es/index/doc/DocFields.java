@@ -44,22 +44,23 @@ public class DocFields {
     }
 
     public XContentBuilder buildXContent(DateConvert dateConvert) throws IOException {
-        XContentBuilder xContentBuilder = XContentFactory.jsonBuilder().startObject();
+        XContentBuilder xContentBuilder = XContentFactory.jsonBuilder();
         fillXContentBuilder(xContentBuilder, sourceMap, dateConvert);
         return xContentBuilder;
     }
 
     @SuppressWarnings("unchecked")
-    protected void fillXContentBuilder(XContentBuilder builder, Map<String, ?> map, DateConvert dateConvert) throws IOException {
+    protected void fillXContentBuilder(XContentBuilder builder, Map<String, Object> map, DateConvert dateConvert) throws IOException {
         builder.startObject();
-        for (Map.Entry<String, ?> e : map.entrySet()) {
+        for (Map.Entry<String, Object> e : map.entrySet()) {
+            builder.field(e.getKey());
             Object v = e.getValue();
             if (v instanceof Date) {
-                builder.field(e.getKey(), dateConvert.format((Date) v));
+                builder.value(dateConvert.format((Date) v));
             } else if (v instanceof Map) {
                 fillXContentBuilder(builder, (Map) v, dateConvert);
             } else {
-                builder.field(e.getKey(), v);
+                builder.value(v);
             }
         }
         builder.endObject();

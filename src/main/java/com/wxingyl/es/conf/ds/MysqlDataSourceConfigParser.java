@@ -24,22 +24,21 @@ public class MysqlDataSourceConfigParser extends AbstractDataSourceConfigParser 
 
     @Override
     protected Tuple<String, String> parseJdbcInfo(String jdbcUrl) {
-        int ipStartIndex = jdbcUrl.indexOf("jdbc:mysql://") + "jdbc:mysql://".length();
-        int endIndex;
-        int index = jdbcUrl.indexOf('/', ipStartIndex);
+        final int startIndex = jdbcUrl.indexOf("jdbc:mysql://") + "jdbc:mysql://".length();
+        int endIndex, index = jdbcUrl.indexOf('/', startIndex);
         String schema = null;
         if (index > 0) {
             endIndex = index;
             index++;
             int schemaIndex = (schemaIndex = jdbcUrl.indexOf('?', index)) > 0 ? schemaIndex : jdbcUrl.length();
             if (index < schemaIndex) schema = jdbcUrl.substring(index, schemaIndex);
-        } else if ((index = jdbcUrl.indexOf('?', ipStartIndex)) > 0) {
+        } else if ((index = jdbcUrl.indexOf('?', startIndex)) > 0) {
             endIndex = index;
         } else {
             endIndex = jdbcUrl.length();
         }
-        String ipAddress = jdbcUrl.substring(ipStartIndex, endIndex);
-        if (jdbcUrl.indexOf(':', ipStartIndex) < 0) ipAddress += ":3306";
+        String ipAddress = jdbcUrl.substring(startIndex, endIndex);
+        if (jdbcUrl.indexOf(':', startIndex) < 0) ipAddress += ":3306";
         return Tuple.tuple(ipAddress, schema);
     }
 }

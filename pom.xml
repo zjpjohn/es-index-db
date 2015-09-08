@@ -34,12 +34,18 @@
             <version>2.1</version>
             <scope>provided</scope>
         </dependency>
-        <!--only for test, would be deleted-->
+        <!--only for test, will be deleted-->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.29</version>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

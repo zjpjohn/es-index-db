@@ -48,7 +48,6 @@ public abstract class AbstractConfigManager implements ConfigManager {
         return getDataSourceConfigFactory().supportParse(driverClassName);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void parseDataSource(String yamlFileName) {
         Map<String, Map<String, Object>> map = readYamlFile(yamlFileName);

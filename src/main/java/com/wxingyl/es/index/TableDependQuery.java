@@ -17,13 +17,13 @@ import java.util.*;
  */
 public class TableDependQuery implements Iterator<DbQueryDependResult> {
 
-    private DbQueryDependResult masterResult;
-
     private SqlQueryParam masterParam;
 
     private SqlQueryHandle masterQueryHandler;
 
     private ImmutableMultimap<String, TableQueryInfo> slaveQuery;
+
+    private boolean hasNext = true;
 
     public TableDependQuery(TableQueryInfo masterTable) {
         masterParam = new SqlQueryParam(masterTable);
@@ -33,7 +33,7 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
 
     @Override
     public boolean hasNext() {
-        return masterParam.getPage() == 0 || masterResult.needContinue();
+        return hasNext;
     }
 
     /**
@@ -43,13 +43,16 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
     public DbQueryDependResult next() {
         try {
             TableQueryResult queryResult = masterQueryHandler.query(masterParam);
-            masterResult = new DbQueryDependResult(queryResult);
+            DbQueryDependResult masterResult = new DbQueryDependResult(queryResult);
             slaveQuery(masterResult, slaveQuery);
+            masterParam.addPage();
+            hasNext = masterResult.needContinue();
+            return masterResult;
         } catch (SQLException e) {
+            hasNext = false;
             throw new IndexDocException("query data have sqlException from: " + masterParam, e);
         }
-        masterParam.addPage();
-        return null;
+
     }
 
     private void slaveQuery(DbQueryDependResult masterResult, ImmutableMultimap<String, TableQueryInfo> slaveMap) throws SQLException {

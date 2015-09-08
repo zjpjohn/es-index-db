@@ -26,7 +26,7 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
 
     @Override
     protected Set<String> loadAllTables(String schema) throws Exception {
-        List<Map<String, Object>> result = queryRunner.query("SHOW TABLES IN " + schema, DEFAULT_MAP_LIST_HANDLER);
+        List<Map<String, Object>> result = queryRunner.query("SHOW TABLES IN `" + schema + '`', DEFAULT_MAP_LIST_HANDLER);
         final Set<String> tables = new HashSet<>();
         result.forEach(m -> m.values().forEach(v -> tables.add(v.toString())));
         return tables;
@@ -34,11 +34,14 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
 
     @Override
     protected Set<String> loadAllFields(DbTableDesc table) throws Exception {
-        List<Map<String, Object>> result = queryRunner.query("SHOW COLUMNS FROM " + table.getSchema() + '.'
-                + table.getTable(), DEFAULT_MAP_LIST_HANDLER);
+        List<Map<String, Object>> result = queryRunner.query("SHOW COLUMNS FROM " + schemaTableSql(table), DEFAULT_MAP_LIST_HANDLER);
         final Set<String> fields = new HashSet<>();
         result.forEach(m -> fields.add(m.get("field").toString()));
         return fields;
+    }
+
+    private String schemaTableSql(DbTableDesc table) {
+        return '`' + table.getSchema() + "`.`" + table.getTable() + '`';
     }
 
     @Override
@@ -47,27 +50,27 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         sb.append("SELECT ");
         if (tableInfo.getFields() != null) {
             for (String s : tableInfo.getFields()) {
-                sb.append(s).append(", ");
+                sb.append('`').append(s).append("`, ");
             }
             sb.delete(sb.length() - 2, sb.length());
         } else {
             sb.append('*');
         }
-        sb.append(" FROM ").append(tableInfo.getTable().getSchema()).append('.').append(tableInfo.getTable().getTable());
+        sb.append(" FROM ").append(schemaTableSql(tableInfo.getTable()));
         SqlQueryCommon.Build build = SqlQueryCommon.build();
         boolean isContainWhere = false;
         if (tableInfo.getDeleteField() != null) {
-            sb.append(" WHERE ").append(tableInfo.getDeleteField()).append(" = ").append('\'')
+            sb.append(" WHERE `").append(tableInfo.getDeleteField()).append("` = '")
                     .append(tableInfo.getDeleteValidValue()).append('\'');
-            build.containWhere();
             isContainWhere = true;
         }
         if (tableInfo.getQueryCondition() != null) {
             sb.append(isContainWhere ? " AND " : " WHERE ").append(tableInfo.getQueryCondition());
+            isContainWhere = true;
         }
-
+        if (isContainWhere) build.containWhere();
         return build.commonFormatSql(sb.toString())
-                .orderBy("ORDER BY " + tableInfo.getRelationField())
+                .orderBy("ORDER BY `" + tableInfo.getRelationField() + '`')
                 .build(tableInfo);
     }
 
@@ -77,10 +80,12 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         StringBuilder sb = new StringBuilder(prepareSql.getCommonSql());
         if (!CommonUtils.isEmpty(param.getKeyValueList())) {
             if (prepareSql.isContainWhere()) sb.append(" AND");
-            sb.append(' ').append(prepareSql.getKeyField()).append(" IN (");
+            else sb.append(" WHERE");
+            sb.append(" `").append(prepareSql.getKeyField()).append("` IN (");
             for (Object o : param.getKeyValueList()) {
-                sb.append('\'').append(o).append("' ");
+                sb.append('\'').append(o).append("', ");
             }
+            sb.delete(sb.length()-2, sb.length());
             sb.append(')');
         }
         sb.append(' ').append(prepareSql.getOrderBy()).append(" LIMIT ").append(param.getPage() * prepareSql.getPageSize())

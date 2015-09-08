@@ -38,7 +38,7 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
         dataSource.setUsername(CommonUtils.getStringVal(config, ConfigKeyName.DS_USERNAME));
         dataSource.setPassword(CommonUtils.getStringVal(config, ConfigKeyName.DS_PASSWORD));
         List<String> dbNames = CommonUtils.getList(config, ConfigKeyName.DS_DB_NAMES);
-        final Tuple<String, String> jdbcInfo = parseJdbcInfo(url);
+        Tuple<String, String> jdbcInfo = parseJdbcInfo(url);
         if (dbNames == null && jdbcInfo.v2() == null) {
             throw new DataSourceConfigException("datasource config: " + configName + " can't find schema for jdbc url: " + url );
         }
