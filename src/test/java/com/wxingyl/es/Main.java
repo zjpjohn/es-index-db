@@ -1,6 +1,6 @@
 package com.wxingyl.es;
 
-import com.wxingyl.es.conf.IndexDbConfigManager;
+import com.wxingyl.es.conf.DefaultConfigManager;
 
 /**
  * Created by xing on 15/8/11.
@@ -9,7 +9,7 @@ import com.wxingyl.es.conf.IndexDbConfigManager;
 public class Main {
 
     public static void main(String[] args) {
-        IndexDbConfigManager configManager = new IndexDbConfigManager();
+        DefaultConfigManager configManager = new DefaultConfigManager();
         configManager.parseDataSource("/Users/xing/code/db-river-elasticsearch/src/test/resources/datasource.yml");
         configManager.parseIndexType("/Users/xing/code/db-river-elasticsearch/src/test/resources/index_data.yml");
         System.out.println();

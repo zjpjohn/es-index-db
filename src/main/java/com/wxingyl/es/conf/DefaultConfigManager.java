@@ -9,14 +9,11 @@ import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.handle.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
-import org.elasticsearch.common.collect.ImmutableMultimap;
-import org.elasticsearch.common.collect.ImmutableSetMultimap;
-import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 
@@ -28,61 +25,32 @@ import java.util.function.BiConsumer;
  * then parse index config ({@link #parseIndexType(String)}, {@link #parseIndexType(Map)}). If you index config had included
  * datasource config, this order is needless
  */
-public class IndexDbConfigManager {
+public class DefaultConfigManager extends AbstractConfigManager {
 
     private ConfigParse<TypeConfigInfo> indexConfParser;
 
-    private DataSourceConfigParse dataSourceConfParser;
-
-    /**
-     * key: schema name, value: list DataSourceBean
-     */
-    private ImmutableMultimap<String, DataSourceBean> dataSourceMap;
-    /**
-     * key: index name, value: list IndexTypeBean
-     */
-    private ImmutableMultimap<String, IndexTypeBean> indexTypeMap;
+    private DataSourceConfigParse dataSourceConfigFactory;
 
     private BiConsumer<TableQueryInfo, List<String>> masterAliasVerify = this::verifyMasterAliasRepeat;
 
     /**
      * default add mysql parser
      */
-    public IndexDbConfigManager() {
+    public DefaultConfigManager() {
         indexConfParser = new IndexTypeConfigParser();
-        dataSourceConfParser = new DataSourceParseFactory();
-        dataSourceConfParser.addDataSourceConfigParser(new MysqlDataSourceConfigParser());
+        dataSourceConfigFactory = new DataSourceParseFactory();
+        dataSourceConfigFactory.addDataSourceConfigParser(new MysqlDataSourceConfigParser());
     }
 
-    public DataSourceConfigParse getDataSourceConfParser() {
-        return dataSourceConfParser;
-    }
-
-    @SuppressWarnings("unchecked")
-    public void parseDataSource(String yamlFileName) {
-        Map<String, Map<String, Object>> map = null;
-        try (InputStream in = new FileInputStream(yamlFileName)) {
-            Yaml yaml = new Yaml();
-            map = (Map<String, Map<String, Object>>) yaml.load(in);
-        } catch (IOException e) {
-            throw new IndexConfigException("load config file: " + yamlFileName + " have IOException", e);
-        }
-        addDataSourceBean(dataSourceConfParser.parse(map.values()));
-    }
-
+    @Override
     public void parseDataSource(Map<String, Object> confMap) {
-        addDataSourceBean(dataSourceConfParser.parse(confMap));
+        addDataSourceBean(dataSourceConfigFactory.parse(confMap));
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public void parseIndexType(String yamlFileName) {
-        Map<String, Object> map;
-        try (InputStream in = new FileInputStream(yamlFileName)) {
-            Yaml yaml = new Yaml();
-            map = (Map<String, Object>) yaml.load(in);
-        } catch (IOException e) {
-            throw new IndexConfigException("load config file: " + yamlFileName + " have IOException", e);
-        }
+        Map<String, Object> map = readYamlFile(yamlFileName);
         if (map.get(ConfigKeyName.DS_DATA_SOURCE) != null) {
             parseDataSource((Map<String, Object>) map.get(ConfigKeyName.DS_DATA_SOURCE));
             map.remove(ConfigKeyName.DS_DATA_SOURCE);
@@ -90,25 +58,23 @@ public class IndexDbConfigManager {
         parseIndexType(map);
     }
 
+    @Override
     public void parseIndexType(Map<String, Object> confMap) {
         Set<TypeConfigInfo> typeSet = indexConfParser.parse(confMap);
         if (CommonUtils.isEmpty(typeSet)) return;
-        ImmutableSetMultimap.Builder<String, IndexTypeBean> mapBuilder = ImmutableSetMultimap.builder();
-        for (final TypeConfigInfo type : typeSet) {
-            final IndexTypeBean.Builder builder = IndexTypeBean.build(type.getTypeDesc());
+        IndexTypeBean.Builder builder = IndexTypeBean.build();
+        for (TypeConfigInfo type : typeSet) {
+            builder.type(type.getTypeDesc());
             for (DbTableConfigInfo tableInfo : type.getTables()) {
                 builder.addTableQuery(verifyTypeTableConfig(type, tableInfo), tableInfo);
             }
-            mapBuilder.put(type.getTypeDesc().getIndex(), builder.build(type.getMasterTable(), masterAliasVerify));
+            addIndexTypeBean(builder.build(type.getMasterTable(), masterAliasVerify));
         }
-        if (indexTypeMap != null) mapBuilder.putAll(indexTypeMap);
-        indexTypeMap = mapBuilder.build();
-        //TODO index type config change, should notify some registers
     }
 
     private SqlQueryHandle verifyTypeTableConfig(TypeConfigInfo type, DbTableConfigInfo info) {
         DbTableDesc table = info.getTable();
-        DataSourceBean dataSourceBean = findDataSourceBean(table);
+        DataSourceBean dataSourceBean = getDataSourceBean(table);
         if (dataSourceBean == null) {
             throw new IndexConfigException("Index config: " + type + ", " + table + " can't find datasource config");
         }
@@ -162,22 +128,8 @@ public class IndexDbConfigManager {
         }
     }
 
-    private DataSourceBean findDataSourceBean(DbTableDesc table) {
-        Collection<DataSourceBean> collection = dataSourceMap.get(table.getSchema());
-        if (CommonUtils.isEmpty(collection)) return null;
-        for (DataSourceBean ds : collection) {
-            if (table.getUrlAddress() == null || table.getUrlAddress().equalsIgnoreCase(ds.getUrlAddress())) {
-                return ds;
-            }
-        }
-        return null;
-    }
-
-    private void addDataSourceBean(Set<DataSourceBean> beanSet) {
-        if (CommonUtils.isEmpty(beanSet)) return;
-        final ImmutableSetMultimap.Builder<String, DataSourceBean> builder = ImmutableSetMultimap.builder();
-        if (dataSourceMap != null) builder.putAll(dataSourceMap);
-        beanSet.forEach(k -> builder.put(k.getSchema(), k));
-        dataSourceMap = builder.build();
+    @Override
+    protected DataSourceConfigParse getDataSourceConfigFactory() {
+        return dataSourceConfigFactory;
     }
 }

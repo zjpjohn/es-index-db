@@ -21,8 +21,6 @@ public interface DataSourceConfigParse extends ConfigParse<DataSourceBean> {
 
     boolean addDataSourceConfigParser(DataSourceConfigParse parser);
 
-    boolean removeDataSourceConfigParser(DataSourceConfigParse parser);
-
     default Set<DataSourceBean> parse(Iterable<Map<String, Object>> schemaListConf) {
         Set<DataSourceBean> set = Sets.newHashSet();
         schemaListConf.forEach(v -> CommonUtils.addAll(set, parse(v)));

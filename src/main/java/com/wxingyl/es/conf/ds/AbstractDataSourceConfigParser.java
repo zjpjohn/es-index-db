@@ -28,11 +28,6 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
         throw new UnsupportedOperationException("Concrete implementation DataSourceConfigParse can't add parser");
     }
 
-    @Override
-    public boolean removeDataSourceConfigParser(DataSourceConfigParse parser) {
-        throw new UnsupportedOperationException("Concrete implementation DataSourceConfigParse can't remove parser");
-    }
-
     /**
      * parse single type db
      * @param schemaConf one of schemas config value, it contain url, username, password or db_names

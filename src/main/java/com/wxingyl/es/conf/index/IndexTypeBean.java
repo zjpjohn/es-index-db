@@ -30,8 +30,8 @@ public class IndexTypeBean {
         return masterTable;
     }
 
-    public static Builder build(IndexTypeDesc type) {
-        return new Builder(type);
+    public static Builder build() {
+        return new Builder();
     }
 
     public static class Builder {
@@ -40,8 +40,9 @@ public class IndexTypeBean {
 
         private Map<DbTableDesc, Tuple<TableQueryInfo.Builder, DbTableFieldDesc>> tableMap = new HashMap<>();
 
-        public Builder(IndexTypeDesc type) {
+        public Builder type(IndexTypeDesc type) {
             this.type = type;
+            return this;
         }
 
         public Builder addTableQuery(SqlQueryHandle queryHandler, DbTableConfigInfo tableInfo) {
@@ -66,6 +67,7 @@ public class IndexTypeBean {
                 builder.addSlave(v.v1(), field.getField());
             });
             bean.masterTable = tableMap.get(masterTable).v1().build();
+            tableMap.clear();
             return bean;
         }
     }

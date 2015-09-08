@@ -54,8 +54,4 @@ public class DataSourceParseFactory implements DataSourceConfigParse {
         return parserSet.add(parser);
     }
 
-    @Override
-    public boolean removeDataSourceConfigParser(DataSourceConfigParse parser) {
-        return parserSet.remove(parser);
-    }
 }
