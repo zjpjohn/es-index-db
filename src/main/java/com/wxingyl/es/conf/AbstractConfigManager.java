@@ -2,8 +2,12 @@ package com.wxingyl.es.conf;
 
 import com.wxingyl.es.conf.ds.DataSourceBean;
 import com.wxingyl.es.conf.ds.DataSourceConfigParse;
+import com.wxingyl.es.conf.ds.DataSourceParserManager;
+import com.wxingyl.es.conf.index.IndexConfigParse;
 import com.wxingyl.es.conf.index.IndexTypeBean;
+import com.wxingyl.es.conf.index.TypeConfigInfo;
 import com.wxingyl.es.exception.IndexConfigException;
+import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.util.CommonUtils;
 import org.yaml.snakeyaml.Yaml;
@@ -20,15 +24,19 @@ import java.util.*;
 public abstract class AbstractConfigManager implements ConfigManager {
 
     /**
-     * key: schema name, value: list DataSourceBean
+     * key: schema name, value: set DataSourceBean
      */
     private Map<String, Set<DataSourceBean>> dataSourceMap = new HashMap<>();
     /**
-     * key: index name, value: list IndexTypeBean
+     * key: index name, value: set IndexTypeBean
      */
     private Map<String, Set<IndexTypeBean>> indexTypeMap = new HashMap<>();
 
-    protected abstract DataSourceConfigParse getDataSourceConfigFactory();
+    protected abstract DataSourceParserManager getDataSourceConfigFactory();
+
+    protected abstract IndexConfigParse getIndexConfigParse();
+
+    protected abstract Set<IndexTypeBean> transformToIndexTypeBean(Set<TypeConfigInfo> typeSet);
 
     @Override
     public boolean addDataSourceConfigParser(DataSourceConfigParse parser) {
@@ -40,22 +48,38 @@ public abstract class AbstractConfigManager implements ConfigManager {
         return getDataSourceConfigFactory().supportParse(driverClassName);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void parseDataSource(String yamlFileName) {
-        parseDataSource(readYamlFile(yamlFileName));
+        Map<String, Map<String, Object>> map = readYamlFile(yamlFileName);
+        addDataSourceBean(getDataSourceConfigFactory().parseAll(map));
+    }
+
+    @Override
+    public void parseDataSource(String configName, Map<String, Object> confMap) {
+        addDataSourceBean(getDataSourceConfigFactory().parse(configName, confMap));
     }
 
     @Override
     public void parseIndexType(String yamlFileName) {
-        parseIndexType(readYamlFile(yamlFileName));
+        Map<String, Map<String, Object>> map = readYamlFile(yamlFileName);
+        if (map.get(ConfigKeyName.DS_DATA_SOURCE) != null) {
+            parseDataSource("index-config", map.get(ConfigKeyName.DS_DATA_SOURCE));
+            map.remove(ConfigKeyName.DS_DATA_SOURCE);
+        }
+        addIndexTypeBean(transformToIndexTypeBean(getIndexConfigParse().parseAll(map)));
+    }
+
+    @Override
+    public void parseIndexType(String index, Map<String, Object> confMap) {
+        addIndexTypeBean(transformToIndexTypeBean(getIndexConfigParse().parse(index, confMap)));
     }
 
     @Override
     public DataSourceBean getDataSourceBean(DbTableDesc table) {
-        if (dataSourceMap == null) return null;
-        Collection<DataSourceBean> collection = dataSourceMap.get(table.getSchema());
-        if (CommonUtils.isEmpty(collection)) return null;
-        for (DataSourceBean ds : collection) {
+        Set<DataSourceBean> set = dataSourceMap.get(table.getSchema());
+        if (CommonUtils.isEmpty(set)) return null;
+        for (DataSourceBean ds : set) {
             if (table.getUrlAddress() == null || table.getUrlAddress().equalsIgnoreCase(ds.getUrlAddress())) {
                 return ds;
             }
@@ -63,22 +87,40 @@ public abstract class AbstractConfigManager implements ConfigManager {
         return null;
     }
 
+    @Override
+    public IndexTypeBean getIndexTypeBean(IndexTypeDesc type) {
+        Set<IndexTypeBean> set = indexTypeMap.get(type.getIndex());
+        if (CommonUtils.isEmpty(set)) return null;
+        for (IndexTypeBean tb : set) {
+            if (tb.getType().equals(type)) return tb;
+        }
+        return null;
+    }
+
+    @Override
+    public Set<IndexTypeBean> getIndexTypeBean(String index) {
+        return indexTypeMap.get(index);
+    }
+
     @SuppressWarnings("unchecked")
-    protected Map<String, Object> readYamlFile(String yamlFileName) {
+    protected <T> Map<String, T> readYamlFile(String yamlFileName) {
         try (InputStream in = new FileInputStream(yamlFileName)) {
             Yaml yaml = new Yaml();
-            return (Map<String, Object>) yaml.load(in);
+            return (Map<String, T>) yaml.load(in);
         } catch (IOException e) {
             throw new IndexConfigException("load config file: " + yamlFileName + " have IOException", e);
         }
     }
 
-    protected boolean addIndexTypeBean(IndexTypeBean typeBean) {
-        Set<IndexTypeBean> set = indexTypeMap.get(typeBean.getType().getIndex());
-        if (set == null) {
-            indexTypeMap.put(typeBean.getType().getIndex(), set = new HashSet<>());
-        }
-        return set.add(typeBean);
+    protected void addIndexTypeBean(Set<IndexTypeBean> beanSet) {
+        if (CommonUtils.isEmpty(beanSet)) return;
+        beanSet.forEach(k -> {
+            Set<IndexTypeBean> set = indexTypeMap.get(k.getType().getIndex());
+            if (set == null) {
+                indexTypeMap.put(k.getType().getIndex(), set = new HashSet<>());
+            }
+            set.add(k);
+        });
         //TODO index type config change, should notify some registers
     }
 

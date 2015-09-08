@@ -50,11 +50,6 @@ public abstract class CommonUtils {
         return ret;
     }
 
-    public static <E> void addAll(Collection<E> src, Collection<? extends E> adds) {
-        if (isEmpty(adds)) return;
-        src.addAll(adds);
-    }
-
     @SuppressWarnings("unchecked")
     public static <T> List<T> getList(Map<String, Object> map, String key) {
         Object obj = map.get(key);

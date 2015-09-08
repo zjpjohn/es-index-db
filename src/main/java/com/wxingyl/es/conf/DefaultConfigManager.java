@@ -1,35 +1,25 @@
 package com.wxingyl.es.conf;
 
-import com.wxingyl.es.conf.ds.DataSourceBean;
-import com.wxingyl.es.conf.ds.DataSourceConfigParse;
-import com.wxingyl.es.conf.ds.DataSourceParseFactory;
-import com.wxingyl.es.conf.ds.MysqlDataSourceConfigParser;
+import com.wxingyl.es.conf.ds.*;
 import com.wxingyl.es.conf.index.*;
 import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.jdal.DbTableDesc;
 import com.wxingyl.es.jdal.handle.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 
 /**
  * Created by xing on 15/8/24.
- * data source manager
- * should singleton obj
- * In the first place, we should parse datasource config ({@link #parseDataSource(String)}, {@link #parseDataSource(Map)}),
- * then parse index config ({@link #parseIndexType(String)}, {@link #parseIndexType(Map)}). If you index config had included
- * datasource config, this order is needless
+ * default data source manager
  */
 public class DefaultConfigManager extends AbstractConfigManager {
 
-    private ConfigParse<TypeConfigInfo> indexConfParser;
+    private IndexConfigParse indexConfParser;
 
-    private DataSourceConfigParse dataSourceConfigFactory;
+    private DataSourceParserManager dataSourceConfigFactory;
 
     private BiConsumer<TableQueryInfo, List<String>> masterAliasVerify = this::verifyMasterAliasRepeat;
 
@@ -37,39 +27,24 @@ public class DefaultConfigManager extends AbstractConfigManager {
      * default add mysql parser
      */
     public DefaultConfigManager() {
-        indexConfParser = new IndexTypeConfigParser();
+        indexConfParser = new IndexConfigParser();
         dataSourceConfigFactory = new DataSourceParseFactory();
         dataSourceConfigFactory.addDataSourceConfigParser(new MysqlDataSourceConfigParser());
     }
 
     @Override
-    public void parseDataSource(Map<String, Object> confMap) {
-        addDataSourceBean(dataSourceConfigFactory.parse(confMap));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void parseIndexType(String yamlFileName) {
-        Map<String, Object> map = readYamlFile(yamlFileName);
-        if (map.get(ConfigKeyName.DS_DATA_SOURCE) != null) {
-            parseDataSource((Map<String, Object>) map.get(ConfigKeyName.DS_DATA_SOURCE));
-            map.remove(ConfigKeyName.DS_DATA_SOURCE);
-        }
-        parseIndexType(map);
-    }
-
-    @Override
-    public void parseIndexType(Map<String, Object> confMap) {
-        Set<TypeConfigInfo> typeSet = indexConfParser.parse(confMap);
-        if (CommonUtils.isEmpty(typeSet)) return;
+    protected Set<IndexTypeBean> transformToIndexTypeBean(Set<TypeConfigInfo> typeSet) {
+        if (CommonUtils.isEmpty(typeSet)) return null;
         IndexTypeBean.Builder builder = IndexTypeBean.build();
+        Set<IndexTypeBean> set = new HashSet<>();
         for (TypeConfigInfo type : typeSet) {
             builder.type(type.getTypeDesc());
             for (DbTableConfigInfo tableInfo : type.getTables()) {
                 builder.addTableQuery(verifyTypeTableConfig(type, tableInfo), tableInfo);
             }
-            addIndexTypeBean(builder.build(type.getMasterTable(), masterAliasVerify));
+            set.add(builder.build(type.getMasterTable(), masterAliasVerify));
         }
+        return set;
     }
 
     private SqlQueryHandle verifyTypeTableConfig(TypeConfigInfo type, DbTableConfigInfo info) {
@@ -129,7 +104,12 @@ public class DefaultConfigManager extends AbstractConfigManager {
     }
 
     @Override
-    protected DataSourceConfigParse getDataSourceConfigFactory() {
+    protected DataSourceParserManager getDataSourceConfigFactory() {
         return dataSourceConfigFactory;
+    }
+
+    @Override
+    protected IndexConfigParse getIndexConfigParse() {
+        return indexConfParser;
     }
 }

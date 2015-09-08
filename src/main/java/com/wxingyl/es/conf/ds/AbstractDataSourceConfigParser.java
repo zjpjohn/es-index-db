@@ -23,29 +23,24 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
         return driverClassName.equalsIgnoreCase(getSupportDriverClassName());
     }
 
-    @Override
-    public boolean addDataSourceConfigParser(DataSourceConfigParse parser) {
-        throw new UnsupportedOperationException("Concrete implementation DataSourceConfigParse can't add parser");
-    }
-
     /**
      * parse single type db
-     * @param schemaConf one of schemas config value, it contain url, username, password or db_names
+     * @param config one of schemas config value, it contain url, username, password or db_names
      * @return DataSourceBean set, a schema have an obj
      */
     @Override
-    public Set<DataSourceBean> parse(Map<String, Object> schemaConf) {
+    public Set<DataSourceBean> parse(String configName, Map<String, Object> config) {
         final Set<DataSourceBean> ret = new HashSet<>();
-        String url = CommonUtils.getStringVal(schemaConf, ConfigKeyName.DS_URL);
+        String url = CommonUtils.getStringVal(config, ConfigKeyName.DS_URL);
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName(getSupportDriverClassName());
         dataSource.setUrl(url);
-        dataSource.setUsername(CommonUtils.getStringVal(schemaConf, ConfigKeyName.DS_USERNAME));
-        dataSource.setPassword(CommonUtils.getStringVal(schemaConf, ConfigKeyName.DS_PASSWORD));
-        List<String> dbNames = CommonUtils.getList(schemaConf, ConfigKeyName.DS_DB_NAMES);
+        dataSource.setUsername(CommonUtils.getStringVal(config, ConfigKeyName.DS_USERNAME));
+        dataSource.setPassword(CommonUtils.getStringVal(config, ConfigKeyName.DS_PASSWORD));
+        List<String> dbNames = CommonUtils.getList(config, ConfigKeyName.DS_DB_NAMES);
         final Tuple<String, String> jdbcInfo = parseJdbcInfo(url);
         if (dbNames == null && jdbcInfo.v2() == null) {
-            throw new DataSourceConfigException("datasource config can't find schema for jdbc url: " + url );
+            throw new DataSourceConfigException("datasource config: " + configName + " can't find schema for jdbc url: " + url );
         }
         SqlQueryHandle sqlQueryHandle = createSqlQueryHandler(dataSource);
         if (dbNames != null) {

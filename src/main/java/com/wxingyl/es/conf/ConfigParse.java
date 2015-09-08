@@ -9,5 +9,5 @@ import java.util.Set;
  */
 public interface ConfigParse<T> {
 
-    Set<T> parse(Map<String, Object> conf);
+    Set<T> parse(String name, Map<String, Object> config);
 }

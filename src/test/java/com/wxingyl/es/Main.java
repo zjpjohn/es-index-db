@@ -1,5 +1,6 @@
 package com.wxingyl.es;
 
+import com.wxingyl.es.conf.ConfigManager;
 import com.wxingyl.es.conf.DefaultConfigManager;
 
 /**
@@ -8,11 +9,15 @@ import com.wxingyl.es.conf.DefaultConfigManager;
  */
 public class Main {
 
+    private static final String DS_CONFIG_FILE = "/Users/xing/code/db-river-elasticsearch/src/test/resources/datasource.yml";
+
+    private static final String INDEX_CONFIG_FILE = "/Users/xing/code/db-river-elasticsearch/src/test/resources/index_data.yml";
+
     public static void main(String[] args) {
-        DefaultConfigManager configManager = new DefaultConfigManager();
-        configManager.parseDataSource("/Users/xing/code/db-river-elasticsearch/src/test/resources/datasource.yml");
-        configManager.parseIndexType("/Users/xing/code/db-river-elasticsearch/src/test/resources/index_data.yml");
-        System.out.println();
+        ConfigManager configManager = new DefaultConfigManager();
+        configManager.parseDataSource(DS_CONFIG_FILE);
+        configManager.parseIndexType(INDEX_CONFIG_FILE);
+        System.out.println(configManager.getIndexTypeBean("order_v1"));
     }
 
 }

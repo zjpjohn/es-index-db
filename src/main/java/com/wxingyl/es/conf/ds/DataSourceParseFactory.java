@@ -11,33 +11,9 @@ import java.util.*;
  * data source parse factory
  * parse config file by driver_class_name, it can select suitable parser to get db info
  */
-public class DataSourceParseFactory implements DataSourceConfigParse {
+public class DataSourceParseFactory implements DataSourceParserManager {
 
     private Set<DataSourceConfigParse> parserSet = new HashSet<>();
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Set<DataSourceBean> parse(Map<String, Object> yamlConf) {
-        final String driverClassName = CommonUtils.getStringVal(yamlConf, ConfigKeyName.DS_DRIVER_CLASS_NAME);
-        if (driverClassName == null) {
-            throw new DataSourceConfigException("dataSource config of driver_class_name is empty");
-        }
-        List<Map<String, Object>> schemaList = CommonUtils.getList(yamlConf, ConfigKeyName.DS_SCHEMA_LIST);
-        if (schemaList == null) {
-            throw new DataSourceConfigException("dataSource config don't have " + ConfigKeyName.DS_SCHEMA_LIST);
-        }
-        DataSourceConfigParse parse = null;
-        for (DataSourceConfigParse e : parserSet) {
-            if (e.supportParse(driverClassName)) {
-                parse = e;
-                break;
-            }
-        }
-        if (parse == null) {
-            throw new DataSourceConfigException("There is not a support parser for driver_class_name: " + driverClassName);
-        }
-        return parse.parse(schemaList);
-    }
 
     @Override
     public boolean supportParse(String driverClassName) {
@@ -54,4 +30,27 @@ public class DataSourceParseFactory implements DataSourceConfigParse {
         return parserSet.add(parser);
     }
 
+    @Override
+    public Set<DataSourceBean> parse(String configName, Map<String, Object> config) {
+        String driverClassName = CommonUtils.getStringVal(config, ConfigKeyName.DS_DRIVER_CLASS_NAME);
+        if (driverClassName == null) {
+            throw new DataSourceConfigException("dataSource config: " + configName + " of driver_class_name is empty");
+        }
+        List<Map<String, Object>> schemaList = CommonUtils.getList(config, ConfigKeyName.DS_SCHEMA_LIST);
+        if (schemaList == null) {
+            throw new DataSourceConfigException("dataSource config: " + configName + " don't have " + ConfigKeyName.DS_SCHEMA_LIST);
+        }
+        DataSourceConfigParse parse = null;
+        for (DataSourceConfigParse e : parserSet) {
+            if (e.supportParse(driverClassName)) {
+                parse = e;
+                break;
+            }
+        }
+        if (parse == null) {
+            throw new DataSourceConfigException("There is not a support parser for driver_class_name: "
+                    + driverClassName + " in " + configName);
+        }
+        return parse.parseDataBase(configName, schemaList);
+    }
 }
