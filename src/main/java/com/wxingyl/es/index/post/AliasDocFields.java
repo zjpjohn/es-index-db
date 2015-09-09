@@ -1,4 +1,4 @@
-package com.wxingyl.es.index.doc;
+package com.wxingyl.es.index.post;
 
 import java.util.*;
 
@@ -12,7 +12,7 @@ public class AliasDocFields extends DocFields {
 
     public AliasDocFields(Map<String, String> aliasMap, int initialCapacity) {
         super(initialCapacity);
-        this.aliasMap = aliasMap;
+        this.aliasMap = Collections.unmodifiableMap(aliasMap);
     }
 
     @Override

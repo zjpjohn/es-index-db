@@ -2,7 +2,7 @@ package com.wxingyl.es;
 
 import com.wxingyl.es.conf.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.dbquery.BaseQueryParam;
+import com.wxingyl.es.db.query.BaseQueryParam;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +29,7 @@ public class IndexDbTest extends AbstractIndexDbTest {
         param.setTable(typeBean.getMasterTable().getQueryCommon().getTable());
         param.addField("count(1)");
         param.addWhere("seller_id", 1);
-        ScalarHandler<Integer> scalarHandler = new ScalarHandler<>();
+        ScalarHandler<Long> scalarHandler = new ScalarHandler<>();
         long dbNum = typeBean.getMasterTable().getQueryHandler().query(param, scalarHandler);
         Assert.assertEquals(num, dbNum);
     }

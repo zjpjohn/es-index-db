@@ -1,8 +1,8 @@
-package com.wxingyl.es.index.doc;
+package com.wxingyl.es.index.post;
 
-import com.wxingyl.es.index.DbQueryDependResult;
+import com.wxingyl.es.index.db.DbQueryDependResult;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.dbquery.TableQueryResult;
+import com.wxingyl.es.db.result.TableQueryResult;
 
 import java.util.Set;
 

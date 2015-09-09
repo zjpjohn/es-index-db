@@ -1,4 +1,4 @@
-package com.wxingyl.es.dbquery;
+package com.wxingyl.es.db;
 
 /**
  * Created by xing on 15/8/27.

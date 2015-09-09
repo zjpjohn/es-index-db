@@ -1,12 +1,12 @@
-package com.wxingyl.es.dbquery;
+package com.wxingyl.es.db;
 
-import com.wxingyl.es.conf.IndexSlaveResultMergeEnum;
+import com.wxingyl.es.index.post.IndexSlaveResultMergeEnum;
 
 /**
  * Created by xing on 15/9/7.
  * table query result base info, don't have query result and param.pageSize
  */
-public class TableQueryBaseInfo {
+public class TableBaseInfo {
 
     private DbTableDesc table;
 
@@ -38,9 +38,9 @@ public class TableQueryBaseInfo {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TableQueryBaseInfo)) return false;
+        if (!(o instanceof TableBaseInfo)) return false;
 
-        TableQueryBaseInfo baseInfo = (TableQueryBaseInfo) o;
+        TableBaseInfo baseInfo = (TableBaseInfo) o;
 
         return table.equals(baseInfo.table);
     }
@@ -52,7 +52,7 @@ public class TableQueryBaseInfo {
         mergeType = sqlQueryCommon.getMergeType();
     }
 
-    protected void init(TableQueryBaseInfo other) {
+    protected void init(TableBaseInfo other) {
         table = other.table;
         keyField = other.keyField;
         masterAlias = other.masterAlias;
@@ -64,8 +64,8 @@ public class TableQueryBaseInfo {
         return table.hashCode();
     }
 
-    public static TableQueryBaseInfo build(SqlQueryCommon sqlQueryCommon) {
-        TableQueryBaseInfo baseInfo = new TableQueryBaseInfo();
+    public static TableBaseInfo build(SqlQueryCommon sqlQueryCommon) {
+        TableBaseInfo baseInfo = new TableBaseInfo();
         baseInfo.init(sqlQueryCommon);
         return baseInfo;
     }

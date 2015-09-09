@@ -1,4 +1,4 @@
-package com.wxingyl.es.dbquery;
+package com.wxingyl.es.db.result;
 
 import com.wxingyl.es.conf.ConfigManager;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
@@ -26,7 +26,7 @@ public class DefaultResultSetHandlerFactory implements ResultSetHandlerFactory {
     @Override
     public ResultSetHandler<List<Map<String, Object>>> get(ConfigManager configManager, DbTableConfigInfo tableInfo) {
         if (defaultFieldValueProcessor == null) {
-            defaultFieldValueProcessor = new NumberFieldValueProcessor(configManager);
+            defaultFieldValueProcessor = new FilterNumberFieldValueProcessor(configManager);
         }
         if (defaultFilterMapListHandler == null) {
             defaultFilterMapListHandler = new FilterMapListHandler(null, defaultFieldValueProcessor);

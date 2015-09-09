@@ -1,8 +1,8 @@
 package com.wxingyl.es.conf.index;
 
-import com.wxingyl.es.dbquery.SqlQueryCommon;
-import com.wxingyl.es.dbquery.SqlQueryHandle;
-import com.wxingyl.es.dbquery.TableQueryBaseInfo;
+import com.wxingyl.es.db.SqlQueryCommon;
+import com.wxingyl.es.db.query.SqlQueryHandle;
+import com.wxingyl.es.db.TableBaseInfo;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.ImmutableListMultimap;
 import org.elasticsearch.common.collect.ImmutableMultimap;
@@ -56,9 +56,9 @@ public class TableQueryInfo {
         return queryCommon;
     }
 
-    public void allTableQueryBaseInfo(List<TableQueryBaseInfo> list) {
+    public void allTableQueryBaseInfo(List<TableBaseInfo> list) {
         if (list == null) return;
-        list.add(queryCommon.getTableQueryBaseInfo());
+        list.add(queryCommon.getTableBaseInfo());
         if (slaveQuery != null) {
             slaveQuery.values().forEach(v -> v.allTableQueryBaseInfo(list));
         }

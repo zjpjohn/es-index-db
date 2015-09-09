@@ -1,9 +1,10 @@
 package com.wxingyl.es.util;
 
-import com.wxingyl.es.dbquery.DbTableDesc;
-import com.wxingyl.es.dbquery.DbTableFieldDesc;
+import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.db.DbTableFieldDesc;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Created by xing on 15/8/17.
@@ -123,5 +124,15 @@ public abstract class CommonUtils {
 
     public static <T> RwLock<T> createRwLock(T lockObj) {
         return new RwLock<>(lockObj);
+    }
+
+    public static <T> ThreadLocal<T> createThreadLocal(Supplier<T> supplier) {
+        if (supplier == null) return new ThreadLocal<>();
+        else return new ThreadLocal<T>() {
+            @Override
+            protected T initialValue() {
+                return supplier.get();
+            }
+        };
     }
 }

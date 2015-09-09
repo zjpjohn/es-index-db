@@ -1,7 +1,7 @@
 package com.wxingyl.es.conf.ds;
 
-import com.wxingyl.es.dbquery.MysqlQueryHandler;
-import com.wxingyl.es.dbquery.SqlQueryHandle;
+import com.wxingyl.es.db.query.MysqlQueryHandler;
+import com.wxingyl.es.db.query.SqlQueryHandle;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.elasticsearch.common.collect.Tuple;
 

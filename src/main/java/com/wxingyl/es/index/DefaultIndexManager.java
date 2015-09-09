@@ -1,10 +1,14 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.conf.index.IndexTypeBean;
-import com.wxingyl.es.index.doc.DefaultDocPostProcessor;
-import com.wxingyl.es.index.doc.DocPostProcessor;
-import com.wxingyl.es.index.doc.PageDocument;
-import com.wxingyl.es.dbquery.TableQueryResult;
+import com.wxingyl.es.index.db.DbQueryDependResult;
+import com.wxingyl.es.index.db.TableDependQuery;
+import com.wxingyl.es.index.post.DefaultDocPostProcessor;
+import com.wxingyl.es.index.post.DocPostProcessor;
+import com.wxingyl.es.index.post.PageDocument;
+import com.wxingyl.es.db.result.TableQueryResult;
+import com.wxingyl.es.index.generator.BulkIndexGenerate;
+import com.wxingyl.es.index.generator.DefaultBulkIndexGenerator;
 import org.elasticsearch.client.Client;
 
 import java.util.Map;

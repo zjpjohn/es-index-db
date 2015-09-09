@@ -1,8 +1,9 @@
-package com.wxingyl.es.index.doc;
+package com.wxingyl.es.index.post;
 
-import com.wxingyl.es.index.DbQueryDependResult;
+import com.wxingyl.es.index.TypeBaseInfo;
+import com.wxingyl.es.index.db.DbQueryDependResult;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.dbquery.TableQueryResult;
+import com.wxingyl.es.db.result.TableQueryResult;
 
 /**
  * Created by xing on 15/9/7.
@@ -19,7 +20,7 @@ public abstract class AbstractDocPostProcessor implements DocPostProcessor {
 
     @Override
     public PageDocument initMasterPageDoc(TableQueryResult masterResult) {
-        PageDocument masterPageDoc = new PageDocument(DocumentBaseInfo.build(masterResult.getBaseInfo(), getPostEvn()));
+        PageDocument masterPageDoc = new PageDocument(TypeBaseInfo.build(masterResult.getBaseInfo(), getPostEvn()));
         masterPageDoc.addAll(DocFields.build(masterResult.getDbData()));
         return masterPageDoc;
     }

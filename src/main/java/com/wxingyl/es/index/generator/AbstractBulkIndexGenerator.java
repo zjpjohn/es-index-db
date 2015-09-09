@@ -1,19 +1,16 @@
-package com.wxingyl.es.index;
+package com.wxingyl.es.index.generator;
 
 import com.wxingyl.es.exception.IndexDocException;
-import com.wxingyl.es.index.doc.DocFields;
-import com.wxingyl.es.index.doc.DocumentBaseInfo;
-import com.wxingyl.es.index.doc.PageDocument;
+import com.wxingyl.es.index.IndexTypeDesc;
+import com.wxingyl.es.index.post.DocFields;
+import com.wxingyl.es.index.TypeBaseInfo;
+import com.wxingyl.es.index.post.PageDocument;
 import com.wxingyl.es.util.DateConvert;
-import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Created by xing on 15/9/7.
@@ -43,13 +40,13 @@ public abstract class AbstractBulkIndexGenerator implements BulkIndexGenerate {
         return bulkRequestBatchSize;
     }
 
-    protected abstract String getDocId(DocumentBaseInfo baseInfo, DocFields doc);
+    protected abstract String getDocId(TypeBaseInfo baseInfo, DocFields doc);
 
     @Override
     public int bulkInsert(Client client, PageDocument pageDocument) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
         int count = 0, ret = 0;
-        DocumentBaseInfo baseInfo = pageDocument.getBaseInfo();
+        TypeBaseInfo baseInfo = pageDocument.getBaseInfo();
         IndexTypeDesc type = baseInfo.getType();
         for (DocFields doc : pageDocument) {
             try {

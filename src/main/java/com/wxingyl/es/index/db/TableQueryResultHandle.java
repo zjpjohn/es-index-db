@@ -1,7 +1,8 @@
-package com.wxingyl.es.index;
+package com.wxingyl.es.index.db;
 
-import com.wxingyl.es.dbquery.DbTableDesc;
-import com.wxingyl.es.dbquery.TableQueryResult;
+import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.db.result.TableQueryResult;
+import com.wxingyl.es.index.IndexTypeDesc;
 
 import java.util.Set;
 

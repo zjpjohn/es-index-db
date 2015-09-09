@@ -1,9 +1,9 @@
 package com.wxingyl.es.conf.index;
 
-import com.wxingyl.es.conf.IndexSlaveResultMergeEnum;
+import com.wxingyl.es.index.post.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.exception.IndexConfigException;
-import com.wxingyl.es.dbquery.DbTableDesc;
-import com.wxingyl.es.dbquery.DbTableFieldDesc;
+import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.db.DbTableFieldDesc;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
 import org.elasticsearch.common.lang3.StringUtils;

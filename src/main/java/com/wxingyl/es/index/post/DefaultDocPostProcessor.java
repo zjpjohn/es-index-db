@@ -1,9 +1,8 @@
-package com.wxingyl.es.index.doc;
+package com.wxingyl.es.index.post;
 
-import com.wxingyl.es.conf.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.dbquery.TableQueryBaseInfo;
-import com.wxingyl.es.dbquery.TableQueryResult;
+import com.wxingyl.es.db.TableBaseInfo;
+import com.wxingyl.es.db.result.TableQueryResult;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.util.List;
@@ -18,7 +17,7 @@ public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
 
     @Override
     public PageDocument applyTableQueryResult(PageDocument masterPageDoc, String masterField, TableQueryResult slaveResult) {
-        TableQueryBaseInfo slaveBaseInfo = slaveResult.getBaseInfo();
+        TableBaseInfo slaveBaseInfo = slaveResult.getBaseInfo();
         Map<Object, List<Map<String, Object>>> group = CommonUtils.groupListMap(slaveResult.getDbData(),
                 slaveBaseInfo.getKeyField(), true);
         String keyAlias = slaveBaseInfo.getMasterAlias();

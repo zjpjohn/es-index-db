@@ -1,11 +1,11 @@
 package com.wxingyl.es;
 
 import com.wxingyl.es.conf.index.IndexTypeBean;
-import com.wxingyl.es.dbquery.DbTableDesc;
-import com.wxingyl.es.dbquery.TableQueryResult;
+import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.db.result.TableQueryResult;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.index.doc.AbstractDocPostProcessor;
-import com.wxingyl.es.index.doc.PageDocument;
+import com.wxingyl.es.index.post.AbstractDocPostProcessor;
+import com.wxingyl.es.index.post.PageDocument;
 
 import java.util.*;
 

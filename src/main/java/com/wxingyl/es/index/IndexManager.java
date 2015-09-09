@@ -1,7 +1,9 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.conf.index.IndexTypeBean;
-import com.wxingyl.es.index.doc.DocPostProcessor;
+import com.wxingyl.es.index.db.TableQueryResultHandle;
+import com.wxingyl.es.index.post.DocPostProcessor;
+import com.wxingyl.es.index.generator.BulkIndexGenerate;
 
 /**
  * Created by xing on 15/9/7.

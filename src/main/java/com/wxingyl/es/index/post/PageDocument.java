@@ -1,4 +1,7 @@
-package com.wxingyl.es.index.doc;
+package com.wxingyl.es.index.post;
+
+import com.wxingyl.es.db.result.NumberFieldValueProcessor;
+import com.wxingyl.es.index.TypeBaseInfo;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -9,11 +12,11 @@ import java.util.function.Consumer;
  */
 public class PageDocument implements Iterable<DocFields> {
 
-    private DocumentBaseInfo baseInfo;
+    private TypeBaseInfo baseInfo;
 
     private List<DocFields> docs;
 
-    public PageDocument(DocumentBaseInfo baseInfo) {
+    public PageDocument(TypeBaseInfo baseInfo) {
         super();
         this.baseInfo = baseInfo;
         docs = new LinkedList<>();
@@ -27,7 +30,7 @@ public class PageDocument implements Iterable<DocFields> {
         docs.addAll(collection);
     }
 
-    public DocumentBaseInfo getBaseInfo() {
+    public TypeBaseInfo getBaseInfo() {
         return baseInfo;
     }
 
@@ -43,6 +46,15 @@ public class PageDocument implements Iterable<DocFields> {
             list.add(doc);
         });
         return group;
+    }
+
+    public DocFields getDocFieldsByKeyVal(Object keyVal) {
+        String keyField = baseInfo.getKeyField();
+        keyVal = NumberFieldValueProcessor.INSTANCE.handle(keyField, keyVal);
+        for(DocFields doc : docs) {
+            if (keyVal.equals(doc.get(keyField))) return doc;
+        }
+        return null;
     }
 
     @Override

@@ -1,6 +1,9 @@
-package com.wxingyl.es.dbquery;
+package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
+import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.db.SqlQueryCommon;
+import com.wxingyl.es.db.result.TableQueryResult;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;

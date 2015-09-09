@@ -2,11 +2,11 @@ package com.wxingyl.es.conf;
 
 import com.wxingyl.es.conf.ds.*;
 import com.wxingyl.es.conf.index.*;
-import com.wxingyl.es.dbquery.DefaultResultSetHandlerFactory;
-import com.wxingyl.es.dbquery.ResultSetHandlerFactory;
+import com.wxingyl.es.db.result.DefaultResultSetHandlerFactory;
+import com.wxingyl.es.db.result.ResultSetHandlerFactory;
 import com.wxingyl.es.exception.IndexConfigException;
-import com.wxingyl.es.dbquery.DbTableDesc;
-import com.wxingyl.es.dbquery.SqlQueryHandle;
+import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.db.query.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.util.*;

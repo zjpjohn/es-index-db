@@ -1,7 +1,7 @@
 package com.wxingyl.es.conf.ds;
 
-import com.wxingyl.es.dbquery.SqlQueryHandle;
-import com.wxingyl.es.dbquery.SqlServerQueryHandler;
+import com.wxingyl.es.db.query.SqlQueryHandle;
+import com.wxingyl.es.db.query.SqlServerQueryHandler;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.lang3.StringUtils;

@@ -1,6 +1,6 @@
-package com.wxingyl.es.dbquery;
+package com.wxingyl.es.db;
 
-import com.wxingyl.es.conf.IndexSlaveResultMergeEnum;
+import com.wxingyl.es.index.post.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 
 /**
@@ -30,7 +30,7 @@ public class SqlQueryCommon {
 
     private String masterAlias;
 
-    private TableQueryBaseInfo tableQueryBaseInfo;
+    private TableBaseInfo tableBaseInfo;
 
     private IndexSlaveResultMergeEnum mergeType;
 
@@ -54,8 +54,8 @@ public class SqlQueryCommon {
         return table;
     }
 
-    public TableQueryBaseInfo getTableQueryBaseInfo() {
-        return tableQueryBaseInfo == null ? tableQueryBaseInfo = TableQueryBaseInfo.build(this) : tableQueryBaseInfo;
+    public TableBaseInfo getTableBaseInfo() {
+        return tableBaseInfo == null ? tableBaseInfo = TableBaseInfo.build(this) : tableBaseInfo;
     }
 
     public String getMasterAlias() {

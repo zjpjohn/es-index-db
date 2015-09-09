@@ -1,4 +1,6 @@
-package com.wxingyl.es.util;
+package com.wxingyl.es.index.post;
+
+import com.wxingyl.es.util.DateConvert;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

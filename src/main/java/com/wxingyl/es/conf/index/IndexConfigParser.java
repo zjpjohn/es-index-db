@@ -2,8 +2,8 @@ package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.dbquery.DbTableDesc;
-import com.wxingyl.es.dbquery.DbTableFieldDesc;
+import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.db.DbTableFieldDesc;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
 
@@ -18,21 +18,14 @@ import static com.wxingyl.es.conf.ConfigKeyName.*;
  */
 public class IndexConfigParser implements IndexConfigParse {
 
-    private ThreadLocal<DefaultValueParser<Integer>> integerDefaultValueParser = new ThreadLocal<DefaultValueParser<Integer>>() {
-        @Override
-        protected DefaultValueParser<Integer> initialValue() {
-            return new DefaultValueParser<>((defaultValue, keyMap) -> {
+    private ThreadLocal<DefaultValueParser<Integer>> integerDefaultValueParser = CommonUtils.createThreadLocal(() ->
+            new DefaultValueParser<>((defaultValue, keyMap) -> {
                 defaultValue.put(INDEX_DEFAULT_PAGE_SIZE, new Integer[2]);
-
                 keyMap.put(INDEX_DEFAULT_PAGE_SIZE, INDEX_TABLE_PAGE_SIZE);
-            });
-        }
-    };
+            }));
 
-    private ThreadLocal<DefaultValueParser<String>> stringDefaultValueParser = new ThreadLocal<DefaultValueParser<String>>() {
-        @Override
-        protected DefaultValueParser<String> initialValue() {
-            return new DefaultValueParser<String>((defaultValue, keyMap) -> {
+    private ThreadLocal<DefaultValueParser<String>> stringDefaultValueParser = CommonUtils.createThreadLocal(() ->
+            new DefaultValueParser<String>((defaultValue, keyMap) -> {
                 defaultValue.put(INDEX_DEFAULT_SCHEMA, new String[2]);
                 defaultValue.put(INDEX_DEFAULT_DB_ADDRESS, new String[2]);
                 defaultValue.put(INDEX_DEFAULT_DELETE_FIELD, new String[2]);
@@ -47,9 +40,7 @@ public class IndexConfigParser implements IndexConfigParse {
                 protected String getVal(Map<String, Object> confMap, String key) {
                     return CommonUtils.getStringVal(confMap, key);
                 }
-            };
-        }
-    };
+            });
 
     private TypeConfigInfo parseType(IndexTypeDesc typeDesc, Map<String, Object> typeConf) {
         List<Map<String, Object>> tablesConf = CommonUtils.getList(typeConf, INDEX_TYPE_INCLUDE_TABLE);

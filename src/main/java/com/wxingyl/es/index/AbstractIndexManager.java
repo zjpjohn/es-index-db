@@ -1,9 +1,11 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.exception.IndexIllegalArgumentException;
-import com.wxingyl.es.index.doc.DocPostProcessor;
-import com.wxingyl.es.dbquery.DbTableDesc;
-import com.wxingyl.es.dbquery.TableQueryResult;
+import com.wxingyl.es.index.db.TableQueryResultHandle;
+import com.wxingyl.es.index.post.DocPostProcessor;
+import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.db.result.TableQueryResult;
+import com.wxingyl.es.index.generator.BulkIndexGenerate;
 import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.client.Client;
 

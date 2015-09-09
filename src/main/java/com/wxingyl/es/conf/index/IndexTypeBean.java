@@ -1,8 +1,8 @@
 package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.dbquery.*;
-import com.wxingyl.es.dbquery.SqlQueryHandle;
+import com.wxingyl.es.db.*;
+import com.wxingyl.es.db.query.SqlQueryHandle;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.Tuple;
 
@@ -19,7 +19,7 @@ public class IndexTypeBean {
 
     private TableQueryInfo masterTable;
 
-    private List<TableQueryBaseInfo> allTableInfo;
+    private List<TableBaseInfo> allTableInfo;
 
     private IndexTypeBean() {
     }
@@ -32,9 +32,9 @@ public class IndexTypeBean {
         return masterTable;
     }
 
-    public List<TableQueryBaseInfo> getTableInfo(String tableName) {
+    public List<TableBaseInfo> getTableInfo(String tableName) {
         if (allTableInfo == null) getAllTableInfo();
-        List<TableQueryBaseInfo> list = new ArrayList<>();
+        List<TableBaseInfo> list = new ArrayList<>();
         allTableInfo.forEach(v -> {
             if (v.getTable().getTable().equals(tableName)) list.add(v);
         });
@@ -44,9 +44,9 @@ public class IndexTypeBean {
     /**
      * @return unmodifiable list
      */
-    public List<TableQueryBaseInfo> getAllTableInfo() {
+    public List<TableBaseInfo> getAllTableInfo() {
         if (allTableInfo == null) {
-            List<TableQueryBaseInfo> list = new ArrayList<>();
+            List<TableBaseInfo> list = new ArrayList<>();
             masterTable.allTableQueryBaseInfo(list);
             allTableInfo = Collections.unmodifiableList(list);
         }

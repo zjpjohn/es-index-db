@@ -1,4 +1,4 @@
-package com.wxingyl.es.index.doc;
+package com.wxingyl.es.index.post;
 
 import com.wxingyl.es.util.DateConvert;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -13,11 +13,9 @@ import java.util.*;
  */
 public class DocFields {
 
-    protected Map<String, Object> sourceMap;
+    private Map<String, Object> sourceMap;
 
-    public DocFields() {
-        sourceMap = new HashMap<>();
-    }
+    private ThreadLocal<DateConvert> dateConvertLocal = new ThreadLocal<>();
 
     public DocFields(int initialCapacity) {
         sourceMap = new HashMap<>(initialCapacity);
@@ -44,26 +42,48 @@ public class DocFields {
     }
 
     public XContentBuilder buildXContent(DateConvert dateConvert) throws IOException {
+        dateConvertLocal.set(dateConvert);
         XContentBuilder xContentBuilder = XContentFactory.jsonBuilder();
-        fillXContentBuilder(xContentBuilder, sourceMap, dateConvert);
+        fillXContentBuilder(xContentBuilder, sourceMap);
+        dateConvertLocal.remove();
         return xContentBuilder;
     }
 
-    @SuppressWarnings("unchecked")
-    protected void fillXContentBuilder(XContentBuilder builder, Map<String, Object> map, DateConvert dateConvert) throws IOException {
+    private void fillXContentBuilder(XContentBuilder builder, Map<String, Object> map) throws IOException {
         builder.startObject();
         for (Map.Entry<String, Object> e : map.entrySet()) {
             builder.field(e.getKey());
             Object v = e.getValue();
-            if (v instanceof Date) {
-                builder.value(dateConvert.format((Date) v));
-            } else if (v instanceof Map) {
-                fillXContentBuilder(builder, (Map) v, dateConvert);
+            if (v instanceof Iterable) {
+                builder.startArray();
+                for (Object obj : (Iterable)v) {
+                    fillXContentValue(builder, obj);
+                }
+                builder.endArray();
+            } else if (v instanceof DocFields[]) {
+                builder.startArray();
+                for (Object obj : (DocFields[]) v) {
+                    fillXContentValue(builder, obj);
+                }
+                builder.endArray();
             } else {
-                builder.value(v);
+                fillXContentValue(builder, v);
             }
         }
         builder.endObject();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void fillXContentValue(XContentBuilder builder, Object val) throws IOException {
+        if (val instanceof DocFields) {
+            fillXContentBuilder(builder, ((DocFields)val).sourceMap);
+        } else if (val instanceof Map) {
+            fillXContentBuilder(builder, (Map) val);
+        } else if (val instanceof Date) {
+            builder.value(dateConvertLocal.get().format((Date) val));
+        } else {
+            builder.value(val);
+        }
     }
 
     public static List<DocFields> build(List<Map<String, Object>> data) {

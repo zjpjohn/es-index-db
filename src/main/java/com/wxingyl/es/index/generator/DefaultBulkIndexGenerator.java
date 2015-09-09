@@ -1,15 +1,15 @@
-package com.wxingyl.es.index;
+package com.wxingyl.es.index.generator;
 
 import com.wxingyl.es.exception.IndexDocException;
-import com.wxingyl.es.index.doc.DocFields;
-import com.wxingyl.es.index.doc.DocumentBaseInfo;
-import com.wxingyl.es.util.DefaultDateConvert;
+import com.wxingyl.es.index.IndexTypeDesc;
+import com.wxingyl.es.index.post.DocFields;
+import com.wxingyl.es.index.TypeBaseInfo;
+import com.wxingyl.es.index.post.DefaultDateConvert;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +30,7 @@ public class DefaultBulkIndexGenerator extends AbstractBulkIndexGenerator {
     }
 
     @Override
-    protected String getDocId(DocumentBaseInfo baseInfo, DocFields doc) {
+    protected String getDocId(TypeBaseInfo baseInfo, DocFields doc) {
         return doc.get(baseInfo.getKeyField()).toString();
     }
 
@@ -46,7 +46,9 @@ public class DefaultBulkIndexGenerator extends AbstractBulkIndexGenerator {
                 failedCount++;
             }
         }
-        if (failedCount > (bulkRequest.numberOfActions() >> 1)) {
+        //TODO temporarily, default failed handle is strict, will may change
+//        if (failedCount > (bulkRequest.numberOfActions() >> 1)) {
+        if (failedCount > 0) {
             BulkResponse failResponse = new BulkResponse(failedItems.toArray(new BulkItemResponse[failedItems.size()]), 0);
             throw new IndexDocException(failResponse.buildFailureMessage());
         }

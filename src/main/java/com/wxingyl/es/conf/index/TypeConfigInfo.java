@@ -1,7 +1,7 @@
 package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.dbquery.DbTableDesc;
+import com.wxingyl.es.db.DbTableDesc;
 
 import java.util.Set;
 

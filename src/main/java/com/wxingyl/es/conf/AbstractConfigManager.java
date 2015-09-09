@@ -3,17 +3,14 @@ package com.wxingyl.es.conf;
 import com.wxingyl.es.conf.ds.DataSourceBean;
 import com.wxingyl.es.conf.ds.DataSourceConfigParse;
 import com.wxingyl.es.conf.ds.DataSourceParserManager;
-import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.conf.index.IndexConfigParse;
 import com.wxingyl.es.conf.index.IndexTypeBean;
 import com.wxingyl.es.conf.index.TypeConfigInfo;
-import com.wxingyl.es.dbquery.ResultSetHandlerFactory;
+import com.wxingyl.es.db.result.ResultSetHandlerFactory;
 import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.dbquery.DbTableDesc;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.Listener;
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;

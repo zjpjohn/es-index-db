@@ -1,4 +1,4 @@
-package com.wxingyl.es.dbquery;
+package com.wxingyl.es.db.result;
 
 import com.wxingyl.es.conf.ConfigManager;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;

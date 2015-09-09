@@ -1,5 +1,6 @@
-package com.wxingyl.es.dbquery;
+package com.wxingyl.es.db.result;
 
+import com.wxingyl.es.db.result.FieldValueProcessor;
 import com.wxingyl.es.util.CommonUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
