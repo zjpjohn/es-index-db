@@ -7,7 +7,7 @@ We use an index file which a yaml format config file to manager index data come 
 index name, type name, database info and so on. A config context as follow:
 
     order_v1:
-      # When deleting some records, awalys do not physically delete, usually update a delete field to 'Y' or '1'
+      # When deleting some records, always do not physically delete, usually update a delete field to 'Y' or '1'
       # instead of physically delete. if you table have this field, you can config like it
       default_delete_field: is_deleted
       default_delete_valid_value: N
