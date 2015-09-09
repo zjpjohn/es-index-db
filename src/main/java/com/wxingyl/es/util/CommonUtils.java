@@ -1,7 +1,7 @@
 package com.wxingyl.es.util;
 
-import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.DbTableFieldDesc;
+import com.wxingyl.es.dbquery.DbTableDesc;
+import com.wxingyl.es.dbquery.DbTableFieldDesc;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package com.wxingyl.es.jdal;
+package com.wxingyl.es.dbquery;
 
 import com.wxingyl.es.conf.index.TableQueryInfo;
 import org.apache.commons.dbutils.ResultSetHandler;

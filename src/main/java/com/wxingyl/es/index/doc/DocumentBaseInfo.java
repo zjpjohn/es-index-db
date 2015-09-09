@@ -1,7 +1,7 @@
 package com.wxingyl.es.index.doc;
 
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.jdal.TableQueryBaseInfo;
+import com.wxingyl.es.dbquery.TableQueryBaseInfo;
 
 /**
  * Created by xing on 15/9/7.

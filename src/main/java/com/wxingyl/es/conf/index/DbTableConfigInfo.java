@@ -2,10 +2,11 @@ package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.conf.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.exception.IndexConfigException;
-import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.DbTableFieldDesc;
+import com.wxingyl.es.dbquery.DbTableDesc;
+import com.wxingyl.es.dbquery.DbTableFieldDesc;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
+import org.elasticsearch.common.lang3.StringUtils;
 
 import java.util.*;
 
@@ -36,7 +37,7 @@ public class DbTableConfigInfo {
 
     private Integer pageSize;
 
-    private String queryCondition;
+    private Map<String, String> queryCondition;
 
     private IndexSlaveResultMergeEnum mergeType;
 
@@ -70,12 +71,10 @@ public class DbTableConfigInfo {
     }
 
     public void clearDeleteField() {
+        queryCondition.remove(deleteField);
+        if (queryCondition.isEmpty()) queryCondition = null;
         deleteField = null;
         deleteValidValue = null;
-    }
-
-    public String getDeleteValidValue() {
-        return deleteValidValue;
     }
 
     public DbTableFieldDesc getMasterField() {
@@ -94,7 +93,7 @@ public class DbTableConfigInfo {
         return masterAlias;
     }
 
-    public String getQueryCondition() {
+    public Map<String, String> getQueryCondition() {
         return queryCondition;
     }
 
@@ -102,14 +101,14 @@ public class DbTableConfigInfo {
         return mergeType;
     }
 
-    void initValue(TypeConfigInfo typeInfo, Map<String, Object> conf,
+    void initValue(TypeConfigInfo typeInfo, Map<String, Object> config,
                    DefaultValueParser<String> strDvp, DefaultValueParser<Integer> intDvp) {
-        String tableName = CommonUtils.getStringVal(conf, INDEX_TABLE_TABLE);
+        String tableName = CommonUtils.getStringVal(config, INDEX_TABLE_TABLE);
         if (tableName == null) {
             throw new IndexConfigException("table_name conf is null of " + typeInfo);
         }
         String[] strArray = new String[2];
-        strDvp.getDefaultValue(conf).forEach((k, v) -> {
+        strDvp.getDefaultValue(config).forEach((k, v) -> {
             switch (k) {
                 case INDEX_TABLE_SCHEMA:
                     strArray[0] = v;
@@ -132,7 +131,7 @@ public class DbTableConfigInfo {
         if (strArray[0] == null) {
             throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " can't find schema");
         }
-        relationField = CommonUtils.getStringVal(conf, INDEX_TABLE_RELATION_FIELD);
+        relationField = CommonUtils.getStringVal(config, INDEX_TABLE_RELATION_FIELD);
         if (relationField == null) {
             throw new IndexConfigException(typeInfo + ", table_name: " + tableName
                     + " need " + INDEX_TABLE_RELATION_FIELD + " config");
@@ -140,10 +139,10 @@ public class DbTableConfigInfo {
             relationField = relationField.toLowerCase();
         }
         table = new DbTableDesc(strArray[1], strArray[0], tableName);
-        pageSize = intDvp.getDefaultValue(conf).getOrDefault(INDEX_TABLE_PAGE_SIZE, 2500);
-        masterAlias = CommonUtils.getStringVal(conf, INDEX_TABLE_MASTER_ALIAS);
-        forbidFields = getFields(conf, INDEX_TABLE_FORBID_FIELDS);
-        fields = getFields(conf, INDEX_TABLE_FIELDS);
+        pageSize = intDvp.getDefaultValue(config).getOrDefault(INDEX_TABLE_PAGE_SIZE, 2500);
+        masterAlias = CommonUtils.getStringVal(config, INDEX_TABLE_MASTER_ALIAS);
+        forbidFields = getFields(config, INDEX_TABLE_FORBID_FIELDS);
+        fields = getFields(config, INDEX_TABLE_FIELDS);
         if (CommonUtils.isEmpty(fields) || fields.contains("*")) {
             fields = null;
         } else if (!CommonUtils.isEmpty(forbidFields)) {
@@ -161,8 +160,8 @@ public class DbTableConfigInfo {
         if (forbidFields != null && forbidFields.contains(relationField)) {
             forbidFields.remove(relationField);
         }
-        queryCondition = CommonUtils.getStringVal(conf, INDEX_TABLE_QUERY_CONDITION);
-        String tmpStr = CommonUtils.getStringVal(conf, INDEX_TABLE_MERGE_TYPE);
+        initQueryCondition(config);
+        String tmpStr = CommonUtils.getStringVal(config, INDEX_TABLE_MERGE_TYPE);
         if (tmpStr == null) mergeType = IndexSlaveResultMergeEnum.LIST;
         else {
             try {
@@ -173,6 +172,25 @@ public class DbTableConfigInfo {
                 throw new IndexConfigException(typeInfo + ", table_name: " + tableName + " config, " + INDEX_TABLE_MERGE_TYPE
                         + " value: " + tmpStr + " is invalid, should in " + list, e);
             }
+        }
+    }
+
+    private void initQueryCondition(Map<String, Object> config) {
+        List<String> list = CommonUtils.getList(config, INDEX_TABLE_QUERY_CONDITION);
+        if (list == null && deleteField == null) return;
+        queryCondition = new HashMap<>();
+        if (deleteField != null) {
+            queryCondition.put(deleteField, deleteValidValue);
+        }
+        if (list != null) {
+            list.forEach(v -> {
+                String[] arr = StringUtils.split(v, '=');
+                if (arr.length != 2) {
+                    throw new IndexConfigException(DbTableConfigInfo.this + " config, " + INDEX_TABLE_QUERY_CONDITION
+                            + " value: " + v + " is invalid");
+                }
+                queryCondition.put(arr[0].trim(), arr[1].trim());
+            });
         }
     }
 

@@ -1,4 +1,4 @@
-package com.wxingyl.es.jdal;
+package com.wxingyl.es.dbquery;
 
 /**
  * Created by xing on 15/8/27.

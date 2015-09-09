@@ -3,8 +3,10 @@ package com.wxingyl.es.conf;
 import com.wxingyl.es.conf.ds.DataSourceBean;
 import com.wxingyl.es.conf.ds.DataSourceConfigParse;
 import com.wxingyl.es.conf.index.IndexTypeBean;
+import com.wxingyl.es.dbquery.ResultSetHandlerFactory;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.jdal.DbTableDesc;
+import com.wxingyl.es.dbquery.DbTableDesc;
+import com.wxingyl.es.util.Listener;
 
 import java.util.Map;
 import java.util.Set;
@@ -23,11 +25,15 @@ public interface ConfigManager {
 
     boolean supportDbParse(String driverClassName);
 
-    DataSourceBean getDataSourceBean(DbTableDesc table);
+    boolean registerDataSourceListener(Listener<Set<DataSourceBean>> listener);
 
-    IndexTypeBean getIndexTypeBean(IndexTypeDesc type);
+    boolean registerIndexTypeListener(Listener<Set<IndexTypeBean>> listener);
 
-    Set<IndexTypeBean> getIndexTypeBean(String index);
+    DataSourceBean findDataSourceBean(String schema, String urlAddress);
+
+    IndexTypeBean findIndexTypeBean(IndexTypeDesc type);
+
+    Set<IndexTypeBean> findIndexTypeBean(String index);
 
     /**
      * parse data_source yaml config file, it have more than one type db

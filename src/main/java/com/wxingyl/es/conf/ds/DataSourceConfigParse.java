@@ -26,7 +26,7 @@ public interface DataSourceConfigParse extends ConfigParse<DataSourceBean> {
      * @param schemaList this database contain schema list
      * @return parse result
      */
-    default Set<DataSourceBean> parseDataBase(String name, List<Map<String, Object>> schemaList) {
+    default Set<DataSourceBean> parseSchemas(String name, List<Map<String, Object>> schemaList) {
         Set<DataSourceBean> set = new HashSet<>();
         schemaList.forEach(schema -> {
             Set<DataSourceBean> parseRet = parse(name, schema);

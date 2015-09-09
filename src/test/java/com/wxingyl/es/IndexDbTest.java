@@ -2,8 +2,12 @@ package com.wxingyl.es;
 
 import com.wxingyl.es.conf.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
+import com.wxingyl.es.dbquery.BaseQueryParam;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.sql.SQLException;
 
 /**
  * Created by xing on 15/8/11.
@@ -12,12 +16,22 @@ import org.junit.Test;
 public class IndexDbTest extends AbstractIndexDbTest {
 
     @Test
-    public void createIndex() {
+    public void createIndex() throws SQLException {
         IndexTypeDesc typeDesc = new IndexTypeDesc("order_v1", "order_info");
-        IndexTypeBean typeBean = configManager.getIndexTypeBean(typeDesc);
+        IndexTypeBean typeBean = configManager.findIndexTypeBean(typeDesc);
         Assert.assertNotNull("can't find " + typeDesc + " config", typeBean);
-        int num = indexManager.indexTypeFill(typeBean);
+        OrderTypeDocPostProcessor docPostProcessor = new OrderTypeDocPostProcessor(typeBean);
+        indexManager.registerDocPostProcessor(docPostProcessor);
+
+        long num = indexManager.indexTypeFill(typeBean);
         System.out.println("create document: " + num);
+        BaseQueryParam param = new BaseQueryParam();
+        param.setTable(typeBean.getMasterTable().getQueryCommon().getTable());
+        param.addField("count(1)");
+        param.addWhere("seller_id", 1);
+        ScalarHandler<Integer> scalarHandler = new ScalarHandler<>();
+        long dbNum = typeBean.getMasterTable().getQueryHandler().query(param, scalarHandler);
+        Assert.assertEquals(num, dbNum);
     }
 
 }

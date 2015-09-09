@@ -1,4 +1,4 @@
-package com.wxingyl.es.jdal;
+package com.wxingyl.es.dbquery;
 
 import com.wxingyl.es.conf.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
@@ -6,7 +6,7 @@ import com.wxingyl.es.conf.index.DbTableConfigInfo;
 /**
  * Created by xing on 15/8/27.
  * query data from table, the sql has common part, eg:
- *  SELECT XX, YY, ZZ FROM TABLE_NAME
+ * SELECT XX, YY, ZZ FROM TABLE_NAME
  * so we can prepare create common part, no need to create every query
  */
 public class SqlQueryCommon {
@@ -30,6 +30,8 @@ public class SqlQueryCommon {
 
     private String masterAlias;
 
+    private TableQueryBaseInfo tableQueryBaseInfo;
+
     private IndexSlaveResultMergeEnum mergeType;
 
     public String getOrderBy() {
@@ -50,6 +52,10 @@ public class SqlQueryCommon {
 
     public DbTableDesc getTable() {
         return table;
+    }
+
+    public TableQueryBaseInfo getTableQueryBaseInfo() {
+        return tableQueryBaseInfo == null ? tableQueryBaseInfo = TableQueryBaseInfo.build(this) : tableQueryBaseInfo;
     }
 
     public String getMasterAlias() {

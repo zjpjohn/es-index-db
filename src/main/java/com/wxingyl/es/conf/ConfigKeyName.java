@@ -20,6 +20,8 @@ public interface ConfigKeyName {
 
     String DS_DB_NAMES = "db_names";
 
+    String DS_QUERY_HANDLE_CLS = "query_handle_cls";
+
     String INDEX_INCLUDE_TYPE = "include_type";
 
     String INDEX_DEFAULT_SCHEMA = "default_schema";

@@ -51,6 +51,6 @@ public class DataSourceParseFactory implements DataSourceParserManager {
             throw new DataSourceConfigException("There is not a support parser for driver_class_name: "
                     + driverClassName + " in " + configName);
         }
-        return parse.parseDataBase(configName, schemaList);
+        return parse.parseSchemas(configName, schemaList);
     }
 }

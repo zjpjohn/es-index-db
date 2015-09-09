@@ -1,6 +1,6 @@
 package com.wxingyl.es.conf.ds;
 
-import com.wxingyl.es.jdal.handle.SqlQueryHandle;
+import com.wxingyl.es.dbquery.SqlQueryHandle;
 
 /**
  * Created by xing on 15/8/17.

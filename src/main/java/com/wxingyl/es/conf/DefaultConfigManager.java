@@ -2,9 +2,11 @@ package com.wxingyl.es.conf;
 
 import com.wxingyl.es.conf.ds.*;
 import com.wxingyl.es.conf.index.*;
+import com.wxingyl.es.dbquery.DefaultResultSetHandlerFactory;
+import com.wxingyl.es.dbquery.ResultSetHandlerFactory;
 import com.wxingyl.es.exception.IndexConfigException;
-import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.handle.SqlQueryHandle;
+import com.wxingyl.es.dbquery.DbTableDesc;
+import com.wxingyl.es.dbquery.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.util.*;
@@ -21,7 +23,9 @@ public class DefaultConfigManager extends AbstractConfigManager {
 
     private DataSourceParserManager dataSourceConfigFactory;
 
-    private BiConsumer<TableQueryInfo, List<String>> masterAliasVerify = this::verifyMasterAliasRepeat;
+    private ResultSetHandlerFactory resultSetHandlerFactory;
+
+    private BiConsumer<TableQueryInfo, List<String>> masterAliasVerify;
 
     /**
      * default add mysql parser
@@ -30,6 +34,8 @@ public class DefaultConfigManager extends AbstractConfigManager {
         indexConfParser = new IndexConfigParser();
         dataSourceConfigFactory = new DataSourceParseFactory();
         dataSourceConfigFactory.addDataSourceConfigParser(new MysqlDataSourceConfigParser());
+        resultSetHandlerFactory = DefaultResultSetHandlerFactory.INSTANCE;
+        masterAliasVerify = this::verifyMasterAliasRepeat;
     }
 
     @Override
@@ -40,7 +46,8 @@ public class DefaultConfigManager extends AbstractConfigManager {
         for (TypeConfigInfo type : typeSet) {
             builder.type(type.getTypeDesc());
             for (DbTableConfigInfo tableInfo : type.getTables()) {
-                builder.addTableQuery(verifyTypeTableConfig(type, tableInfo), tableInfo);
+                builder.addTableQuery(verifyTypeTableConfig(type, tableInfo), tableInfo,
+                        resultSetHandlerFactory.get(this, tableInfo));
             }
             set.add(builder.build(type.getMasterTable(), masterAliasVerify));
         }
@@ -49,7 +56,7 @@ public class DefaultConfigManager extends AbstractConfigManager {
 
     private SqlQueryHandle verifyTypeTableConfig(TypeConfigInfo type, DbTableConfigInfo info) {
         DbTableDesc table = info.getTable();
-        DataSourceBean dataSourceBean = getDataSourceBean(table);
+        DataSourceBean dataSourceBean = findDataSourceBean(table.getSchema(), table.getUrlAddress());
         if (dataSourceBean == null) {
             throw new IndexConfigException("Index config: " + type + ", " + table + " can't find datasource config");
         }

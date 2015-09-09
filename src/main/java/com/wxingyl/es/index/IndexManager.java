@@ -14,11 +14,11 @@ public interface IndexManager {
      * @param typeBean type
      * @return create document number
      */
-    int indexTypeFill(IndexTypeBean typeBean);
+    long indexTypeFill(IndexTypeBean typeBean);
 
     void registerDocPostProcessor(DocPostProcessor docPostProcessor);
 
     void registerBulkIndexGenerate(BulkIndexGenerate bulkIndexGenerate);
 
-    void registerTableQueryResultListener(TableQueryResultListener listener);
+    void registerTableQueryResultHandle(TableQueryResultHandle listener);
 }

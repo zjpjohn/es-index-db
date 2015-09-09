@@ -1,12 +1,16 @@
 package com.wxingyl.es.conf.index;
 
-import com.wxingyl.es.jdal.FilterMapListHandler;
-import com.wxingyl.es.jdal.SqlQueryCommon;
-import com.wxingyl.es.jdal.handle.SqlQueryHandle;
+import com.wxingyl.es.dbquery.SqlQueryCommon;
+import com.wxingyl.es.dbquery.SqlQueryHandle;
+import com.wxingyl.es.dbquery.TableQueryBaseInfo;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.ImmutableListMultimap;
 import org.elasticsearch.common.collect.ImmutableMultimap;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
@@ -21,7 +25,7 @@ public class TableQueryInfo {
      * filter {@link DbTableConfigInfo#forbidFields}
      * nullable
      */
-    private FilterMapListHandler rsh;
+    private ResultSetHandler<List<Map<String, Object>>> rsh;
 
     private SqlQueryCommon queryCommon;
 
@@ -37,7 +41,7 @@ public class TableQueryInfo {
         return queryHandler;
     }
 
-    public FilterMapListHandler getRsh() {
+    public ResultSetHandler<List<Map<String, Object>>> getRsh() {
         return rsh;
     }
 
@@ -52,6 +56,14 @@ public class TableQueryInfo {
         return queryCommon;
     }
 
+    public void allTableQueryBaseInfo(List<TableQueryBaseInfo> list) {
+        if (list == null) return;
+        list.add(queryCommon.getTableQueryBaseInfo());
+        if (slaveQuery != null) {
+            slaveQuery.values().forEach(v -> v.allTableQueryBaseInfo(list));
+        }
+    }
+
     static Builder build() {
         return new Builder();
     }
@@ -60,7 +72,7 @@ public class TableQueryInfo {
 
         private SqlQueryHandle queryHandler;
 
-        private FilterMapListHandler rsh;
+        private ResultSetHandler<List<Map<String, Object>>> rsh;
 
         private SqlQueryCommon queryCommon;
 
@@ -75,7 +87,7 @@ public class TableQueryInfo {
             return this;
         }
 
-        public Builder rsh(FilterMapListHandler rsh) {
+        public Builder rsh(ResultSetHandler<List<Map<String, Object>>> rsh) {
             this.rsh = rsh;
             return this;
         }

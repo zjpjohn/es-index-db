@@ -1,10 +1,9 @@
 package com.wxingyl.es.index.doc;
 
 import com.wxingyl.es.conf.IndexSlaveResultMergeEnum;
-import com.wxingyl.es.index.DbQueryDependResult;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.jdal.TableQueryBaseInfo;
-import com.wxingyl.es.jdal.TableQueryResult;
+import com.wxingyl.es.dbquery.TableQueryBaseInfo;
+import com.wxingyl.es.dbquery.TableQueryResult;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.util.List;
@@ -16,18 +15,6 @@ import java.util.Set;
  * default DocPostProcessor
  */
 public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
-
-    @Override
-    public PageDocument postProcessor(DbQueryDependResult masterResult) {
-        return null;
-    }
-
-    @Override
-    public PageDocument initMasterPageDoc(TableQueryResult masterResult) {
-        PageDocument masterPageDoc = new PageDocument(DocumentBaseInfo.build(masterResult.getBaseInfo(), getPostEvn()));
-        masterPageDoc.addAll(DocFields.build(masterResult.getDbData()));
-        return masterPageDoc;
-    }
 
     @Override
     public PageDocument applyTableQueryResult(PageDocument masterPageDoc, String masterField, TableQueryResult slaveResult) {

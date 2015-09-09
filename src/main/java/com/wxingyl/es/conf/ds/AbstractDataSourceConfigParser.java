@@ -2,11 +2,13 @@ package com.wxingyl.es.conf.ds;
 
 import com.wxingyl.es.conf.ConfigKeyName;
 import com.wxingyl.es.exception.DataSourceConfigException;
-import com.wxingyl.es.jdal.handle.SqlQueryHandle;
+import com.wxingyl.es.dbquery.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.elasticsearch.common.collect.Tuple;
 
+import javax.sql.DataSource;
+import java.lang.reflect.Constructor;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +44,7 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
         if (dbNames == null && jdbcInfo.v2() == null) {
             throw new DataSourceConfigException("datasource config: " + configName + " can't find schema for jdbc url: " + url );
         }
-        SqlQueryHandle sqlQueryHandle = createSqlQueryHandler(dataSource);
+        SqlQueryHandle sqlQueryHandle = createSqlQueryHandler(dataSource, config);
         if (dbNames != null) {
             dbNames.forEach(v -> ret.add(DataSourceBean.build(jdbcInfo.v1(), v)
                     .queryHandle(sqlQueryHandle)
@@ -66,6 +68,24 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
      *         v2: if there is schema name, return
      */
     protected abstract Tuple<String, String> parseJdbcInfo(String jdbcUrl);
+
+    @SuppressWarnings("unchecked")
+    private SqlQueryHandle createSqlQueryHandler(BasicDataSource dataSource, Map<String, Object> config) {
+        String className = CommonUtils.getStringVal(config, ConfigKeyName.DS_QUERY_HANDLE_CLS);
+        if (className == null) return createSqlQueryHandler(dataSource);
+        try {
+            Class cls = Class.forName(className);
+            if (!SqlQueryHandle.class.isAssignableFrom(cls)) {
+                throw new DataSourceConfigException("config " + ConfigKeyName.DS_QUERY_HANDLE_CLS + ": " + className
+                        + " is not implement " + SqlQueryHandle.class);
+            }
+            Constructor constructor = cls.getConstructor(DataSource.class);
+            return (SqlQueryHandle) constructor.newInstance(dataSource);
+        } catch (Exception e) {
+            throw new DataSourceConfigException("config " + ConfigKeyName.DS_QUERY_HANDLE_CLS + ": " + className
+                    + " create failed", e);
+        }
+    }
 
     @Override
     public int hashCode() {

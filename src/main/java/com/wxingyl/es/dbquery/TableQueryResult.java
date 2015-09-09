@@ -1,4 +1,4 @@
-package com.wxingyl.es.jdal;
+package com.wxingyl.es.dbquery;
 
 import java.util.List;
 import java.util.Map;
@@ -59,7 +59,7 @@ public class TableQueryResult {
             TableQueryResult ret = new TableQueryResult();
             ret.pageSize = common.getPageSize();
             ret.dbData = dbData;
-            ret.baseInfo = TableQueryBaseInfo.build(common);
+            ret.baseInfo = common.getTableQueryBaseInfo();
             return ret;
         }
 

@@ -1,15 +1,15 @@
 package com.wxingyl.es.index;
 
-import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.TableQueryResult;
+import com.wxingyl.es.dbquery.DbTableDesc;
+import com.wxingyl.es.dbquery.TableQueryResult;
 
 import java.util.Set;
 
 /**
  * Created by xing on 15/9/2.
- * table query result listener
+ * table query result handle
  */
-public interface TableQueryResultListener {
+public interface TableQueryResultHandle {
 
     void onHandle(IndexTypeDesc type, TableQueryResult tableQueryResult);
 

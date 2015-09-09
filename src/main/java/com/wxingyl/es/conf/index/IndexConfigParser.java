@@ -2,8 +2,8 @@ package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.DbTableFieldDesc;
+import com.wxingyl.es.dbquery.DbTableDesc;
+import com.wxingyl.es.dbquery.DbTableFieldDesc;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
 

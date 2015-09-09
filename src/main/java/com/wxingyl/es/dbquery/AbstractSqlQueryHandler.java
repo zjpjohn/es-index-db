@@ -1,13 +1,14 @@
-package com.wxingyl.es.jdal.handle;
+package com.wxingyl.es.dbquery;
 
-import com.wxingyl.es.jdal.DbTableDesc;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.elasticsearch.common.cache.CacheBuilder;
 import org.elasticsearch.common.cache.CacheLoader;
 import org.elasticsearch.common.cache.LoadingCache;
-import org.elasticsearch.common.collect.Tuple;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -17,7 +18,9 @@ import java.util.concurrent.ExecutionException;
  */
 public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
 
-    protected QueryRunner queryRunner;
+    protected static final MapListHandler DEFAULT_MAP_LIST_HANDLER = new MapListHandler();
+
+    private QueryRunner queryRunner;
 
     private LoadingCache<String, Set<String>> schemaTablesCache;
 
@@ -44,6 +47,17 @@ public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
                     }
                 });
     }
+
+    @Override
+    public <T> T query(BaseQueryParam param, ResultSetHandler<T> rsh) throws SQLException {
+        return queryRunner.query(createSql(param), rsh);
+    }
+
+    protected QueryRunner getQueryRunner() {
+        return queryRunner;
+    }
+
+    protected abstract String createSql(BaseQueryParam param);
 
     protected abstract Set<String> loadAllTables(String schema) throws Exception;
 

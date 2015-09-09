@@ -3,13 +3,17 @@ package com.wxingyl.es.conf;
 import com.wxingyl.es.conf.ds.DataSourceBean;
 import com.wxingyl.es.conf.ds.DataSourceConfigParse;
 import com.wxingyl.es.conf.ds.DataSourceParserManager;
+import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.conf.index.IndexConfigParse;
 import com.wxingyl.es.conf.index.IndexTypeBean;
 import com.wxingyl.es.conf.index.TypeConfigInfo;
+import com.wxingyl.es.dbquery.ResultSetHandlerFactory;
 import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.jdal.DbTableDesc;
+import com.wxingyl.es.dbquery.DbTableDesc;
 import com.wxingyl.es.util.CommonUtils;
+import com.wxingyl.es.util.Listener;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;
@@ -32,11 +36,11 @@ public abstract class AbstractConfigManager implements ConfigManager {
      */
     private Map<String, Set<IndexTypeBean>> indexTypeMap = new HashMap<>();
 
-    protected abstract DataSourceParserManager getDataSourceConfigFactory();
+    private List<Listener<Set<DataSourceBean>>> dataSourceListeners = new ArrayList<>();
 
-    protected abstract IndexConfigParse getIndexConfigParse();
+    private List<Listener<Set<IndexTypeBean>>> indexTypeListeners = new ArrayList<>();
 
-    protected abstract Set<IndexTypeBean> transformToIndexTypeBean(Set<TypeConfigInfo> typeSet);
+    private ResultSetHandlerFactory resultSetHandlerFactory;
 
     @Override
     public boolean addDataSourceConfigParser(DataSourceConfigParse parser) {
@@ -75,11 +79,12 @@ public abstract class AbstractConfigManager implements ConfigManager {
     }
 
     @Override
-    public DataSourceBean getDataSourceBean(DbTableDesc table) {
-        Set<DataSourceBean> set = dataSourceMap.get(table.getSchema());
+    public DataSourceBean findDataSourceBean(String schema, String urlAddress) {
+        Objects.requireNonNull(schema);
+        Set<DataSourceBean> set = dataSourceMap.get(schema);
         if (CommonUtils.isEmpty(set)) return null;
         for (DataSourceBean ds : set) {
-            if (table.getUrlAddress() == null || table.getUrlAddress().equalsIgnoreCase(ds.getUrlAddress())) {
+            if (urlAddress == null || urlAddress.equalsIgnoreCase(ds.getUrlAddress())) {
                 return ds;
             }
         }
@@ -87,7 +92,7 @@ public abstract class AbstractConfigManager implements ConfigManager {
     }
 
     @Override
-    public IndexTypeBean getIndexTypeBean(IndexTypeDesc type) {
+    public IndexTypeBean findIndexTypeBean(IndexTypeDesc type) {
         Set<IndexTypeBean> set = indexTypeMap.get(type.getIndex());
         if (CommonUtils.isEmpty(set)) return null;
         for (IndexTypeBean tb : set) {
@@ -97,8 +102,18 @@ public abstract class AbstractConfigManager implements ConfigManager {
     }
 
     @Override
-    public Set<IndexTypeBean> getIndexTypeBean(String index) {
+    public Set<IndexTypeBean> findIndexTypeBean(String index) {
         return indexTypeMap.get(index);
+    }
+
+    @Override
+    public boolean registerDataSourceListener(Listener<Set<DataSourceBean>> listener) {
+        return !dataSourceListeners.contains(listener) && dataSourceListeners.add(listener);
+    }
+
+    @Override
+    public boolean registerIndexTypeListener(Listener<Set<IndexTypeBean>> listener) {
+        return !indexTypeListeners.contains(listener) && indexTypeListeners.add(listener);
     }
 
     @SuppressWarnings("unchecked")
@@ -120,7 +135,7 @@ public abstract class AbstractConfigManager implements ConfigManager {
             }
             set.add(k);
         });
-        //TODO index type config change, should notify some registers
+        indexTypeListeners.forEach(l -> l.onChange(beanSet));
     }
 
     protected void addDataSourceBean(Set<DataSourceBean> beanSet) {
@@ -132,7 +147,7 @@ public abstract class AbstractConfigManager implements ConfigManager {
             }
             set.add(k);
         });
-        //TODO index type config change, should notify some registers
+        dataSourceListeners.forEach(l -> l.onChange(beanSet));
     }
 
     protected Map<String, Set<DataSourceBean>> getDataSourceMap() {
@@ -142,4 +157,10 @@ public abstract class AbstractConfigManager implements ConfigManager {
     protected Map<String, Set<IndexTypeBean>> getIndexTypeMap() {
         return indexTypeMap;
     }
+
+    protected abstract DataSourceParserManager getDataSourceConfigFactory();
+
+    protected abstract IndexConfigParse getIndexConfigParse();
+
+    protected abstract Set<IndexTypeBean> transformToIndexTypeBean(Set<TypeConfigInfo> typeSet);
 }

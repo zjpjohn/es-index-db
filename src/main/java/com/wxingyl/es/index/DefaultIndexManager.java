@@ -4,7 +4,7 @@ import com.wxingyl.es.conf.index.IndexTypeBean;
 import com.wxingyl.es.index.doc.DefaultDocPostProcessor;
 import com.wxingyl.es.index.doc.DocPostProcessor;
 import com.wxingyl.es.index.doc.PageDocument;
-import com.wxingyl.es.jdal.TableQueryResult;
+import com.wxingyl.es.dbquery.TableQueryResult;
 import org.elasticsearch.client.Client;
 
 import java.util.Map;
@@ -52,7 +52,7 @@ public class DefaultIndexManager extends AbstractIndexManager {
     }
 
     @Override
-    public int indexTypeFill(IndexTypeBean typeBean) {
+    public long indexTypeFill(IndexTypeBean typeBean) {
         IndexTypeDesc type = typeBean.getType();
         TableDependQuery query = new TableDependQuery(typeBean.getMasterTable());
 
@@ -66,10 +66,10 @@ public class DefaultIndexManager extends AbstractIndexManager {
             docPostProcessor.startPost(type);
         }
 
-        int docCount = 0;
+        long docCount = 0;
         while (query.hasNext()) {
             DbQueryDependResult ret = query.next();
-            notifyTableQueryResultListener(type, ret.getAllTableResult());
+            notifyTableQueryResultHandler(type, ret.getAllTableResult());
 
             PageDocument pageDocument = null;
             if (docPostProcessor != null) {

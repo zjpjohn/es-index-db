@@ -2,8 +2,8 @@ package com.wxingyl.es.index;
 
 import com.wxingyl.es.exception.IndexIllegalArgumentException;
 import com.wxingyl.es.index.doc.DocPostProcessor;
-import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.TableQueryResult;
+import com.wxingyl.es.dbquery.DbTableDesc;
+import com.wxingyl.es.dbquery.TableQueryResult;
 import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.client.Client;
 
@@ -24,7 +24,7 @@ public abstract class AbstractIndexManager implements IndexManager {
 
     private Map<IndexTypeDesc, BulkIndexGenerate> bulkIndexGeneratorMap = new HashMap<>();
 
-    private Map<DbTableDesc, TableQueryResultListener> tableQueryResultListenerMap = new HashMap<>();
+    private Map<DbTableDesc, TableQueryResultHandle> tableQueryResultHandleMap = new HashMap<>();
 
     public AbstractIndexManager(Client client) {
         this.client = client;
@@ -47,11 +47,11 @@ public abstract class AbstractIndexManager implements IndexManager {
     }
 
     @Override
-    public void registerTableQueryResultListener(TableQueryResultListener listener) {
-        if (CommonUtils.isEmpty(listener.supportTable())) {
-            throw new IndexIllegalArgumentException("TableQueryResultListener: " + listener + " supportTable is empty");
+    public void registerTableQueryResultHandle(TableQueryResultHandle handler) {
+        if (CommonUtils.isEmpty(handler.supportTable())) {
+            throw new IndexIllegalArgumentException("TableQueryResultListener: " + handler + " supportTable is empty");
         }
-        listener.supportTable().forEach(table -> tableQueryResultListenerMap.put(table, listener));
+        handler.supportTable().forEach(table -> tableQueryResultHandleMap.put(table, handler));
     }
 
     protected DocPostProcessor getDocPostProcessor(IndexTypeDesc type) {
@@ -62,11 +62,11 @@ public abstract class AbstractIndexManager implements IndexManager {
         return bulkIndexGeneratorMap.get(type);
     }
 
-    protected void notifyTableQueryResultListener(IndexTypeDesc type, List<TableQueryResult> queryResults) {
+    protected void notifyTableQueryResultHandler(IndexTypeDesc type, List<TableQueryResult> queryResults) {
         queryResults.forEach(q -> {
-            TableQueryResultListener listener = tableQueryResultListenerMap.get(q.getBaseInfo().getTable());
-            if (listener != null) {
-                listener.onHandle(type, q);
+            TableQueryResultHandle handler = tableQueryResultHandleMap.get(q.getBaseInfo().getTable());
+            if (handler != null) {
+                handler.onHandle(type, q);
             }
         });
     }

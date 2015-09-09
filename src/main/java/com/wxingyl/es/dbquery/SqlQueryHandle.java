@@ -1,7 +1,8 @@
-package com.wxingyl.es.jdal.handle;
+package com.wxingyl.es.dbquery;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
-import com.wxingyl.es.jdal.*;
+import com.wxingyl.es.dbquery.*;
+import org.apache.commons.dbutils.ResultSetHandler;
 
 import java.sql.SQLException;
 import java.util.Set;
@@ -13,12 +14,11 @@ import java.util.concurrent.ExecutionException;
  */
 public interface SqlQueryHandle {
 
-    FilterMapListHandler DEFAULT_MAP_LIST_HANDLER = new FilterMapListHandler(null);
-
     SqlQueryCommon createPrepareSqlQuery(DbTableConfigInfo tableInfo);
 
     TableQueryResult query(SqlQueryParam param) throws SQLException;
 
+    <T> T query(BaseQueryParam param, ResultSetHandler<T> rsh) throws SQLException;
     /**
      * get all tables in the schema
      */

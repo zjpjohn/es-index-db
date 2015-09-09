@@ -1,4 +1,4 @@
-package com.wxingyl.es.jdal;
+package com.wxingyl.es.dbquery;
 
 import com.wxingyl.es.util.CommonUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -18,10 +18,13 @@ public class FilterMapListHandler implements ResultSetHandler<List<Map<String, O
 
     private Set<String> filterFields;
 
-    public FilterMapListHandler(Collection<String> fields) {
+    private FieldValueProcessor fieldValueProcessor;
+
+    public FilterMapListHandler(Set<String> fields, FieldValueProcessor fieldValueProcessor) {
         if (!CommonUtils.isEmpty(fields)) {
-            filterFields = new HashSet<>(fields);
+            filterFields = Collections.unmodifiableSet(fields);
         }
+        this.fieldValueProcessor = fieldValueProcessor;
     }
 
     protected Map<String, Object> handleRow(ResultSet rs) throws SQLException {
@@ -36,7 +39,12 @@ public class FilterMapListHandler implements ResultSetHandler<List<Map<String, O
             }
             columnName = columnName.toLowerCase();
             if (filterFields != null && filterFields.contains(columnName)) continue;
-            result.put(columnName, rs.getObject(i));
+            Object value = rs.getObject(i);
+            if (fieldValueProcessor != null) {
+                value = fieldValueProcessor.handle(columnName, value);
+            }
+            if (value == null) continue;
+            result.put(columnName, value);
         }
 
         return result;

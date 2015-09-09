@@ -1,10 +1,9 @@
 package com.wxingyl.es.conf.index;
 
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.jdal.*;
-import com.wxingyl.es.jdal.FilterMapListHandler;
-import com.wxingyl.es.jdal.handle.SqlQueryHandle;
-import com.wxingyl.es.util.CommonUtils;
+import com.wxingyl.es.dbquery.*;
+import com.wxingyl.es.dbquery.SqlQueryHandle;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.Tuple;
 
 import java.util.*;
@@ -20,7 +19,10 @@ public class IndexTypeBean {
 
     private TableQueryInfo masterTable;
 
-    private IndexTypeBean() {}
+    private List<TableQueryBaseInfo> allTableInfo;
+
+    private IndexTypeBean() {
+    }
 
     public IndexTypeDesc getType() {
         return type;
@@ -28,6 +30,43 @@ public class IndexTypeBean {
 
     public TableQueryInfo getMasterTable() {
         return masterTable;
+    }
+
+    public List<TableQueryBaseInfo> getTableInfo(String tableName) {
+        if (allTableInfo == null) getAllTableInfo();
+        List<TableQueryBaseInfo> list = new ArrayList<>();
+        allTableInfo.forEach(v -> {
+            if (v.getTable().getTable().equals(tableName)) list.add(v);
+        });
+        return list;
+    }
+
+    /**
+     * @return unmodifiable list
+     */
+    public List<TableQueryBaseInfo> getAllTableInfo() {
+        if (allTableInfo == null) {
+            List<TableQueryBaseInfo> list = new ArrayList<>();
+            masterTable.allTableQueryBaseInfo(list);
+            allTableInfo = Collections.unmodifiableList(list);
+        }
+        return allTableInfo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof IndexTypeBean)) return false;
+
+        IndexTypeBean bean = (IndexTypeBean) o;
+
+        return type.equals(bean.type);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return type.hashCode();
     }
 
     public static Builder build() {
@@ -45,12 +84,12 @@ public class IndexTypeBean {
             return this;
         }
 
-        public Builder addTableQuery(SqlQueryHandle queryHandler, DbTableConfigInfo tableInfo) {
+        public Builder addTableQuery(SqlQueryHandle queryHandler, DbTableConfigInfo tableInfo,
+                                     ResultSetHandler<List<Map<String, Object>>> rsh) {
             TableQueryInfo.Builder queryBuilder = TableQueryInfo.build();
             queryBuilder.queryHandler(queryHandler)
                     .queryCommon(queryHandler.createPrepareSqlQuery(tableInfo))
-                    .rsh(CommonUtils.isEmpty(tableInfo.getForbidFields()) ? SqlQueryHandle.DEFAULT_MAP_LIST_HANDLER
-                            : new FilterMapListHandler(tableInfo.getForbidFields()));
+                    .rsh(rsh);
             tableMap.put(tableInfo.getTable(), Tuple.tuple(queryBuilder, tableInfo.getMasterField()));
             return this;
         }

@@ -1,10 +1,6 @@
-package com.wxingyl.es.jdal.handle;
+package com.wxingyl.es.dbquery;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
-import com.wxingyl.es.jdal.TableQueryResult;
-import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.SqlQueryCommon;
-import com.wxingyl.es.jdal.SqlQueryParam;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -18,6 +14,11 @@ public class SqlServerQueryHandler extends AbstractSqlQueryHandler {
 
     public SqlServerQueryHandler(DataSource dataSource) {
         super(dataSource);
+    }
+
+    @Override
+    protected String createSql(BaseQueryParam param) {
+        return null;
     }
 
     @Override

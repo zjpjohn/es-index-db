@@ -2,7 +2,7 @@ package com.wxingyl.es.index.doc;
 
 import com.wxingyl.es.index.DbQueryDependResult;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.jdal.TableQueryResult;
+import com.wxingyl.es.dbquery.TableQueryResult;
 
 import java.util.Set;
 
@@ -24,10 +24,29 @@ public interface DocPostProcessor {
      */
     PageDocument postProcessor(DbQueryDependResult masterResult);
 
+    /**
+     * create PageDocument by master table query result
+     */
     PageDocument initMasterPageDoc(TableQueryResult masterResult);
 
+    /**
+     * if this slave-table is leaf table, don't have child slave-table, only self table query, will callback this function
+     * @param masterPageDoc master PageDocument object
+     * @param masterField master table key field
+     * @param slaveResult leaf slave-table query result
+     * @return return PageDocument, you can wrapper this PageDocument,
+     *  if return null, it means don't handle, and will call defaultDocPostProcessor.applyTableQueryResult
+     */
     PageDocument applyTableQueryResult(PageDocument masterPageDoc, String masterField, TableQueryResult slaveResult);
 
+    /**
+     * if a slave-table have child slave-table, not a leaf salve-table, need merge childPageDoc
+     * @param masterPageDoc master PageDocument object
+     * @param masterField   master table key field
+     * @param childPageDoc child pageDocument
+     * @return return PageDocument, you can wrapper this PageDocument,
+     *  if return null, it means don't handle, and will call defaultDocPostProcessor.applyTableQueryResult
+     */
     PageDocument mergeChildPageDoc(PageDocument masterPageDoc, String masterField, PageDocument childPageDoc);
 
     Set<IndexTypeDesc> supportType();

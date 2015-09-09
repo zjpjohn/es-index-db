@@ -1,7 +1,6 @@
 package com.wxingyl.es.index;
 
-import com.wxingyl.es.jdal.DbTableDesc;
-import com.wxingyl.es.jdal.TableQueryResult;
+import com.wxingyl.es.dbquery.TableQueryResult;
 import org.elasticsearch.common.collect.ArrayListMultimap;
 import org.elasticsearch.common.collect.Multimap;
 
