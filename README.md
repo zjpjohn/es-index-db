@@ -10,3 +10,6 @@
 <p style="font-size: 14px;">   关键词：ElasticSearch index / mysql, sqlserver river es / real time index </p>
 <h1>文档</h1>
 <p style="font-size: 14px;"> <a href="https://github.com/wxingyl/db-river-elasticsearch/wiki">here</a></p>
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/wxingyl/db-river-elasticsearch/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
