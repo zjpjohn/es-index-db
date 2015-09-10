@@ -4,10 +4,10 @@
 <p style="font-size: 14px;">  另外索引创建之后，数据库数据如有改动，索引无法联动修改，ElasticSearch没有相关功能，我们只能根据修改频率重建索引，基本上没有实时性可言。</p>
 <p style="font-size: 14px;">  db-river-es正是为了解决这些问题而生。</p>
 <h1>项目介绍</h1>
-<p style="font-size: 14px;">   名称：db-river-es</p>
+<p style="font-size: 14px;">   名称：es-index-db</p>
 <p style="font-size: 14px;">   语言：纯java开发</p>
 <p style="font-size: 14px;">   定位：从数据库创建ElasticSearch全量索引，索引与数据库数据联动，实时更新</p>
-<p style="font-size: 14px;">   关键词：ElasticSearch index / mysql, sqlserver river es / real time index </p>
+<p style="font-size: 14px;">   关键词：ElasticSearch index / mysql, sqlserver... / real time index </p>
 <h1>文档</h1>
 <p style="font-size: 14px;"> <a href="https://github.com/wxingyl/db-river-elasticsearch/wiki">here</a></p>
 
