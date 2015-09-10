@@ -9,6 +9,25 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <name>es-index-db</name>
+    <description>A easy way to create index of elasticsearch from database, and real time update index when database updated</description>
+
+    <scm>
+        <url>https://github.com/wxingyl/db-river-elasticsearch</url>
+        <connection>scm:git:https://github.com/wxingyl/db-river-elasticsearch.git</connection>
+        <developerConnection>scm:git:git@github.com:wxingyl/db-river-elasticsearch.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>wxingyl</id>
+            <name>xingxing.wang</name>
+            <email>xingxing.wang@live.com</email>
+            <timezone>8</timezone>
+        </developer>
+    </developers>
+
     <dependencies>
         <dependency>
             <groupId>org.elasticsearch</groupId>
