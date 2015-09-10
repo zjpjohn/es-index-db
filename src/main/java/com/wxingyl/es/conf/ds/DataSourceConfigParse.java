@@ -1,6 +1,7 @@
 package com.wxingyl.es.conf.ds;
 
 import com.wxingyl.es.conf.ConfigParse;
+import com.wxingyl.es.db.DataSourceBean;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.util.HashSet;

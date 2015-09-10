@@ -7,6 +7,7 @@ import com.wxingyl.es.index.IndexManager;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -34,6 +35,11 @@ public abstract class AbstractIndexDbTest {
         indexManager = new DefaultIndexManager(client);
         configManager = new DefaultConfigManager();
         System.out.println("~~~~~~~~~ setup end ~~~~~~~~~~~");
+    }
+
+    @AfterClass
+    public static void finish() {
+        client.close();
     }
 
     @Before

@@ -1,7 +1,7 @@
-package com.wxingyl.es.conf.index;
+package com.wxingyl.es.db.query;
 
+import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.db.SqlQueryCommon;
-import com.wxingyl.es.db.query.SqlQueryHandle;
 import com.wxingyl.es.db.TableBaseInfo;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.ImmutableListMultimap;
@@ -64,7 +64,7 @@ public class TableQueryInfo {
         }
     }
 
-    static Builder build() {
+    public static Builder build() {
         return new Builder();
     }
 

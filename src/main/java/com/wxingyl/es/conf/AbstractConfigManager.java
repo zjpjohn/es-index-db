@@ -1,10 +1,10 @@
 package com.wxingyl.es.conf;
 
-import com.wxingyl.es.conf.ds.DataSourceBean;
+import com.wxingyl.es.db.DataSourceBean;
 import com.wxingyl.es.conf.ds.DataSourceConfigParse;
 import com.wxingyl.es.conf.ds.DataSourceParserManager;
 import com.wxingyl.es.conf.index.IndexConfigParse;
-import com.wxingyl.es.conf.index.IndexTypeBean;
+import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.conf.index.TypeConfigInfo;
 import com.wxingyl.es.db.result.ResultSetHandlerFactory;
 import com.wxingyl.es.exception.IndexConfigException;

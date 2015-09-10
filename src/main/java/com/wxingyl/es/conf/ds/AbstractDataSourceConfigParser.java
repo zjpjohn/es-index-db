@@ -1,6 +1,7 @@
 package com.wxingyl.es.conf.ds;
 
 import com.wxingyl.es.conf.ConfigKeyName;
+import com.wxingyl.es.db.DataSourceBean;
 import com.wxingyl.es.exception.DataSourceConfigException;
 import com.wxingyl.es.db.query.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;

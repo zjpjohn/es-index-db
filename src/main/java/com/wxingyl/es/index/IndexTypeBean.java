@@ -1,6 +1,7 @@
-package com.wxingyl.es.conf.index;
+package com.wxingyl.es.index;
 
-import com.wxingyl.es.index.IndexTypeDesc;
+import com.wxingyl.es.conf.index.DbTableConfigInfo;
+import com.wxingyl.es.db.query.TableQueryInfo;
 import com.wxingyl.es.db.*;
 import com.wxingyl.es.db.query.SqlQueryHandle;
 import org.apache.commons.dbutils.ResultSetHandler;

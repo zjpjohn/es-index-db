@@ -1,5 +1,6 @@
 package com.wxingyl.es.index.post;
 
+import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DateConvert;
 
 import java.text.ParseException;
@@ -12,16 +13,13 @@ import java.util.Date;
  */
 public class DefaultDateConvert implements DateConvert {
 
-    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT = new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        }
-    };
+    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT = CommonUtils.createThreadLocal(() ->
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 
     public static final DefaultDateConvert INSTANCE = new DefaultDateConvert();
 
-    private DefaultDateConvert() {}
+    private DefaultDateConvert() {
+    }
 
     @Override
     public String format(Date date) {

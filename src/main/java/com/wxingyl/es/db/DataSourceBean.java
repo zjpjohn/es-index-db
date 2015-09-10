@@ -1,4 +1,4 @@
-package com.wxingyl.es.conf.ds;
+package com.wxingyl.es.db;
 
 import com.wxingyl.es.db.query.SqlQueryHandle;
 

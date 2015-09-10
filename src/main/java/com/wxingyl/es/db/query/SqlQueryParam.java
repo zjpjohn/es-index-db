@@ -1,6 +1,5 @@
 package com.wxingyl.es.db.query;
 
-import com.wxingyl.es.conf.index.TableQueryInfo;
 import com.wxingyl.es.db.SqlQueryCommon;
 import org.apache.commons.dbutils.ResultSetHandler;
 

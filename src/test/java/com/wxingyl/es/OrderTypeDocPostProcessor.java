@@ -1,6 +1,6 @@
 package com.wxingyl.es;
 
-import com.wxingyl.es.conf.index.IndexTypeBean;
+import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.result.TableQueryResult;
 import com.wxingyl.es.index.IndexTypeDesc;
