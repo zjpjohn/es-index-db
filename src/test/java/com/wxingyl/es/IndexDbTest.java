@@ -1,6 +1,6 @@
 package com.wxingyl.es;
 
-import com.wxingyl.es.conf.index.IndexTypeBean;
+import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.db.query.BaseQueryParam;
 import org.apache.commons.dbutils.handlers.ScalarHandler;

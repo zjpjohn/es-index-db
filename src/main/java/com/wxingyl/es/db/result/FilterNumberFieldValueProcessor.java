@@ -1,7 +1,7 @@
 package com.wxingyl.es.db.result;
 
 import com.wxingyl.es.conf.ConfigManager;
-import com.wxingyl.es.conf.index.IndexTypeBean;
+import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.Listener;
 import com.wxingyl.es.util.RwLock;
