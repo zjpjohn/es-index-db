@@ -1,67 +1,12 @@
-# db-river-elasticsearch
-Create elasticsearch index from db, and db query is configurable.
-
-Create full index from db for elasticsearch, now support mysql. If work well for other db, you must to implement some interface!
-
-We use an index file which a yaml format config file to manager index data come from which database, this config file define 
-index name, type name, database info and so on. A config context as follow:
-
-    order_v1:
-      # When deleting some records, always do not physically delete, usually update a delete field to 'Y' or '1'
-      # instead of physically delete. if you table have this field, you can config like it
-      default_delete_field: is_deleted
-      default_delete_valid_value: N
-      include_type:
-        - type: order_info
-          default_schema: sea
-          default_page_size: 240
-          # We user relational data base, when creating index need a master table, and query data from relative table(named slave-table)
-          # to fill data. 'master_table'.relation_field will be used primary key when creating index.
-          master_table: db_order_info
-          # Note: type config have many tables, every table can config schema, dbAddress. When we config master_field, if there are
-          # some same name tables, it will bring about can't find right table. In the immediate future, will work a solution to the issue.
-          include_table:
-            - table: db_order_info
-              page_size: 100
-              fields: '*'
-              forbid_fields: [admin_id, pay_url, city_id, bonus, money_paid]
-              # relation_field which in local-table field relation with master_field of master-table
-              # if this table is not a master-table, this config is indispensable
-              relation_field: order_id
-              query_condition: seller_id=1
-            - table: db_order_goods
-              # every table must be have master_field
-              fields: [order_id, goods_id, goods_name, new_goods_sn, goods_number, measure_unit, goods_price, sold_price,
-              sold_price_amount, activity_id, activity_group_id, activity_name]
-              relation_field: order_id
-              master_alias: order_goods_info
-              # salve-table can be sub-master-table, like here: in table 'db_order_goods', the master field is order_id, but
-              # we need goods info, we can query from 'db_goods', so 'db_order_goods' is master-table for 'db_goods'
-            - table: db_goods
-              fields: [goods_id, cat_id, brand_id, packing_value, oe_num, goods_quality_type, goods_img]
-              # in salve-table, master_field pair with relation_field, relation_field is local-table field, master_field is
-              # one field in master-table, you can assign to any one field of master-table, it default master-table.master_field.
-              # if the master-table is a sub-master-table, it can be assigned by the format of 'table.field'
-              master_alias: goods_info
-              master_field: db_order_goods.goods_id
-              relation_field: goods_id
-              merge_type: single
-            - table: db_warehouse
-              schema: tqdb_base
-              fields: warehouse_name
-              master_field: warehouse_id
-              relation_field: warehouse_id
-              query_condition: [seller_id=1]
-              merge_type: single
-    
-        - type: users
-          master_table: db_users
-          include_table:
-            table: db_users
-            schema: tqdb_base
-            relation_field: user_id
-            fields: '*'
-        
-This config file will create a index named order, it contain two type: order_info, user.
-
-I will publish version 1.0 as soon as possible !!!!
+# db-river-es
+<h1>背景</h1>
+<p style="font-size: 14px;">  <a href="https://github.com/elastic/elasticsearch">ElasticSearch</a>, 深受欢迎的开源分布式搜索引擎，很多场景下，我们需要将数据库的数据导入到ES，提供快速稳定的搜索服务。然而，从绑定了很多业务逻辑的关系型数据库中创建规范的，能够搜索的索引并不那么容易，我们必须根据业务，编写较多代码，关联多个表，才能很好的创建索引，而且很多时候这些代码是重复的。
+<p style="font-size: 14px;">  另外索引创建之后，数据库数据如有改动，索引无法联动修改，ElasticSearch没有相关功能，我们只能根据修改频率重建索引，基本上没有实时性可言。</p>
+<p style="font-size: 14px;">  db-river-es正是为了解决该问题而生。</p>
+<h1>项目介绍</h1>
+<p style="font-size: 14px;">   名称：db-river-es</p>
+<p style="font-size: 14px;">   语言：纯java开发</p>
+<p style="font-size: 14px;">   定位：从数据库创建ElasticSearch全量索引，索引与数据库数据联动，实时更新</p>
+<p style="font-size: 14px;">   关键词：ElasticSearch index / real time index </p>
+<h1>文档</h1>
+<p style="font-size: 14px;"> <a href="https://github.com/wxingyl/db-river-elasticsearch/wiki">here</a></p>
