@@ -7,6 +7,6 @@
 <p style="font-size: 14px;">   名称：db-river-es</p>
 <p style="font-size: 14px;">   语言：纯java开发</p>
 <p style="font-size: 14px;">   定位：从数据库创建ElasticSearch全量索引，索引与数据库数据联动，实时更新</p>
-<p style="font-size: 14px;">   关键词：ElasticSearch index / real time index </p>
+<p style="font-size: 14px;">   关键词：ElasticSearch index / mysql, sqlserver river es / real time index </p>
 <h1>文档</h1>
 <p style="font-size: 14px;"> <a href="https://github.com/wxingyl/db-river-elasticsearch/wiki">here</a></p>
