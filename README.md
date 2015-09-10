@@ -12,7 +12,6 @@
 <p style="font-size: 14px;"> <a href="https://github.com/wxingyl/db-river-elasticsearch/wiki">here</a></p>
 
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/wxingyl/es-index-db/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/wxingyl/es-index-db/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
