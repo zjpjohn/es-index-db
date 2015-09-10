@@ -67,4 +67,4 @@ This config file will create a index named order, it contain two type: order_inf
 I will publish version 1.0 as soon as possible !!!!
 
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/wxingyl/db-river-elasticsearch/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/wxingyl/es-index-db/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
