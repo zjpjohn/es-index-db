@@ -17,6 +17,8 @@ import org.junit.BeforeClass;
  */
 public abstract class AbstractIndexDbTest {
 
+    public static final String PROJECT_PATH = "/Users/xing/code/es-index-db";
+
     protected static TransportClient client;
 
     protected static ConfigManager configManager;
@@ -44,8 +46,8 @@ public abstract class AbstractIndexDbTest {
 
     @Before
     public void initConfig() {
-        configManager.parseDataSource("/Users/xing/code/db-river-elasticsearch/src/test/resources/datasource.yml");
-        configManager.parseIndexType("/Users/xing/code/db-river-elasticsearch/src/test/resources/index_data.yml");
+        configManager.parseDataSource(PROJECT_PATH + "/src/test/resources/datasource.yml");
+        configManager.parseIndexType(PROJECT_PATH + "/src/test/resources/index_data.yml");
         System.out.println("~~~~~~~~~ init config end ~~~~~~~~~~~");
     }
 }
