@@ -1,5 +1,7 @@
 package com.wxingyl.es;
 
+import com.wxingyl.es.db.query.QueryCondition;
+import com.wxingyl.es.db.query.SqlQueryOperator;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.db.query.BaseQueryParam;
@@ -28,7 +30,8 @@ public class IndexDbTest extends AbstractIndexDbTest {
         BaseQueryParam param = new BaseQueryParam();
         param.setTable(typeBean.getMasterTable().getQueryCommon().getTable());
         param.addField("count(1)");
-        param.addWhere("seller_id", 1);
+        QueryCondition.buildSingle("seller_id", SqlQueryOperator.EQ, "1");
+        param.addCondition(QueryCondition.buildSingle("seller_id", SqlQueryOperator.EQ, "1"));
         ScalarHandler<Long> scalarHandler = new ScalarHandler<>();
         long dbNum = typeBean.getMasterTable().getQueryHandler().query(param, scalarHandler);
         Assert.assertEquals(num, dbNum);

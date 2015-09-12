@@ -1,12 +1,13 @@
 package com.wxingyl.es.conf.index;
 
-import com.wxingyl.es.index.post.IndexSlaveResultMergeEnum;
-import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.DbTableFieldDesc;
+import com.wxingyl.es.db.query.QueryCondition;
+import com.wxingyl.es.db.query.SqlQueryOperator;
+import com.wxingyl.es.exception.IndexConfigException;
+import com.wxingyl.es.index.post.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
-import org.elasticsearch.common.lang3.StringUtils;
 
 import java.util.*;
 
@@ -37,7 +38,7 @@ public class DbTableConfigInfo {
 
     private Integer pageSize;
 
-    private Map<String, String> queryCondition;
+    private Set<QueryCondition> queryConditions;
 
     private IndexSlaveResultMergeEnum mergeType;
 
@@ -71,8 +72,8 @@ public class DbTableConfigInfo {
     }
 
     public void clearDeleteField() {
-        queryCondition.remove(deleteField);
-        if (queryCondition.isEmpty()) queryCondition = null;
+        queryConditions.remove(QueryCondition.buildSingle(deleteField, SqlQueryOperator.EQ, deleteValidValue));
+        if (queryConditions.isEmpty()) queryConditions = null;
         deleteField = null;
         deleteValidValue = null;
     }
@@ -93,8 +94,8 @@ public class DbTableConfigInfo {
         return masterAlias;
     }
 
-    public Map<String, String> getQueryCondition() {
-        return queryCondition;
+    public Set<QueryCondition> getQueryConditions() {
+        return queryConditions;
     }
 
     public IndexSlaveResultMergeEnum getMergeType() {
@@ -178,18 +179,18 @@ public class DbTableConfigInfo {
     private void initQueryCondition(Map<String, Object> config) {
         List<String> list = CommonUtils.getList(config, INDEX_TABLE_QUERY_CONDITION);
         if (list == null && deleteField == null) return;
-        queryCondition = new HashMap<>();
+        queryConditions = new HashSet<>();
         if (deleteField != null) {
-            queryCondition.put(deleteField, deleteValidValue);
+            queryConditions.add(QueryCondition.buildSingle(deleteField, SqlQueryOperator.EQ, deleteValidValue));
         }
         if (list != null) {
             list.forEach(v -> {
-                String[] arr = StringUtils.split(v, '=');
-                if (arr.length != 2) {
+                QueryCondition condition = QueryCondition.build(v);
+                if (condition == null) {
                     throw new IndexConfigException(DbTableConfigInfo.this + " config, " + INDEX_TABLE_QUERY_CONDITION
                             + " value: " + v + " is invalid");
                 }
-                queryCondition.put(arr[0].trim(), arr[1].trim());
+                queryConditions.add(condition);
             });
         }
     }

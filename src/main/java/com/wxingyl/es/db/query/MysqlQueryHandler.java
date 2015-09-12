@@ -19,15 +19,16 @@ import java.util.*;
 public class MysqlQueryHandler extends AbstractSqlQueryHandler {
 
     public MysqlQueryHandler(DataSource dataSource) {
-        super(dataSource);
+        super(dataSource, new MysqlQueryStatementStructure());
     }
 
     @Override
     protected String createSql(BaseQueryParam param) {
         StringBuilder sb = new StringBuilder();
         appendSelectSql(sb, param.getFields(), param.getTable(), false);
-        if (param.getWhere() != null) {
-            appendWhereSql(sb, param.getWhere());
+        if (param.getConditions() != null) {
+            sb.append(" WHERE ");
+            param.getConditions().forEach(c -> c.appendQuerySql(sb, queryStatementStructure));
         }
         if (param.getOrderBy() != null) {
             appendOrderBySql(sb, param.getOrderBy());
@@ -54,20 +55,6 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         sb.delete(sb.length() - 2, sb.length());
     }
 
-    private void appendWhereSql(StringBuilder sb, Map<String, ? extends Object> map) {
-        sb.append(" WHERE ");
-        map.forEach((k, v) -> {
-            sb.append(k);
-            if (v instanceof Iterable) {
-                appendWhereSqlIn(sb, (Iterable) v);
-                sb.append(", ");
-            } else {
-                sb.append(" = ").append('\'').append(v).append("', ");
-            }
-        });
-        sb.delete(sb.length() - 2, sb.length());
-    }
-
     private void appendWhereSqlIn(StringBuilder sb, Iterable it) {
         sb.append(" IN (");
         for (Object obj : it) {
@@ -86,7 +73,7 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
                 if (escape) sb.append('`').append(f).append("`, ");
                 else sb.append(f).append(", ");
             });
-            sb.delete(sb.length()-2, sb.length());
+            sb.delete(sb.length() - 2, sb.length());
         }
         sb.append(" FROM ").append(schemaTableSql(table));
     }
@@ -116,14 +103,14 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         StringBuilder sb = new StringBuilder();
         appendSelectSql(sb, tableInfo.getFields(), tableInfo.getTable(), true);
         SqlQueryCommon.Build build = SqlQueryCommon.build();
-        Map<String, String> conditionMap = tableInfo.getQueryCondition();
-        if (conditionMap != null) {
-            String deleteField = tableInfo.getDeleteField();
-            if (deleteField != null) {
-                conditionMap.put('`' + deleteField + '`', conditionMap.get(deleteField));
-                conditionMap.remove(deleteField);
-            }
-            appendWhereSql(sb, tableInfo.getQueryCondition());
+        Set<QueryCondition> conditions = tableInfo.getQueryConditions();
+        if (conditions != null) {
+            sb.append(" WHERE ");
+            conditions.forEach(c -> {
+                c.appendQuerySql(sb, queryStatementStructure);
+                sb.append(" AND ");
+            });
+            sb.delete(sb.length() - 5, sb.length());
             build.containWhere();
         }
         return build.commonFormatSql(sb.toString())
@@ -135,11 +122,10 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     public TableQueryResult query(SqlQueryParam param) throws SQLException {
         SqlQueryCommon prepareSql = param.getQueryCommon();
         StringBuilder sb = new StringBuilder(prepareSql.getCommonSql());
-        if (!CommonUtils.isEmpty(param.getKeyValueList())) {
-            if (prepareSql.isContainWhere()) sb.append(" AND");
-            else sb.append(" WHERE");
-            sb.append(" `").append(prepareSql.getKeyField()).append('`');
-            appendWhereSqlIn(sb, param.getKeyValueList());
+        if (param.getQueryCondition() != null) {
+            if (prepareSql.isContainWhere()) sb.append(" AND ");
+            else sb.append(" WHERE ");
+            param.getQueryCondition().appendQuerySql(sb, queryStatementStructure);
         }
         sb.append(' ').append(prepareSql.getOrderBy());
         appendPageSql(sb, Tuple.tuple(param.getPage() * prepareSql.getPageSize(), prepareSql.getPageSize()));

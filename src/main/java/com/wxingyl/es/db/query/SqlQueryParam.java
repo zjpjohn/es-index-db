@@ -1,11 +1,10 @@
 package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.db.SqlQueryCommon;
+import com.wxingyl.es.util.CommonUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by xing on 15/8/27.
@@ -19,7 +18,7 @@ public class SqlQueryParam {
      */
     private int page;
 
-    private Collection keyValueList;
+    private QueryCondition queryCondition;
 
     private ResultSetHandler<List<Map<String, Object>>> rsh;
 
@@ -30,11 +29,21 @@ public class SqlQueryParam {
     public SqlQueryParam(TableQueryInfo tableQuery, Collection list) {
         queryCommon = tableQuery.getQueryCommon();
         rsh = tableQuery.getRsh();
-        keyValueList = list;
+        if (!CommonUtils.isEmpty(list)) {
+            Set<String> values = new HashSet<>();
+            for (Object o : list) {
+                values.add(o.toString());
+            }
+            queryCondition = QueryCondition.buildList(queryCommon.getKeyField(), SqlQueryOperator.IN, values);
+        }
     }
 
     public SqlQueryCommon getQueryCommon() {
         return queryCommon;
+    }
+
+    public QueryCondition getQueryCondition() {
+        return queryCondition;
     }
 
     public void addPage() {
@@ -43,10 +52,6 @@ public class SqlQueryParam {
 
     public int getPage() {
         return page;
-    }
-
-    public Collection getKeyValueList() {
-        return keyValueList;
     }
 
     public ResultSetHandler<List<Map<String, Object>>> getRsh() {
@@ -58,7 +63,6 @@ public class SqlQueryParam {
         return "SqlQueryParam{" +
                 "queryCommon=" + queryCommon +
                 ", start=" + page +
-                ", whereList=" + keyValueList +
                 '}';
     }
 

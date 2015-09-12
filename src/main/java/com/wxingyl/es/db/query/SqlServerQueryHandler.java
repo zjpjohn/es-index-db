@@ -16,7 +16,7 @@ import java.util.Set;
 public class SqlServerQueryHandler extends AbstractSqlQueryHandler {
 
     public SqlServerQueryHandler(DataSource dataSource) {
-        super(dataSource);
+        super(dataSource, null);
     }
 
     @Override

@@ -37,19 +37,35 @@ public abstract class QueryCondition<T> {
         return value;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof QueryCondition)) return false;
+
+        QueryCondition<?> that = (QueryCondition<?>) o;
+
+        return field.equals(that.field);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return field.hashCode();
+    }
+
     public abstract StringBuilder appendQuerySql(StringBuilder sb, SqlQueryStatementStructure structure);
 
     public static QueryCondition build(String queryStr) {
         String[] queries = StringUtils.split(queryStr, SEPARATOR_CHAR);
         if (queries.length < 3) return null;
-        SqlQueryOperator op = SqlQueryOperator.getOp(queries[0]);
+        SqlQueryOperator op = SqlQueryOperator.getOp(queries[1]);
         if (op == null) return null;
         if (op == SqlQueryOperator.RANGE) {
-            return buildRange(queries[1], op, Tuple.tuple(queries[2], queries[3]));
+            return buildRange(queries[0], op, Tuple.tuple(queries[2], queries[3]));
         } else if (op == SqlQueryOperator.IN || op == SqlQueryOperator.NIN) {
-            return buildList(queries[1], op, ImmutableSet.copyOf(StringUtils.split(queries[2])));
+            return buildList(queries[0], op, ImmutableSet.copyOf(StringUtils.split(queries[2])));
         } else {
-            return buildSingle(queries[1], op, queries[2]);
+            return buildSingle(queries[0], op, queries[2]);
         }
     }
 

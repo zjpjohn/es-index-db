@@ -27,8 +27,11 @@ public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
 
     private LoadingCache<DbTableDesc, Set<String>> tableFieldsCache;
 
-    public AbstractSqlQueryHandler(DataSource dataSource) {
+    protected SqlQueryStatementStructure queryStatementStructure;
+
+    public AbstractSqlQueryHandler(DataSource dataSource, SqlQueryStatementStructure queryStatementStructure) {
         queryRunner = new QueryRunner(dataSource);
+        this.queryStatementStructure = queryStatementStructure;
         schemaTablesCache = CacheBuilder.newBuilder()
                 .weakKeys()
                 .weakValues()

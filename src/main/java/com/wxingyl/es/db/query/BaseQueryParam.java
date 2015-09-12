@@ -14,7 +14,7 @@ public class BaseQueryParam {
 
     private DbTableDesc table;
 
-    private Map<String, Object> where;
+    private Set<QueryCondition> conditions;
 
     private Map<String, SortOrder> orderBy;
 
@@ -34,9 +34,9 @@ public class BaseQueryParam {
         this.table = table;
     }
 
-    public Object addWhere(String field, Object condition) {
-        if (where == null) where = new HashMap<>();
-        return where.put(field, condition);
+    public boolean addCondition(QueryCondition condition) {
+        if (conditions == null) conditions = new HashSet<>();
+        return conditions.add(condition);
     }
 
     public boolean addField(String... fields) {
@@ -65,7 +65,7 @@ public class BaseQueryParam {
         return table;
     }
 
-    public Map<String, Object> getWhere() {
-        return where;
+    public Set<QueryCondition> getConditions() {
+        return conditions;
     }
 }
