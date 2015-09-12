@@ -57,6 +57,11 @@ public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
         return queryRunner.query(createSql(param), rsh);
     }
 
+    @Override
+    public <T> T query(String sql, ResultSetHandler<T> rsh) throws SQLException {
+        return queryRunner.query(sql, rsh);
+    }
+
     protected QueryRunner getQueryRunner() {
         return queryRunner;
     }

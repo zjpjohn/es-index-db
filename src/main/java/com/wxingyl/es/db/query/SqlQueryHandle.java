@@ -21,6 +21,8 @@ public interface SqlQueryHandle {
     TableQueryResult query(SqlQueryParam param) throws SQLException;
 
     <T> T query(BaseQueryParam param, ResultSetHandler<T> rsh) throws SQLException;
+
+    <T> T query(String sql, ResultSetHandler<T> rsh) throws SQLException;
     /**
      * get all tables in the schema
      */

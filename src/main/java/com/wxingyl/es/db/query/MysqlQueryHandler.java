@@ -25,7 +25,7 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     @Override
     protected String createSql(BaseQueryParam param) {
         StringBuilder sb = new StringBuilder();
-        appendSelectSql(sb, param.getFields(), param.getTable(), false);
+        appendSelectSql(sb, param.getFields(), param.getTable());
         if (param.getConditions() != null) {
             sb.append(" WHERE ");
             param.getConditions().forEach(c -> c.appendQuerySql(sb, queryStatementStructure));
@@ -55,23 +55,13 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         sb.delete(sb.length() - 2, sb.length());
     }
 
-    private void appendWhereSqlIn(StringBuilder sb, Iterable it) {
-        sb.append(" IN (");
-        for (Object obj : it) {
-            sb.append('\'').append(obj).append("', ");
-        }
-        sb.delete(sb.length() - 2, sb.length());
-        sb.append(')');
-    }
-
-    private void appendSelectSql(StringBuilder sb, Set<String> fields, DbTableDesc table, boolean escape) {
+    private void appendSelectSql(StringBuilder sb, Set<String> fields, DbTableDesc table) {
         sb.append("SELECT ");
         if (CommonUtils.isEmpty(fields)) {
             sb.append('*');
         } else {
             fields.forEach(f -> {
-                if (escape) sb.append('`').append(f).append("`, ");
-                else sb.append(f).append(", ");
+                queryStatementStructure.appendField(sb, f).append(", ");
             });
             sb.delete(sb.length() - 2, sb.length());
         }
@@ -101,7 +91,7 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     @Override
     public SqlQueryCommon createPrepareSqlQuery(DbTableConfigInfo tableInfo) {
         StringBuilder sb = new StringBuilder();
-        appendSelectSql(sb, tableInfo.getFields(), tableInfo.getTable(), true);
+        appendSelectSql(sb, tableInfo.getFields(), tableInfo.getTable());
         SqlQueryCommon.Build build = SqlQueryCommon.build();
         Set<QueryCondition> conditions = tableInfo.getQueryConditions();
         if (conditions != null) {
