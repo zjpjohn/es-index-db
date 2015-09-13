@@ -12,8 +12,6 @@ import java.util.Set;
  */
 public abstract class QueryCondition<T> {
 
-    protected static final char SEPARATOR_CHAR = ':';
-
     private String field;
 
     private SqlQueryOperator op;
@@ -56,9 +54,14 @@ public abstract class QueryCondition<T> {
     public abstract StringBuilder appendQuerySql(StringBuilder sb, SqlQueryStatementStructure structure);
 
     public static QueryCondition build(String queryStr) {
-        String[] queries = StringUtils.split(queryStr, SEPARATOR_CHAR);
+        String[] queries = queryStr.split(":");
         if (queries.length < 3) return null;
-        SqlQueryOperator op = SqlQueryOperator.getOp(queries[1]);
+        SqlQueryOperator op;
+        if (queries[1].isEmpty()) {
+            op = SqlQueryOperator.EQ;
+        } else {
+            op = SqlQueryOperator.getOp(queries[1]);
+        }
         if (op == null) return null;
         if (op == SqlQueryOperator.RANGE) {
             return buildRange(queries[0], op, Tuple.tuple(queries[2], queries[3]));

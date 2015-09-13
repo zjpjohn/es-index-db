@@ -1,5 +1,6 @@
 package com.wxingyl.es.db;
 
+import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.index.post.IndexSlaveResultMergeEnum;
 
 /**

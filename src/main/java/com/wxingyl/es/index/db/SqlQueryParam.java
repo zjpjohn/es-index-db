@@ -1,6 +1,8 @@
-package com.wxingyl.es.db.query;
+package com.wxingyl.es.index.db;
 
-import com.wxingyl.es.db.SqlQueryCommon;
+import com.wxingyl.es.db.query.QueryCondition;
+import com.wxingyl.es.db.query.SqlQueryOperator;
+import com.wxingyl.es.db.query.TableQueryInfo;
 import com.wxingyl.es.util.CommonUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 

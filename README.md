@@ -23,7 +23,7 @@
 
 ## 文档
 
-[Here](https://github.com/wxingyl/db-river-elasticsearch/wikiwiki)
+[Here](https://github.com/wxingyl/db-river-elasticsearch/wiki)
 
 
 

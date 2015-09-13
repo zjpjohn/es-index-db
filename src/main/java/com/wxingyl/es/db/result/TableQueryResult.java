@@ -1,6 +1,6 @@
 package com.wxingyl.es.db.result;
 
-import com.wxingyl.es.db.SqlQueryCommon;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.db.TableBaseInfo;
 
 import java.util.List;
