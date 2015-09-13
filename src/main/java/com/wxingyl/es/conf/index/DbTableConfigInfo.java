@@ -5,7 +5,7 @@ import com.wxingyl.es.db.DbTableFieldDesc;
 import com.wxingyl.es.db.query.QueryCondition;
 import com.wxingyl.es.db.query.SqlQueryOperator;
 import com.wxingyl.es.exception.IndexConfigException;
-import com.wxingyl.es.index.post.IndexSlaveResultMergeEnum;
+import com.wxingyl.es.index.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
 

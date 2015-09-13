@@ -9,6 +9,7 @@ import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.query.SqlQueryHandle;
 import com.wxingyl.es.index.IndexTypeBean;
+import com.wxingyl.es.index.DefaultIndexTypeBean;
 import com.wxingyl.es.db.query.TableQueryInfo;
 import com.wxingyl.es.util.CommonUtils;
 
@@ -44,7 +45,7 @@ public class DefaultConfigManager extends AbstractConfigManager {
     @Override
     protected Set<IndexTypeBean> transformToIndexTypeBean(Set<TypeConfigInfo> typeSet) {
         if (CommonUtils.isEmpty(typeSet)) return null;
-        IndexTypeBean.Builder builder = IndexTypeBean.build();
+        DefaultIndexTypeBean.Builder builder = DefaultIndexTypeBean.build();
         Set<IndexTypeBean> set = new HashSet<>();
         for (TypeConfigInfo type : typeSet) {
             builder.type(type.getTypeDesc());

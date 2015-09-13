@@ -1,7 +1,7 @@
 package com.wxingyl.es.db;
 
 import com.wxingyl.es.index.db.SqlQueryCommon;
-import com.wxingyl.es.index.post.IndexSlaveResultMergeEnum;
+import com.wxingyl.es.index.IndexSlaveResultMergeEnum;
 
 /**
  * Created by xing on 15/9/7.

@@ -1,7 +1,7 @@
 package com.wxingyl.es.conf;
 
-import com.wxingyl.es.db.DataSourceBean;
 import com.wxingyl.es.conf.ds.DataSourceConfigParse;
+import com.wxingyl.es.db.DataSourceBean;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.util.Listener;

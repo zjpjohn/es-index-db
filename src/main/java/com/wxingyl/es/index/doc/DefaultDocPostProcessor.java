@@ -1,5 +1,6 @@
-package com.wxingyl.es.index.post;
+package com.wxingyl.es.index.doc;
 
+import com.wxingyl.es.index.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.db.result.TableQueryResult;

@@ -1,4 +1,4 @@
-package com.wxingyl.es.index.post;
+package com.wxingyl.es.index;
 
 import com.wxingyl.es.util.CommonUtils;
 

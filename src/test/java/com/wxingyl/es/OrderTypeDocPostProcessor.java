@@ -1,11 +1,11 @@
 package com.wxingyl.es;
 
-import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.result.TableQueryResult;
+import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.index.post.AbstractDocPostProcessor;
-import com.wxingyl.es.index.post.PageDocument;
+import com.wxingyl.es.index.doc.AbstractDocPostProcessor;
+import com.wxingyl.es.index.doc.PageDocument;
 
 import java.util.*;
 
@@ -27,16 +27,14 @@ public class OrderTypeDocPostProcessor extends AbstractDocPostProcessor {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public PageDocument applyTableQueryResult(PageDocument masterPageDoc, String masterField, TableQueryResult slaveResult) {
         if (!slaveResult.getBaseInfo().getTable().equals(warehouseTable)) return null;
         Map<Long, String> warehouseMap = new HashMap<>();
         String warehouseIdField = slaveResult.getBaseInfo().getKeyField();
-        slaveResult.getDbData().forEach(f -> {
-            warehouseMap.put((Long) f.get(warehouseIdField), (String) f.get("warehouse_name"));
-        });
+        slaveResult.getDbData().forEach(f -> warehouseMap.put((Long) f.get(warehouseIdField), (String) f.get("warehouse_name")));
         masterPageDoc.forEach(doc -> {
-            doc.put("warehouse_name", warehouseMap.get(doc.get(masterField)));
+            Long warehouseId = (Long) doc.get(masterField);
+            doc.put("warehouse_name", warehouseMap.get(warehouseId));
         });
         return masterPageDoc;
     }

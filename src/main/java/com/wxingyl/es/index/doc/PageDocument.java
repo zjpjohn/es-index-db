@@ -1,4 +1,4 @@
-package com.wxingyl.es.index.post;
+package com.wxingyl.es.index.doc;
 
 import com.wxingyl.es.db.result.NumberFieldValueProcessor;
 import com.wxingyl.es.index.TypeBaseInfo;

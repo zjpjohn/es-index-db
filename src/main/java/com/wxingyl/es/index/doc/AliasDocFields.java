@@ -1,10 +1,11 @@
-package com.wxingyl.es.index.post;
+package com.wxingyl.es.index.doc;
 
 import java.util.*;
 
 /**
  * Created by xing on 15/9/6.
  * field support alias
+ * Note: it is useless now!!!
  */
 public class AliasDocFields extends DocFields {
 
