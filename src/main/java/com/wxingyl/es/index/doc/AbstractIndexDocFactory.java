@@ -8,7 +8,6 @@ import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.index.db.DbQueryDependResult;
 import com.wxingyl.es.index.db.TableDependQuery;
 import com.wxingyl.es.index.db.TableQueryResultHandle;
-import com.wxingyl.es.index.generator.BulkIndexGenerate;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.util.HashMap;
@@ -24,8 +23,6 @@ public abstract class AbstractIndexDocFactory implements IndexDocFactory {
 
     private Map<IndexTypeDesc, DocPostProcessor> docPostProcessorMap = new HashMap<>();
 
-    private Map<IndexTypeDesc, BulkIndexGenerate> bulkIndexGeneratorMap = new HashMap<>();
-
     private Map<DbTableDesc, TableQueryResultHandle> tableQueryResultHandleMap = new HashMap<>();
 
     @Override
@@ -34,14 +31,6 @@ public abstract class AbstractIndexDocFactory implements IndexDocFactory {
             throw new IndexIllegalArgumentException("DocPostProcessor: " + docPostProcessor + " supportType is empty");
         }
         docPostProcessor.supportType().forEach(v -> docPostProcessorMap.put(v, docPostProcessor));
-    }
-
-    @Override
-    public void registerBulkIndexGenerate(BulkIndexGenerate bulkIndexGenerate) {
-        if (CommonUtils.isEmpty(bulkIndexGenerate.supportType())) {
-            throw new IndexIllegalArgumentException("BulkIndexGenerate: " + bulkIndexGenerate + " supportType is empty");
-        }
-        bulkIndexGenerate.supportType().forEach(v -> bulkIndexGeneratorMap.put(v, bulkIndexGenerate));
     }
 
     @Override
@@ -54,10 +43,6 @@ public abstract class AbstractIndexDocFactory implements IndexDocFactory {
 
     protected DocPostProcessor getDocPostProcessor(IndexTypeDesc type) {
         return docPostProcessorMap.get(type);
-    }
-
-    protected BulkIndexGenerate getBulkIndexGenerator(IndexTypeDesc type) {
-        return bulkIndexGeneratorMap.get(type);
     }
 
     protected void notifyTableQueryResultHandler(IndexTypeDesc type, List<TableQueryResult> queryResults) {

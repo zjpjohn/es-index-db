@@ -25,8 +25,8 @@ public class IndexDbTest extends AbstractIndexDbTest {
         OrderTypeDocPostProcessor docPostProcessor = new OrderTypeDocPostProcessor(typeBean);
         indexDocFactory.registerDocPostProcessor(docPostProcessor);
 
-//        long num = indexDocFactory.indexDocCreate(typeBean);
-//        System.out.println("create document: " + num);
+        long num = indexManager.indexFill(typeBean);
+        System.out.println("create document: " + num);
         BaseQueryParam param = new BaseQueryParam();
         param.setTable(typeBean.getMasterTable().getQueryCommon().getTable());
         param.addField("count(1)");
@@ -34,7 +34,7 @@ public class IndexDbTest extends AbstractIndexDbTest {
         param.addCondition(QueryCondition.buildSingle("seller_id", SqlQueryOperator.EQ, "1"));
         ScalarHandler<Long> scalarHandler = new ScalarHandler<>();
         long dbNum = typeBean.getMasterTable().getQueryHandler().query(param, scalarHandler);
-//        Assert.assertEquals(num, dbNum);
+        Assert.assertEquals(num, dbNum);
     }
 
 }

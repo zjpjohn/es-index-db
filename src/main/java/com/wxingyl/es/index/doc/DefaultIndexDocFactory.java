@@ -15,11 +15,8 @@ public class DefaultIndexDocFactory extends AbstractIndexDocFactory {
 
     private DocPostProcessor defaultDocPostProcessor;
 
-//    private BulkIndexGenerate defaultBulkIndexGenerator;
-
     public DefaultIndexDocFactory() {
         defaultDocPostProcessor = new DefaultDocPostProcessor();
-//        defaultBulkIndexGenerator = new DefaultBulkIndexGenerator();
     }
 
     @Override
