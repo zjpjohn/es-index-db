@@ -41,6 +41,10 @@ public class DocFields {
         return sourceMap.containsKey(key);
     }
 
+    public Set<String> keySet() {
+        return sourceMap.keySet();
+    }
+
     public XContentBuilder buildXContent(DateConvert dateConvert) throws IOException {
         dateConvertLocal.set(dateConvert);
         XContentBuilder xContentBuilder = XContentFactory.jsonBuilder();

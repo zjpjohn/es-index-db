@@ -15,7 +15,10 @@ public class TableBaseInfo {
      * the field is primary key, its value should be unique in table
      */
     private String keyField;
-
+    /**
+     * when {@link #mergeType} is {@link IndexSlaveResultMergeEnum#MERGE}, masterAlias is prefix name of field which is have
+     * conflict
+     */
     private String masterAlias;
 
     private IndexSlaveResultMergeEnum mergeType;

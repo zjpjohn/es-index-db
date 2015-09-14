@@ -37,14 +37,14 @@ local_order:
           master_alias: goods_info
           master_field: db_order_goods.goods_id
           relation_field: goods_id
-          merge_type: single
+          merge_type: merge
         - table: db_warehouse
           schema: tqdb_base
           fields: warehouse_name
           master_field: warehouse_id
           relation_field: warehouse_id
           query_condition: ['seller_id::1']
-          merge_type: single
+          merge_type: merge
 
     - type: users
       master_table: db_users
