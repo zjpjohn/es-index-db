@@ -2,8 +2,9 @@ package com.wxingyl.es;
 
 import com.wxingyl.es.conf.ConfigManager;
 import com.wxingyl.es.conf.DefaultConfigManager;
-import com.wxingyl.es.index.DefaultIndexManager;
 import com.wxingyl.es.index.IndexManager;
+import com.wxingyl.es.index.doc.DefaultIndexDocFactory;
+import com.wxingyl.es.index.doc.IndexDocFactory;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
@@ -17,9 +18,9 @@ import org.junit.BeforeClass;
  */
 public abstract class AbstractIndexDbTest {
 
-    protected static TransportClient client;
+    public static final String PROJECT_PATH = "/Users/xing/code/es-index-db";
 
-    protected static ConfigManager configManager;
+    protected static TransportClient client;
 
     protected static IndexManager indexManager;
 
@@ -32,8 +33,7 @@ public abstract class AbstractIndexDbTest {
                 .put("client.transport.nodes_sampler_interval", "20s")
                 .build());
         client.addTransportAddress(new InetSocketTransportAddress("127.0.0.1", 9300));
-        indexManager = new DefaultIndexManager(client);
-        configManager = new DefaultConfigManager();
+        indexManager = new IndexManager(client, new DefaultConfigManager());
         System.out.println("~~~~~~~~~ setup end ~~~~~~~~~~~");
     }
 
@@ -44,8 +44,8 @@ public abstract class AbstractIndexDbTest {
 
     @Before
     public void initConfig() {
-        configManager.parseDataSource("/Users/xing/code/db-river-elasticsearch/src/test/resources/datasource.yml");
-        configManager.parseIndexType("/Users/xing/code/db-river-elasticsearch/src/test/resources/index_data.yml");
+        indexManager.getConfigManager().parseDataSource(PROJECT_PATH + "/src/test/resources/datasource.yml");
+        indexManager.getConfigManager().parseIndexType(PROJECT_PATH + "/src/test/resources/index_data.yml");
         System.out.println("~~~~~~~~~ init config end ~~~~~~~~~~~");
     }
 }

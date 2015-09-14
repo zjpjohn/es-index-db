@@ -65,6 +65,3 @@ index name, type name, database info and so on. A config context as follow:
 This config file will create a index named order, it contain two type: order_info, user.
 
 I will publish version 1.0 as soon as possible !!!!
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/wxingyl/es-index-db/trend.png)](https://bitdeli.com/free "Bitdeli Badge")

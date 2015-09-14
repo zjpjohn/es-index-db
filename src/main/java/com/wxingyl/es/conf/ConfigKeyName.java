@@ -40,6 +40,8 @@ public interface ConfigKeyName {
 
     String INDEX_TYPE_INCLUDE_TABLE = "include_table";
 
+    String INDEX_TYPE_PRIORITY = "priority";
+
     String INDEX_TABLE_SCHEMA = "schema";
 
     String INDEX_TABLE_DB_ADDRESS = "db_address";

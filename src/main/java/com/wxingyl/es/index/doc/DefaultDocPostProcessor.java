@@ -1,5 +1,6 @@
-package com.wxingyl.es.index.post;
+package com.wxingyl.es.index.doc;
 
+import com.wxingyl.es.index.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.db.result.TableQueryResult;
@@ -18,17 +19,25 @@ public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
     @Override
     public PageDocument applyTableQueryResult(PageDocument masterPageDoc, String masterField, TableQueryResult slaveResult) {
         TableBaseInfo slaveBaseInfo = slaveResult.getBaseInfo();
-        Map<Object, List<Map<String, Object>>> group = CommonUtils.groupListMap(slaveResult.getDbData(),
+        Map<Object, List<Map<String, Object>>> slaveGroup = CommonUtils.groupListMap(slaveResult.getDbData(),
                 slaveBaseInfo.getKeyField(), true);
         String keyAlias = slaveBaseInfo.getMasterAlias();
         IndexSlaveResultMergeEnum mergeType = slaveBaseInfo.getMergeType();
-        masterPageDoc.forEach(doc -> {
+        if (mergeType == IndexSlaveResultMergeEnum.MERGE && !keyAlias.endsWith("_")) {
+            keyAlias += '_';
+        }
+        for (DocFields doc : masterPageDoc) {
             Object obj = doc.get(masterField);
-            if (obj != null) {
-                Object valObj = mergeType.function(group.get(obj));
-                if (valObj != null) doc.put(keyAlias, valObj);
+            if (obj == null) continue;
+            Object valObj = mergeType.function(slaveGroup.get(obj));
+            if (valObj != null) {
+                if (mergeType == IndexSlaveResultMergeEnum.MERGE) {
+                    CommonUtils.mergeSlaveResult(keyAlias, doc, (Map) valObj);
+                } else {
+                    doc.put(keyAlias, valObj);
+                }
             }
-        });
+        }
         return masterPageDoc;
     }
 
@@ -37,13 +46,17 @@ public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
         Map<Object, List<DocFields>> group = childPageDoc.groupByKeyField(true);
         String masterAlias = childPageDoc.getBaseInfo().getMasterAlias();
         IndexSlaveResultMergeEnum mergeType = childPageDoc.getBaseInfo().getMergeType();
-        masterPageDoc.forEach(doc -> {
+        if (mergeType == IndexSlaveResultMergeEnum.MERGE && !masterAlias.endsWith("_")) {
+            masterAlias += '_';
+        }
+        for (DocFields doc : masterPageDoc) {
             Object val = doc.get(masterField);
             if (val != null) {
                 Object obj = mergeType.function(group.get(val));
-                if (obj != null) doc.put(masterAlias, mergeType.function(group.get(val)));
+                if (obj == null) continue;
+                doc.put(masterAlias, obj);
             }
-        });
+        }
         return masterPageDoc;
     }
 

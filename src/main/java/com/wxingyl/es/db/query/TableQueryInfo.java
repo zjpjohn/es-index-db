@@ -1,7 +1,7 @@
 package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
-import com.wxingyl.es.db.SqlQueryCommon;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.db.TableBaseInfo;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.ImmutableListMultimap;

@@ -2,6 +2,7 @@ package com.wxingyl.es.util;
 
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.DbTableFieldDesc;
+import com.wxingyl.es.index.doc.DocFields;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -104,7 +105,8 @@ public abstract class CommonUtils {
         return new DbTableFieldDesc(new DbTableDesc(defaultTable.getUrlAddress(), defaultSchema, defaultTableName), field);
     }
 
-    public static Map<Object, List<Map<String, Object>>> groupListMap(List<Map<String, Object>> data, String keyField, boolean removeKeyField) {
+    public static Map<Object, List<Map<String, Object>>> groupListMap(List<Map<String, Object>> data,
+                                                                      String keyField, boolean removeKeyField) {
         Map<Object, List<Map<String, Object>>> group = new HashMap<>();
         data.forEach(map -> {
             Object obj = map.get(keyField);
@@ -120,6 +122,26 @@ public abstract class CommonUtils {
 
     public static String getStringVal(Map<String, Object> map, String key) {
         return emptyTrim((String) map.get(key));
+    }
+
+    public static void mergeSlaveResult(String prefixConflict, DocFields masterField, Map<String, Object> slaveField) {
+        for(String key : slaveField.keySet()) {
+            if (masterField.containsKey(key)) {
+                masterField.put(prefixConflict + key, slaveField.get(key));
+            } else {
+                masterField.put(key, slaveField.get(key));
+            }
+        }
+    }
+
+    public static void mergeSlaveResult(String prefixConflict, DocFields masterField, DocFields slaveField) {
+        for(String key : slaveField.keySet()) {
+            if (masterField.containsKey(key)) {
+                masterField.put(prefixConflict + key, slaveField.get(key));
+            } else {
+                masterField.put(key, slaveField.get(key));
+            }
+        }
     }
 
     public static <T> RwLock<T> createRwLock(T lockObj) {

@@ -2,8 +2,9 @@ package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.db.DbTableDesc;
-import com.wxingyl.es.db.SqlQueryCommon;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.db.result.TableQueryResult;
+import com.wxingyl.es.index.db.SqlQueryParam;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -16,7 +17,7 @@ import java.util.Set;
 public class SqlServerQueryHandler extends AbstractSqlQueryHandler {
 
     public SqlServerQueryHandler(DataSource dataSource) {
-        super(dataSource);
+        super(dataSource, null);
     }
 
     @Override

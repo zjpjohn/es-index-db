@@ -1,7 +1,7 @@
 package com.wxingyl.es.index.generator;
 
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.index.post.PageDocument;
+import com.wxingyl.es.index.doc.PageDocument;
 import org.elasticsearch.client.Client;
 
 import java.util.Set;

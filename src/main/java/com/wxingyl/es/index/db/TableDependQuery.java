@@ -3,7 +3,6 @@ package com.wxingyl.es.index.db;
 import com.wxingyl.es.db.query.TableQueryInfo;
 import com.wxingyl.es.exception.IndexDocException;
 import com.wxingyl.es.db.result.TableQueryResult;
-import com.wxingyl.es.db.query.SqlQueryParam;
 import com.wxingyl.es.db.query.SqlQueryHandle;
 import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.common.collect.ImmutableMultimap;

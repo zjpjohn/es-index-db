@@ -19,12 +19,6 @@ public class RwLock<T> {
         this.obj = obj;
     }
 
-    public void resetObj(T lockObj) {
-        rwLock.writeLock().lock();
-        this.obj = lockObj;
-        rwLock.writeLock().unlock();
-    }
-
     public <R> R readOp(Function<T, R> function) {
         rwLock.readLock().lock();
         try {

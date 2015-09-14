@@ -1,4 +1,4 @@
-package com.wxingyl.es.index.post;
+package com.wxingyl.es.index.doc;
 
 import com.wxingyl.es.util.DateConvert;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -39,6 +39,10 @@ public class DocFields {
 
     public boolean containsKey(String key) {
         return sourceMap.containsKey(key);
+    }
+
+    public Set<String> keySet() {
+        return sourceMap.keySet();
     }
 
     public XContentBuilder buildXContent(DateConvert dateConvert) throws IOException {

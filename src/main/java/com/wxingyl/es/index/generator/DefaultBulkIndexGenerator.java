@@ -2,9 +2,9 @@ package com.wxingyl.es.index.generator;
 
 import com.wxingyl.es.exception.IndexDocException;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.index.post.DocFields;
+import com.wxingyl.es.index.doc.DocFields;
 import com.wxingyl.es.index.TypeBaseInfo;
-import com.wxingyl.es.index.post.DefaultDateConvert;
+import com.wxingyl.es.index.doc.DefaultDateConvert;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;

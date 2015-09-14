@@ -1,6 +1,8 @@
-package com.wxingyl.es.db;
+package com.wxingyl.es.index.db;
 
-import com.wxingyl.es.index.post.IndexSlaveResultMergeEnum;
+import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.db.TableBaseInfo;
+import com.wxingyl.es.index.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 
 /**

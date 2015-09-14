@@ -55,6 +55,9 @@ public class IndexConfigParser implements IndexConfigParse {
         integerDefaultValueParser.get().addDefaultValue(typeConf, 1);
 
         TypeConfigInfo typeInfo = new TypeConfigInfo(typeDesc);
+        if (typeConf.containsKey(INDEX_TYPE_PRIORITY)) {
+            typeInfo.setPriority((Integer) typeConf.get(INDEX_TYPE_PRIORITY));
+        }
         Map<DbTableDesc, DbTableConfigInfo> tableInfoMap = new HashMap<>();
         DbTableConfigInfo masterTableInfo = null;
         Map<DbTableConfigInfo, String> tableMasterFiledMap = new HashMap<>();

@@ -1,13 +1,12 @@
 package com.wxingyl.es.conf;
 
-import com.wxingyl.es.db.DataSourceBean;
 import com.wxingyl.es.conf.ds.DataSourceConfigParse;
 import com.wxingyl.es.conf.ds.DataSourceParserManager;
 import com.wxingyl.es.conf.index.IndexConfigParse;
-import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.conf.index.TypeConfigInfo;
-import com.wxingyl.es.db.result.ResultSetHandlerFactory;
+import com.wxingyl.es.db.DataSourceBean;
 import com.wxingyl.es.exception.IndexConfigException;
+import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.Listener;
@@ -31,13 +30,11 @@ public abstract class AbstractConfigManager implements ConfigManager {
     /**
      * key: index name, value: set IndexTypeBean
      */
-    private Map<String, Set<IndexTypeBean>> indexTypeMap = new HashMap<>();
+    private Map<String, SortedSet<IndexTypeBean>> indexTypeMap = new HashMap<>();
 
     private List<Listener<Set<DataSourceBean>>> dataSourceListeners = new ArrayList<>();
 
     private List<Listener<Set<IndexTypeBean>>> indexTypeListeners = new ArrayList<>();
-
-    private ResultSetHandlerFactory resultSetHandlerFactory;
 
     @Override
     public boolean addDataSourceConfigParser(DataSourceConfigParse parser) {
@@ -99,7 +96,7 @@ public abstract class AbstractConfigManager implements ConfigManager {
     }
 
     @Override
-    public Set<IndexTypeBean> findIndexTypeBean(String index) {
+    public SortedSet<IndexTypeBean> findIndexTypeBean(String index) {
         return indexTypeMap.get(index);
     }
 
@@ -126,9 +123,9 @@ public abstract class AbstractConfigManager implements ConfigManager {
     protected void addIndexTypeBean(Set<IndexTypeBean> beanSet) {
         if (CommonUtils.isEmpty(beanSet)) return;
         beanSet.forEach(k -> {
-            Set<IndexTypeBean> set = indexTypeMap.get(k.getType().getIndex());
+            SortedSet<IndexTypeBean> set = indexTypeMap.get(k.getType().getIndex());
             if (set == null) {
-                indexTypeMap.put(k.getType().getIndex(), set = new HashSet<>());
+                indexTypeMap.put(k.getType().getIndex(), set = new TreeSet<>());
             }
             set.add(k);
         });
@@ -151,7 +148,7 @@ public abstract class AbstractConfigManager implements ConfigManager {
         return dataSourceMap;
     }
 
-    protected Map<String, Set<IndexTypeBean>> getIndexTypeMap() {
+    protected Map<String, SortedSet<IndexTypeBean>> getIndexTypeMap() {
         return indexTypeMap;
     }
 

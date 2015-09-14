@@ -2,8 +2,9 @@ package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.db.DbTableDesc;
-import com.wxingyl.es.db.SqlQueryCommon;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.db.result.TableQueryResult;
+import com.wxingyl.es.index.db.SqlQueryParam;
 import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.search.sort.SortOrder;
@@ -19,15 +20,16 @@ import java.util.*;
 public class MysqlQueryHandler extends AbstractSqlQueryHandler {
 
     public MysqlQueryHandler(DataSource dataSource) {
-        super(dataSource);
+        super(dataSource, new MysqlQueryStatementStructure());
     }
 
     @Override
     protected String createSql(BaseQueryParam param) {
         StringBuilder sb = new StringBuilder();
-        appendSelectSql(sb, param.getFields(), param.getTable(), false);
-        if (param.getWhere() != null) {
-            appendWhereSql(sb, param.getWhere());
+        appendSelectSql(sb, param.getFields(), param.getTable(), param.isFieldEscape());
+        if (param.getConditions() != null) {
+            sb.append(" WHERE ");
+            param.getConditions().forEach(c -> c.appendQuerySql(sb, queryStatementStructure));
         }
         if (param.getOrderBy() != null) {
             appendOrderBySql(sb, param.getOrderBy());
@@ -54,39 +56,17 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         sb.delete(sb.length() - 2, sb.length());
     }
 
-    private void appendWhereSql(StringBuilder sb, Map<String, ? extends Object> map) {
-        sb.append(" WHERE ");
-        map.forEach((k, v) -> {
-            sb.append(k);
-            if (v instanceof Iterable) {
-                appendWhereSqlIn(sb, (Iterable) v);
-                sb.append(", ");
-            } else {
-                sb.append(" = ").append('\'').append(v).append("', ");
-            }
-        });
-        sb.delete(sb.length() - 2, sb.length());
-    }
-
-    private void appendWhereSqlIn(StringBuilder sb, Iterable it) {
-        sb.append(" IN (");
-        for (Object obj : it) {
-            sb.append('\'').append(obj).append("', ");
-        }
-        sb.delete(sb.length() - 2, sb.length());
-        sb.append(')');
-    }
-
-    private void appendSelectSql(StringBuilder sb, Set<String> fields, DbTableDesc table, boolean escape) {
+    private void appendSelectSql(StringBuilder sb, Set<String> fields, DbTableDesc table, final boolean fieldEscape) {
         sb.append("SELECT ");
         if (CommonUtils.isEmpty(fields)) {
             sb.append('*');
         } else {
-            fields.forEach(f -> {
-                if (escape) sb.append('`').append(f).append("`, ");
-                else sb.append(f).append(", ");
-            });
-            sb.delete(sb.length()-2, sb.length());
+            if (fieldEscape) {
+                fields.forEach(f -> queryStatementStructure.appendField(sb, f).append(", "));
+            } else {
+                fields.forEach(f -> sb.append(f).append(", "));
+            }
+            sb.delete(sb.length() - 2, sb.length());
         }
         sb.append(" FROM ").append(schemaTableSql(table));
     }
@@ -116,14 +96,14 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         StringBuilder sb = new StringBuilder();
         appendSelectSql(sb, tableInfo.getFields(), tableInfo.getTable(), true);
         SqlQueryCommon.Build build = SqlQueryCommon.build();
-        Map<String, String> conditionMap = tableInfo.getQueryCondition();
-        if (conditionMap != null) {
-            String deleteField = tableInfo.getDeleteField();
-            if (deleteField != null) {
-                conditionMap.put('`' + deleteField + '`', conditionMap.get(deleteField));
-                conditionMap.remove(deleteField);
-            }
-            appendWhereSql(sb, tableInfo.getQueryCondition());
+        Set<QueryCondition> conditions = tableInfo.getQueryConditions();
+        if (conditions != null) {
+            sb.append(" WHERE ");
+            conditions.forEach(c -> {
+                c.appendQuerySql(sb, queryStatementStructure);
+                sb.append(" AND ");
+            });
+            sb.delete(sb.length() - 5, sb.length());
             build.containWhere();
         }
         return build.commonFormatSql(sb.toString())
@@ -135,11 +115,10 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     public TableQueryResult query(SqlQueryParam param) throws SQLException {
         SqlQueryCommon prepareSql = param.getQueryCommon();
         StringBuilder sb = new StringBuilder(prepareSql.getCommonSql());
-        if (!CommonUtils.isEmpty(param.getKeyValueList())) {
-            if (prepareSql.isContainWhere()) sb.append(" AND");
-            else sb.append(" WHERE");
-            sb.append(" `").append(prepareSql.getKeyField()).append('`');
-            appendWhereSqlIn(sb, param.getKeyValueList());
+        if (param.getQueryCondition() != null) {
+            if (prepareSql.isContainWhere()) sb.append(" AND ");
+            else sb.append(" WHERE ");
+            param.getQueryCondition().appendQuerySql(sb, queryStatementStructure);
         }
         sb.append(' ').append(prepareSql.getOrderBy());
         appendPageSql(sb, Tuple.tuple(param.getPage() * prepareSql.getPageSize(), prepareSql.getPageSize()));

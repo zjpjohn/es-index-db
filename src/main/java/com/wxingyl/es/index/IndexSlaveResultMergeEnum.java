@@ -1,5 +1,6 @@
-package com.wxingyl.es.index.post;
+package com.wxingyl.es.index;
 
+import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.util.List;
@@ -27,7 +28,12 @@ public enum IndexSlaveResultMergeEnum {
         if (CommonUtils.isEmpty(list)) return null;
         else if (list.size() == 1) return list.get(0);
         else return list;
-    });
+    }),
+    /**
+     * slave result as one, and auto merge slave result to master table
+     * Note: There is same name when merging, will add "{@link TableBaseInfo#masterAlias} _" before field name
+     */
+    MERGE(AUTO.function);
 
     private Function<List, Object> function;
 
