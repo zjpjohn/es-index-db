@@ -1,4 +1,4 @@
-package com.wxingyl.es.index.alias;
+package com.wxingyl.es.index.version;
 
 import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.db.query.TableQueryInfo;
@@ -11,15 +11,21 @@ import java.util.List;
  * Created by xing on 15/9/13.
  * wrapper indexTypeBean, support index alias
  */
-public class AliasIndexTypeBean implements IndexTypeBean {
+public class VersionIndexTypeBean implements IndexTypeBean {
 
     private IndexTypeBean indexTypeBean;
 
     private IndexTypeDesc aliasType;
 
-    public AliasIndexTypeBean(IndexTypeBean indexTypeBean, String aliasIndex) {
-        this.indexTypeBean = indexTypeBean;
-        aliasType = new IndexTypeDesc(aliasIndex, indexTypeBean.getType().getType());
+    private String versionIndexName;
+
+    public VersionIndexTypeBean(String versionIndexName) {
+        this.versionIndexName = versionIndexName;
+    }
+
+    public void setIndexTypeBean(IndexTypeBean typeBean) {
+        indexTypeBean = typeBean;
+        aliasType = new IndexTypeDesc(versionIndexName, typeBean.getType().getType());
     }
 
     @Override

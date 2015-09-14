@@ -39,7 +39,7 @@ public abstract class AbstractIndexDbTest {
         client.addTransportAddress(new InetSocketTransportAddress("127.0.0.1", 9300));
         indexDocFactory = new DefaultIndexDocFactory();
         configManager = new DefaultConfigManager();
-        indexManager = new IndexManager(client, indexDocFactory);
+        indexManager = new IndexManager(client, configManager, indexDocFactory);
         System.out.println("~~~~~~~~~ setup end ~~~~~~~~~~~");
     }
 

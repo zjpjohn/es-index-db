@@ -25,7 +25,7 @@ public class IndexDbTest extends AbstractIndexDbTest {
         OrderTypeDocPostProcessor docPostProcessor = new OrderTypeDocPostProcessor(typeBean);
         indexDocFactory.registerDocPostProcessor(docPostProcessor);
 
-        long num = indexManager.indexFill(typeBean);
+        long num = indexManager.indexFill(typeDesc);
         System.out.println("create document: " + num);
         BaseQueryParam param = new BaseQueryParam();
         param.setTable(typeBean.getMasterTable().getQueryCommon().getTable());
