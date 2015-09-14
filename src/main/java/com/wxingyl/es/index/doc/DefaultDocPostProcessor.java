@@ -54,7 +54,11 @@ public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
             if (val != null) {
                 Object obj = mergeType.function(group.get(val));
                 if (obj == null) continue;
-                doc.put(masterAlias, obj);
+                if (mergeType == IndexSlaveResultMergeEnum.MERGE) {
+                    CommonUtils.mergeSlaveResult(masterAlias, doc, (DocFields) obj);
+                } else {
+                    doc.put(masterAlias, obj);
+                }
             }
         }
         return masterPageDoc;
