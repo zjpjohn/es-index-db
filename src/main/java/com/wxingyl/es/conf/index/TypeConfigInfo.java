@@ -17,6 +17,8 @@ public class TypeConfigInfo {
 
     private Set<DbTableConfigInfo> tables;
 
+    private int priority;
+
     public TypeConfigInfo(IndexTypeDesc typeDesc) {
         this.typeDesc = typeDesc;
     }
@@ -27,6 +29,14 @@ public class TypeConfigInfo {
 
     public void setTables(Set<DbTableConfigInfo> tables) {
         this.tables = tables;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public int getPriority() {
+        return priority;
     }
 
     public IndexTypeDesc getTypeDesc() {

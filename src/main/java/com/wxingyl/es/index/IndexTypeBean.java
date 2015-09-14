@@ -9,7 +9,7 @@ import java.util.List;
  * Created by xing on 15/9/13.
  * define indexTypeBean interface
  */
-public interface IndexTypeBean {
+public interface IndexTypeBean extends Comparable<IndexTypeBean> {
 
     IndexTypeDesc getType();
 
@@ -19,4 +19,5 @@ public interface IndexTypeBean {
 
     List<TableBaseInfo> getAllTableInfo();
 
+    int getPriority();
 }

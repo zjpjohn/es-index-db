@@ -34,7 +34,11 @@ public class IndexManager {
 
     private Map<IndexTypeDesc, BulkIndexGenerate> bulkIndexGeneratorMap = new HashMap<>();
 
-    private volatile boolean defaultIndexVersionManagerEnable;
+    /**
+     * switch default copy settings and mapping config
+     * default turn on
+     */
+    private volatile boolean defaultIndexVersionManagerEnable = false;
 
     private IndexVersionManager defaultIndexVersionManager;
 
@@ -51,17 +55,14 @@ public class IndexManager {
         this.indexDocFactory = indexDocFactory;
         this.configManager = configManager;
         defaultBulkIndexGenerator = new DefaultBulkIndexGenerator();
+        switchDefaultIndexVersionManager(true);
     }
 
-    public void enableDefaultIndexVersionManager() {
-        defaultIndexVersionManagerEnable = true;
-        if (defaultIndexVersionManager == null) {
+    public void switchDefaultIndexVersionManager(boolean turnOn) {
+        defaultIndexVersionManagerEnable = turnOn;
+        if (turnOn && defaultIndexVersionManager == null) {
             defaultIndexVersionManager = new DefaultIndexVersionManager(client);
         }
-    }
-
-    public void disableDefaultIndexVersionManager() {
-        defaultIndexVersionManagerEnable = false;
     }
 
     public void registerBulkIndexGenerate(BulkIndexGenerate bulkIndexGenerate) {
@@ -75,15 +76,11 @@ public class IndexManager {
     }
 
     public void registerIndexVersionManager(IndexVersionManager indexVersionManager) {
-        if (CommonUtils.isEmpty(indexVersionManager.supportIndex())) {
+        String name = CommonUtils.emptyTrim(indexVersionManager.supportIndex());
+        if (name == null) {
             throw new IndexIllegalArgumentException("IndexVersionManager: " + indexVersionManager + " supportIndex is empty");
         }
-        IndexVersionManager manager = new IndexVersionManagerWrapper(indexVersionManager);
-        manager.supportIndex().forEach(index -> {
-            String name = CommonUtils.emptyTrim(index);
-            if (name == null) return;
-            indexVersionManagerMap.put(name, manager);
-        });
+        indexVersionManagerMap.put(name, new IndexVersionManagerWrapper(indexVersionManager));
     }
 
     public ConfigManager getConfigManager() {
@@ -92,10 +89,6 @@ public class IndexManager {
 
     public IndexDocFactory getIndexDocFactory() {
         return indexDocFactory;
-    }
-
-    public long indexFill(IndexTypeDesc type) {
-        return indexFill(type.getIndex(), type.getType());
     }
 
     public long indexFill(String index, String type) {
@@ -218,7 +211,12 @@ public class IndexManager {
 
         @Override
         public VersionIndex createNextVersionIndex(VersionIndex curTopVersion) {
-            VersionIndex versionIndex = in.createNextVersionIndex(curTopVersion);
+            VersionIndex versionIndex;
+            if (in.supportMaxVersion() >= curTopVersion.getVersion()) {
+                versionIndex = in.createNextVersionIndex(curTopVersion);
+            } else {
+                versionIndex = null;
+            }
             if (versionIndex == null && defaultIndexVersionManagerEnable) {
                 versionIndex = defaultIndexVersionManager.createNextVersionIndex(curTopVersion);
             }
@@ -226,7 +224,12 @@ public class IndexManager {
         }
 
         @Override
-        public Set<String> supportIndex() {
+        public int supportMaxVersion() {
+            return in.supportMaxVersion();
+        }
+
+        @Override
+        public String supportIndex() {
             return in.supportIndex();
         }
     }

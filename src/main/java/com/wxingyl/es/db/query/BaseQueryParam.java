@@ -20,6 +20,8 @@ public class BaseQueryParam {
 
     private Set<String> fields;
 
+    private boolean fieldEscape = true;
+
     private Tuple<Integer, Integer> page;
 
     /**
@@ -42,6 +44,14 @@ public class BaseQueryParam {
     public boolean addField(String... fields) {
         if (this.fields == null) this.fields = new HashSet<>();
         return Collections.addAll(this.fields, fields);
+    }
+
+    public void fieldEscape(boolean fieldEscape) {
+        this.fieldEscape = fieldEscape;
+    }
+
+    public boolean isFieldEscape() {
+        return fieldEscape;
     }
 
     public SortOrder addOrder(String field, SortOrder order) {

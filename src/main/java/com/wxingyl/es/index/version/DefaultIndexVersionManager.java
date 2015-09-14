@@ -1,15 +1,18 @@
 package com.wxingyl.es.index.version;
 
+import com.wxingyl.es.exception.IndexDocException;
 import com.wxingyl.es.util.CommonUtils;
+import com.wxingyl.es.util.EsUtils;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Set;
 
 /**
  * Created by xing on 15/9/14.
@@ -64,17 +67,27 @@ public class DefaultIndexVersionManager implements IndexVersionManager {
 
     @Override
     public VersionIndex createNextVersionIndex(VersionIndex curTopVersion) {
-        VersionIndex nextVersion = new VersionIndex(curTopVersion.getVersion()+1, curTopVersion.getIndexName());
+        VersionIndex nextVersion = new VersionIndex(curTopVersion.getVersion() + 1, curTopVersion.getIndexName());
         nextVersion.initConfig(curTopVersion.getMappings(), curTopVersion.getSettings());
-        indicesAdminClient.create(new CreateIndexRequest(nextVersion.getVersionIndexName(), nextVersion.getSettings()));
-        PutMappingRequest mappingRequest = new PutMappingRequest(nextVersion.getVersionIndexName());
-        mappingRequest.source(nextVersion.getMappings());
-        indicesAdminClient.putMapping(mappingRequest);
+        Map<String, String> typeMapping = new HashMap<>();
+        nextVersion.getMappings().forEach(v -> {
+            try {
+                typeMapping.put(v.key, v.value.source().string());
+            } catch (IOException e) {
+                throw new IndexDocException("copy mapping failed, nextVersion: " + nextVersion, e);
+            }
+        });
+        EsUtils.createNewIndex(indicesAdminClient, nextVersion.getVersionIndexName(), nextVersion.getSettings(), typeMapping);
         return nextVersion;
     }
 
     @Override
-    public Set<String> supportIndex() {
+    public int supportMaxVersion() {
+        return -1;
+    }
+
+    @Override
+    public String supportIndex() {
         return null;
     }
 

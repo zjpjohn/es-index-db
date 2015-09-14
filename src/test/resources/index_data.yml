@@ -1,4 +1,4 @@
-order_v1:
+local_order:
   # When deleting some records, awalys do not physically delete, usually update a delete field to 'Y' or '1'
   # instead of physically delete. if you table have this field, you can config like it
   default_delete_field: is_deleted
@@ -43,7 +43,7 @@ order_v1:
           fields: warehouse_name
           master_field: warehouse_id
           relation_field: warehouse_id
-          query_condition: [seller_id=1]
+          query_condition: ['seller_id::1']
           merge_type: single
 
     - type: users

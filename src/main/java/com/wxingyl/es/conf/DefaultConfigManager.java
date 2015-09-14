@@ -48,7 +48,7 @@ public class DefaultConfigManager extends AbstractConfigManager {
         DefaultIndexTypeBean.Builder builder = DefaultIndexTypeBean.build();
         Set<IndexTypeBean> set = new HashSet<>();
         for (TypeConfigInfo type : typeSet) {
-            builder.type(type.getTypeDesc());
+            builder.type(type.getTypeDesc()).priority(type.getPriority());
             for (DbTableConfigInfo tableInfo : type.getTables()) {
                 builder.addTableQuery(verifyTypeTableConfig(type, tableInfo), tableInfo,
                         resultSetHandlerFactory.get(this, tableInfo));

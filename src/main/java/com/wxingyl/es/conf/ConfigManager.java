@@ -8,6 +8,7 @@ import com.wxingyl.es.util.Listener;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 /**
  * Created by xing on 15/9/8.
@@ -31,7 +32,7 @@ public interface ConfigManager {
 
     IndexTypeBean findIndexTypeBean(IndexTypeDesc type);
 
-    Set<IndexTypeBean> findIndexTypeBean(String index);
+    SortedSet<IndexTypeBean> findIndexTypeBean(String index);
 
     /**
      * parse data_source yaml config file, it have more than one type db

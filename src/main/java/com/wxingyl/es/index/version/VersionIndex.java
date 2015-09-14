@@ -36,6 +36,12 @@ public class VersionIndex implements Comparable<VersionIndex> {
         this.settings = settings;
     }
 
+
+
+    public void setSettings(Settings settings) {
+        this.settings = settings;
+    }
+
     public ImmutableOpenMap<String, MappingMetaData> getMappings() {
         return mappings;
     }
@@ -62,5 +68,13 @@ public class VersionIndex implements Comparable<VersionIndex> {
     @Override
     public int compareTo(VersionIndex o) {
         return Integer.compare(o.version, this.version);
+    }
+
+    @Override
+    public String toString() {
+        return "VersionIndex{" +
+                "indexName='" + indexName + '\'' +
+                ", version=" + version +
+                '}';
     }
 }

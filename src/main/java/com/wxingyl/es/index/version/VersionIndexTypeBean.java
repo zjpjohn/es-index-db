@@ -52,4 +52,13 @@ public class VersionIndexTypeBean implements IndexTypeBean {
         return indexTypeBean.getAllTableInfo();
     }
 
+    @Override
+    public int getPriority() {
+        return indexTypeBean.getPriority();
+    }
+
+    @Override
+    public int compareTo(IndexTypeBean o) {
+        return indexTypeBean.compareTo(o);
+    }
 }

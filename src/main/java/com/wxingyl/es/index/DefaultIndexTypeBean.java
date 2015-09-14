@@ -22,6 +22,8 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
 
     private List<TableBaseInfo> allTableInfo;
 
+    private int priority;
+
     @Override
     public IndexTypeDesc getType() {
         return type;
@@ -56,6 +58,11 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
     }
 
     @Override
+    public int getPriority() {
+        return priority;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof DefaultIndexTypeBean)) return false;
@@ -75,11 +82,23 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
         return new Builder();
     }
 
+    @Override
+    public int compareTo(IndexTypeBean o) {
+        return o.getPriority() - priority;
+    }
+
     public static class Builder {
 
         private IndexTypeDesc type;
 
         private Map<DbTableDesc, Tuple<TableQueryInfo.Builder, DbTableFieldDesc>> tableMap = new HashMap<>();
+
+        private int priority;
+
+        public Builder priority(int priority) {
+            this.priority = priority;
+            return this;
+        }
 
         public Builder type(IndexTypeDesc type) {
             this.type = type;
@@ -109,6 +128,7 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
             });
             bean.masterTable = tableMap.get(masterTable).v1().build();
             tableMap.clear();
+            bean.priority = priority;
             return bean;
         }
     }

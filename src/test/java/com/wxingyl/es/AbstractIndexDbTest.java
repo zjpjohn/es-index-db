@@ -22,10 +22,6 @@ public abstract class AbstractIndexDbTest {
 
     protected static TransportClient client;
 
-    protected static ConfigManager configManager;
-
-    protected static IndexDocFactory indexDocFactory;
-
     protected static IndexManager indexManager;
 
     @BeforeClass
@@ -37,9 +33,7 @@ public abstract class AbstractIndexDbTest {
                 .put("client.transport.nodes_sampler_interval", "20s")
                 .build());
         client.addTransportAddress(new InetSocketTransportAddress("127.0.0.1", 9300));
-        indexDocFactory = new DefaultIndexDocFactory();
-        configManager = new DefaultConfigManager();
-        indexManager = new IndexManager(client, configManager, indexDocFactory);
+        indexManager = new IndexManager(client, new DefaultConfigManager());
         System.out.println("~~~~~~~~~ setup end ~~~~~~~~~~~");
     }
 
@@ -50,8 +44,8 @@ public abstract class AbstractIndexDbTest {
 
     @Before
     public void initConfig() {
-        configManager.parseDataSource(PROJECT_PATH + "/src/test/resources/datasource.yml");
-        configManager.parseIndexType(PROJECT_PATH + "/src/test/resources/index_data.yml");
+        indexManager.getConfigManager().parseDataSource(PROJECT_PATH + "/src/test/resources/datasource.yml");
+        indexManager.getConfigManager().parseIndexType(PROJECT_PATH + "/src/test/resources/index_data.yml");
         System.out.println("~~~~~~~~~ init config end ~~~~~~~~~~~");
     }
 }

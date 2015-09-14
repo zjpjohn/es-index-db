@@ -19,17 +19,18 @@ public class IndexDbTest extends AbstractIndexDbTest {
 
     @Test
     public void createIndex() throws SQLException {
-        IndexTypeDesc typeDesc = new IndexTypeDesc("order_v1", "order_info");
-        IndexTypeBean typeBean = configManager.findIndexTypeBean(typeDesc);
+        IndexTypeDesc typeDesc = new IndexTypeDesc("local_order", "order_info");
+        IndexTypeBean typeBean = indexManager.getConfigManager().findIndexTypeBean(typeDesc);
         Assert.assertNotNull("can't find " + typeDesc + " config", typeBean);
         OrderTypeDocPostProcessor docPostProcessor = new OrderTypeDocPostProcessor(typeBean);
-        indexDocFactory.registerDocPostProcessor(docPostProcessor);
+        indexManager.getIndexDocFactory().registerDocPostProcessor(docPostProcessor);
 
-        long num = indexManager.indexFill(typeDesc);
+        long num = indexManager.indexFill(typeDesc.getIndex(), typeDesc.getType());
         System.out.println("create document: " + num);
         BaseQueryParam param = new BaseQueryParam();
         param.setTable(typeBean.getMasterTable().getQueryCommon().getTable());
         param.addField("count(1)");
+        param.fieldEscape(false);
         QueryCondition.buildSingle("seller_id", SqlQueryOperator.EQ, "1");
         param.addCondition(QueryCondition.buildSingle("seller_id", SqlQueryOperator.EQ, "1"));
         ScalarHandler<Long> scalarHandler = new ScalarHandler<>();

@@ -26,7 +26,7 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     @Override
     protected String createSql(BaseQueryParam param) {
         StringBuilder sb = new StringBuilder();
-        appendSelectSql(sb, param.getFields(), param.getTable());
+        appendSelectSql(sb, param.getFields(), param.getTable(), param.isFieldEscape());
         if (param.getConditions() != null) {
             sb.append(" WHERE ");
             param.getConditions().forEach(c -> c.appendQuerySql(sb, queryStatementStructure));
@@ -56,14 +56,16 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         sb.delete(sb.length() - 2, sb.length());
     }
 
-    private void appendSelectSql(StringBuilder sb, Set<String> fields, DbTableDesc table) {
+    private void appendSelectSql(StringBuilder sb, Set<String> fields, DbTableDesc table, final boolean fieldEscape) {
         sb.append("SELECT ");
         if (CommonUtils.isEmpty(fields)) {
             sb.append('*');
         } else {
-            fields.forEach(f -> {
-                queryStatementStructure.appendField(sb, f).append(", ");
-            });
+            if (fieldEscape) {
+                fields.forEach(f -> queryStatementStructure.appendField(sb, f).append(", "));
+            } else {
+                fields.forEach(f -> sb.append(f).append(", "));
+            }
             sb.delete(sb.length() - 2, sb.length());
         }
         sb.append(" FROM ").append(schemaTableSql(table));
@@ -92,7 +94,7 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     @Override
     public SqlQueryCommon createPrepareSqlQuery(DbTableConfigInfo tableInfo) {
         StringBuilder sb = new StringBuilder();
-        appendSelectSql(sb, tableInfo.getFields(), tableInfo.getTable());
+        appendSelectSql(sb, tableInfo.getFields(), tableInfo.getTable(), true);
         SqlQueryCommon.Build build = SqlQueryCommon.build();
         Set<QueryCondition> conditions = tableInfo.getQueryConditions();
         if (conditions != null) {
