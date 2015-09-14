@@ -17,15 +17,19 @@ public class VersionIndexTypeBean implements IndexTypeBean {
 
     private IndexTypeDesc aliasType;
 
-    private String versionIndexName;
+    private VersionIndex versionIndex;
 
-    public VersionIndexTypeBean(String versionIndexName) {
-        this.versionIndexName = versionIndexName;
+    public VersionIndexTypeBean(VersionIndex versionIndex) {
+        this.versionIndex = versionIndex;
     }
 
     public void setIndexTypeBean(IndexTypeBean typeBean) {
         indexTypeBean = typeBean;
-        aliasType = new IndexTypeDesc(versionIndexName, typeBean.getType().getType());
+        aliasType = new IndexTypeDesc(versionIndex.getVersionIndexName(), typeBean.getType().getType());
+    }
+
+    public VersionIndex getVersionIndex() {
+        return versionIndex;
     }
 
     @Override

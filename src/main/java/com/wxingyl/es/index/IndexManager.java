@@ -10,6 +10,7 @@ import com.wxingyl.es.index.generator.BulkIndexGenerate;
 import com.wxingyl.es.index.generator.DefaultBulkIndexGenerator;
 import com.wxingyl.es.index.version.DefaultIndexVersionManager;
 import com.wxingyl.es.index.version.IndexVersionManager;
+import com.wxingyl.es.index.version.VersionIndex;
 import com.wxingyl.es.index.version.VersionIndexTypeBean;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.RwLock;
@@ -77,10 +78,11 @@ public class IndexManager {
         if (CommonUtils.isEmpty(indexVersionManager.supportIndex())) {
             throw new IndexIllegalArgumentException("IndexVersionManager: " + indexVersionManager + " supportIndex is empty");
         }
-        indexVersionManager.supportIndex().forEach(index -> {
+        IndexVersionManager manager = new IndexVersionManagerWrapper(indexVersionManager);
+        manager.supportIndex().forEach(index -> {
             String name = CommonUtils.emptyTrim(index);
             if (name == null) return;
-            indexVersionManagerMap.put(name, indexVersionManager);
+            indexVersionManagerMap.put(name, manager);
         });
     }
 
@@ -108,33 +110,39 @@ public class IndexManager {
     }
 
     private Map<String, Long> innerIndexFill(String index, String type) {
-        Set<IndexTypeBean> typeBeans;
+        Set<IndexTypeBean> typeBeanSet;
         if (type == null) {
-            typeBeans = configManager.findIndexTypeBean(index);
+            typeBeanSet = configManager.findIndexTypeBean(index);
         } else {
             IndexTypeBean bean = configManager.findIndexTypeBean(new IndexTypeDesc(index, type));
             if (bean != null) {
-                typeBeans = new HashSet<>();
-                typeBeans.add(bean);
+                typeBeanSet = new HashSet<>();
+                typeBeanSet.add(bean);
             } else {
-                typeBeans = null;
+                typeBeanSet = null;
             }
         }
 
-        if (CommonUtils.isEmpty(typeBeans)) return null;
+        if (CommonUtils.isEmpty(typeBeanSet)) return null;
 
         if (fillingIndex.readOp(list -> list.contains(index))) {
             return null;
         }
         fillingIndex.writeOp(list -> list.add(index));
 
-        VersionIndexTypeBean versionIndex = getVersionIndex(index);
+        VersionIndexTypeBean topVersionIndex = getVersionIndex(index);
+        VersionIndexTypeBean createVersionIndex;
+        if (topVersionIndex != null) {
+            createVersionIndex = createNextVersionIndex(index, topVersionIndex);
+        } else {
+            createVersionIndex = null;
+        }
         Map<String, Long> typeDocNum = new HashMap<>();
-        typeBeans.forEach(typeBean -> {
-            if (versionIndex != null) versionIndex.setIndexTypeBean(typeBean);
+        typeBeanSet.forEach(typeBean -> {
+            if (createVersionIndex != null) createVersionIndex.setIndexTypeBean(typeBean);
             PageDocumentIterator docItr = null;
             try {
-                docItr = indexDocFactory.indexDocCreate(versionIndex == null ? typeBean : versionIndex);
+                docItr = indexDocFactory.indexDocCreate(createVersionIndex == null ? typeBean : createVersionIndex);
                 docItr.startFillIndex();
                 long num = 0;
                 while (docItr.hasNext()) {
@@ -150,15 +158,77 @@ public class IndexManager {
     }
 
     private VersionIndexTypeBean getVersionIndex(String index) {
+        IndexVersionManager manager = getIndexVersionManager(index);
+        if (manager == null) {
+            return null;
+        } else {
+            return manager.topVersionIndex(index);
+        }
+    }
+
+    private IndexVersionManager getIndexVersionManager(String index) {
         IndexVersionManager manager = indexVersionManagerMap.get(index);
-        if (defaultIndexVersionManagerEnable) manager = defaultIndexVersionManager;
-        if (manager != null) return manager.getIndexVersion(index);
-        else return null;
+        return manager != null ? manager : defaultIndexVersionManagerEnable ? defaultIndexVersionManager : null;
+    }
+
+    private VersionIndexTypeBean createNextVersionIndex(String index, VersionIndexTypeBean topVersionIndex) {
+        IndexVersionManager manager = getIndexVersionManager(index);
+        if (manager == null) return null;
+        VersionIndex topVersion = topVersionIndex.getVersionIndex();
+        VersionIndex nextVersion;
+        if (topVersion == null) {
+            nextVersion = manager.createNewIndex(index);
+        } else {
+            nextVersion = manager.createNextVersionIndex(topVersion);
+        }
+        Objects.requireNonNull(nextVersion);
+        return new VersionIndexTypeBean(nextVersion);
     }
 
     private int indexGenerate(PageDocument document) {
         return bulkIndexGeneratorMap.getOrDefault(document.getBaseInfo().getType(),
                 defaultBulkIndexGenerator).bulkInsert(client, document);
+    }
+
+    class IndexVersionManagerWrapper implements IndexVersionManager {
+
+        IndexVersionManager in;
+
+        IndexVersionManagerWrapper(IndexVersionManager in) {
+            this.in = in;
+        }
+
+        @Override
+        public VersionIndexTypeBean topVersionIndex(String indexName) {
+            VersionIndexTypeBean bean = in.topVersionIndex(indexName);
+            if (bean == null && defaultIndexVersionManagerEnable) {
+                bean = defaultIndexVersionManager.topVersionIndex(indexName);
+            }
+            return bean;
+        }
+
+        @Override
+        public VersionIndex createNewIndex(String indexName) {
+            VersionIndex versionIndex = in.createNewIndex(indexName);
+            if (versionIndex == null && defaultIndexVersionManagerEnable) {
+                versionIndex = defaultIndexVersionManager.createNewIndex(indexName);
+            }
+            return versionIndex;
+        }
+
+        @Override
+        public VersionIndex createNextVersionIndex(VersionIndex curTopVersion) {
+            VersionIndex versionIndex = in.createNextVersionIndex(curTopVersion);
+            if (versionIndex == null && defaultIndexVersionManagerEnable) {
+                versionIndex = defaultIndexVersionManager.createNextVersionIndex(curTopVersion);
+            }
+            return versionIndex;
+        }
+
+        @Override
+        public Set<String> supportIndex() {
+            return in.supportIndex();
+        }
     }
 
 }
