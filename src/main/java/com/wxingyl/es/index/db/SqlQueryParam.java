@@ -24,13 +24,14 @@ public class SqlQueryParam {
 
     private ResultSetHandler<List<Map<String, Object>>> rsh;
 
-    public SqlQueryParam(TableQueryInfo tableQuery) {
-        this(tableQuery, null);
+    public SqlQueryParam(TableQueryInfo tableQuery, int startPage) {
+        this(tableQuery, startPage, null);
     }
 
-    public SqlQueryParam(TableQueryInfo tableQuery, Collection list) {
+    public SqlQueryParam(TableQueryInfo tableQuery, int startPage, Collection list) {
         queryCommon = tableQuery.getQueryCommon();
         rsh = tableQuery.getRsh();
+        this.page = startPage;
         if (!CommonUtils.isEmpty(list)) {
             Set<String> values = new HashSet<>();
             for (Object o : list) {

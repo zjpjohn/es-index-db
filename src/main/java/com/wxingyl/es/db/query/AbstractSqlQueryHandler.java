@@ -1,9 +1,11 @@
 package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.elasticsearch.common.cache.CacheBuilder;
 import org.elasticsearch.common.cache.CacheLoader;
 import org.elasticsearch.common.cache.LoadingCache;
@@ -57,14 +59,11 @@ public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
         return queryRunner.query(createSql(param), rsh);
     }
 
-    @Override
-    public <T> T query(String sql, ResultSetHandler<T> rsh) throws SQLException {
-        return queryRunner.query(sql, rsh);
-    }
-
     protected QueryRunner getQueryRunner() {
         return queryRunner;
     }
+
+    protected abstract String createCountSql(SqlQueryCommon common);
 
     protected abstract String createSql(BaseQueryParam param);
 
@@ -80,5 +79,12 @@ public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
     @Override
     public Set<String> getAllFields(DbTableDesc table) throws ExecutionException {
         return tableFieldsCache.get(table);
+    }
+
+    @Override
+    public long countKeyField(SqlQueryCommon common) throws SQLException {
+        ScalarHandler<Long> scalarHandler = new ScalarHandler<>();
+        Long num = queryRunner.query(createCountSql(common), scalarHandler);
+        return num == null ? 0 : num;
     }
 }

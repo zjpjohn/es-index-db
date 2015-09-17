@@ -24,8 +24,8 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
 
     private boolean hasNext = true;
 
-    public TableDependQuery(TableQueryInfo masterTable) {
-        masterParam = new SqlQueryParam(masterTable);
+    public TableDependQuery(TableQueryInfo masterTable, int startPage) {
+        masterParam = new SqlQueryParam(masterTable, startPage);
         masterQueryHandler = masterTable.getQueryHandler();
         slaveQuery = masterTable.getSlaveQuery();
     }
@@ -78,7 +78,7 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
     }
 
     private TableQueryResult pageQuery(Collection<Object> collection, TableQueryInfo queryInfo) throws SQLException {
-        SqlQueryParam param = new SqlQueryParam(queryInfo, collection);
+        SqlQueryParam param = new SqlQueryParam(queryInfo, 0, collection);
         TableQueryResult ret = null;
         do {
             TableQueryResult result = queryInfo.getQueryHandler().query(param);

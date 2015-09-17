@@ -24,6 +24,16 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     }
 
     @Override
+    protected String createCountSql(SqlQueryCommon common) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT COUNT(1) FROM ").append(schemaTableSql(common.getTable()));
+        if (!CommonUtils.isEmpty(common.getConditions())) {
+            appendWhereCondition(sb, common.getConditions());
+        }
+        return sb.toString();
+    }
+
+    @Override
     protected String createSql(BaseQueryParam param) {
         StringBuilder sb = new StringBuilder();
         appendSelectSql(sb, param.getFields(), param.getTable(), param.isFieldEscape());
@@ -71,6 +81,15 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         sb.append(" FROM ").append(schemaTableSql(table));
     }
 
+    private void appendWhereCondition(StringBuilder sb, Set<QueryCondition> conditions) {
+        sb.append(" WHERE ");
+        conditions.forEach(c -> {
+            c.appendQuerySql(sb, queryStatementStructure);
+            sb.append(" AND ");
+        });
+        sb.delete(sb.length() - 5, sb.length());
+    }
+
     @Override
     protected Set<String> loadAllTables(String schema) throws Exception {
         List<Map<String, Object>> result = getQueryRunner().query("SHOW TABLES IN `" + schema + '`', DEFAULT_MAP_LIST_HANDLER);
@@ -97,16 +116,12 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         appendSelectSql(sb, tableInfo.getFields(), tableInfo.getTable(), true);
         SqlQueryCommon.Build build = SqlQueryCommon.build();
         Set<QueryCondition> conditions = tableInfo.getQueryConditions();
-        if (conditions != null) {
-            sb.append(" WHERE ");
-            conditions.forEach(c -> {
-                c.appendQuerySql(sb, queryStatementStructure);
-                sb.append(" AND ");
-            });
-            sb.delete(sb.length() - 5, sb.length());
+        if (!CommonUtils.isEmpty(conditions)) {
+            appendWhereCondition(sb, conditions);
             build.containWhere();
         }
-        return build.commonFormatSql(sb.toString())
+        return build.commonSql(sb.toString())
+                .conditions(conditions)
                 .orderBy("ORDER BY `" + tableInfo.getRelationField() + '`')
                 .build(tableInfo);
     }

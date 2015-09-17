@@ -2,8 +2,11 @@ package com.wxingyl.es.index.db;
 
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.TableBaseInfo;
+import com.wxingyl.es.db.query.QueryCondition;
 import com.wxingyl.es.index.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
+
+import java.util.Set;
 
 /**
  * Created by xing on 15/8/27.
@@ -35,6 +38,8 @@ public class SqlQueryCommon {
     private TableBaseInfo tableBaseInfo;
 
     private IndexSlaveResultMergeEnum mergeType;
+
+    private Set<QueryCondition> conditions;
 
     public String getOrderBy() {
         return orderBy;
@@ -72,6 +77,10 @@ public class SqlQueryCommon {
         return keyField;
     }
 
+    public Set<QueryCondition> getConditions() {
+        return conditions;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -104,19 +113,17 @@ public class SqlQueryCommon {
 
     public static class Build {
 
-        private String commonFormatSql;
+        private String commonSql;
 
         private boolean containWhere;
 
         private String orderBy;
 
-        public Build commonFormatSql(String commonFormatSql) {
-            this.commonFormatSql = commonFormatSql;
-            return this;
-        }
+        private Set<QueryCondition> conditions;
 
-        public boolean isContainWhere() {
-            return containWhere;
+        public Build commonSql(String commonSql) {
+            this.commonSql = commonSql;
+            return this;
         }
 
         public Build containWhere() {
@@ -129,9 +136,14 @@ public class SqlQueryCommon {
             return this;
         }
 
+        public Build conditions(Set<QueryCondition> conditions) {
+            this.conditions = conditions;
+            return this;
+        }
+
         public SqlQueryCommon build(DbTableConfigInfo tableInfo) {
             SqlQueryCommon sqlQueryCommon = new SqlQueryCommon();
-            sqlQueryCommon.commonSql = commonFormatSql;
+            sqlQueryCommon.commonSql = commonSql;
             sqlQueryCommon.containWhere = containWhere;
             sqlQueryCommon.orderBy = orderBy;
             sqlQueryCommon.pageSize = tableInfo.getPageSize();
@@ -139,6 +151,7 @@ public class SqlQueryCommon {
             sqlQueryCommon.keyField = tableInfo.getRelationField();
             sqlQueryCommon.masterAlias = tableInfo.getMasterAlias();
             sqlQueryCommon.mergeType = tableInfo.getMergeType();
+            sqlQueryCommon.conditions = conditions;
             return sqlQueryCommon;
         }
     }

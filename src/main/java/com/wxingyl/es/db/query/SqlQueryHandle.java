@@ -23,7 +23,8 @@ public interface SqlQueryHandle {
 
     <T> T query(BaseQueryParam param, ResultSetHandler<T> rsh) throws SQLException;
 
-    <T> T query(String sql, ResultSetHandler<T> rsh) throws SQLException;
+    long countKeyField(SqlQueryCommon common) throws SQLException;
+
     /**
      * get all tables in the schema
      */

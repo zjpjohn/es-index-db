@@ -14,7 +14,7 @@ public interface IndexDocFactory {
      * @param typeBean type
      * @return create document iterator
      */
-    PageDocumentIterator indexDocCreate(IndexTypeBean typeBean);
+    PageDocumentIterator indexDocCreate(IndexTypeBean typeBean, int startPage);
 
     void registerDocPostProcessor(DocPostProcessor docPostProcessor);
 

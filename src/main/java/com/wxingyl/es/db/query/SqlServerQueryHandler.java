@@ -13,11 +13,17 @@ import java.util.Set;
 /**
  * Created by xing on 15/8/27.
  * sql server query default handler
+ * TODO: all function has not implement
  */
 public class SqlServerQueryHandler extends AbstractSqlQueryHandler {
 
     public SqlServerQueryHandler(DataSource dataSource) {
         super(dataSource, null);
+    }
+
+    @Override
+    protected String createCountSql(SqlQueryCommon common) {
+        return null;
     }
 
     @Override

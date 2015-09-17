@@ -16,6 +16,7 @@ import java.util.Set;
  */
 public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
 
+    @SuppressWarnings("unchecked")
     @Override
     public PageDocument applyTableQueryResult(PageDocument masterPageDoc, String masterField, TableQueryResult slaveResult) {
         TableBaseInfo slaveBaseInfo = slaveResult.getBaseInfo();
