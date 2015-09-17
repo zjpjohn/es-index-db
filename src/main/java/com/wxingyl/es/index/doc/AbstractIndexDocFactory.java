@@ -30,10 +30,10 @@ public abstract class AbstractIndexDocFactory implements IndexDocFactory {
         if (CommonUtils.isEmpty(docPostProcessor.supportType())) {
             throw new IndexIllegalArgumentException("DocPostProcessor: " + docPostProcessor + " supportType is empty");
         }
-        docPostProcessor.supportType().forEach(v -> {
+        for (IndexTypeDesc v : docPostProcessor.supportType()) {
             if (v == null) return;
             docPostProcessorMap.put(v, docPostProcessor);
-        });
+        }
     }
 
     @Override
@@ -41,10 +41,10 @@ public abstract class AbstractIndexDocFactory implements IndexDocFactory {
         if (CommonUtils.isEmpty(handler.supportTable())) {
             throw new IndexIllegalArgumentException("TableQueryResultListener: " + handler + " supportTable is empty");
         }
-        handler.supportTable().forEach(table -> {
+        for (DbTableDesc table : handler.supportTable()) {
             if (table == null) return;
             tableQueryResultHandleMap.put(table, handler);
-        });
+        }
     }
 
     protected DocPostProcessor getDocPostProcessor(IndexTypeDesc type) {
@@ -52,12 +52,12 @@ public abstract class AbstractIndexDocFactory implements IndexDocFactory {
     }
 
     protected void notifyTableQueryResultHandler(IndexTypeDesc type, List<TableQueryResult> queryResults) {
-        queryResults.forEach(q -> {
+        for (TableQueryResult q : queryResults) {
             TableQueryResultHandle handler = tableQueryResultHandleMap.get(q.getBaseInfo().getTable());
             if (handler != null) {
                 handler.onHandle(type, q);
             }
-        });
+        }
     }
 
     protected abstract class Itr implements PageDocumentIterator {

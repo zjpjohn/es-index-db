@@ -59,6 +59,11 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
 
     }
 
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException("remove");
+    }
+
     private void slaveQuery(DbQueryDependResult masterResult, ImmutableMultimap<String, TableQueryInfo> slaveMap) throws SQLException {
         if (masterResult == null || masterResult.isEmpty() || slaveMap == null) return;
         for (String field : slaveMap.keys()) {

@@ -12,10 +12,6 @@ public interface SqlQueryStatementStructure {
 
     StringBuilder appendField(StringBuilder sb, String field);
 
-    default StringBuilder appendValue(StringBuilder sb, String value) {
-        return sb.append('\'').append(value).append('\'');
-    }
-
     StringBuilder singleValueAppend(StringBuilder sb, QueryCondition<String> condition);
 
     StringBuilder rangeValueAppend(StringBuilder sb, QueryCondition<Tuple<String, String>> condition);

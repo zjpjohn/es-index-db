@@ -4,8 +4,10 @@ import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.DbTableFieldDesc;
+import com.wxingyl.es.util.BiConsumer;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
+import com.wxingyl.es.util.Supplier;
 
 import java.util.*;
 
@@ -18,29 +20,49 @@ import static com.wxingyl.es.conf.ConfigKeyName.*;
  */
 public class IndexConfigParser implements IndexConfigParse {
 
-    private ThreadLocal<DefaultValueParser<Integer>> integerDefaultValueParser = CommonUtils.createThreadLocal(() ->
-            new DefaultValueParser<>((defaultValue, keyMap) -> {
-                defaultValue.put(INDEX_DEFAULT_PAGE_SIZE, new Integer[2]);
-                keyMap.put(INDEX_DEFAULT_PAGE_SIZE, INDEX_TABLE_PAGE_SIZE);
-            }));
-
-    private ThreadLocal<DefaultValueParser<String>> stringDefaultValueParser = CommonUtils.createThreadLocal(() ->
-            new DefaultValueParser<String>((defaultValue, keyMap) -> {
-                defaultValue.put(INDEX_DEFAULT_SCHEMA, new String[2]);
-                defaultValue.put(INDEX_DEFAULT_DB_ADDRESS, new String[2]);
-                defaultValue.put(INDEX_DEFAULT_DELETE_FIELD, new String[2]);
-                defaultValue.put(INDEX_DEFAULT_DELETE_VALID_VALUE, new String[2]);
-
-                keyMap.put(INDEX_DEFAULT_SCHEMA, INDEX_TABLE_SCHEMA);
-                keyMap.put(INDEX_DEFAULT_DB_ADDRESS, INDEX_TABLE_DB_ADDRESS);
-                keyMap.put(INDEX_DEFAULT_DELETE_FIELD, INDEX_TABLE_DELETE_FIELD);
-                keyMap.put(INDEX_DEFAULT_DELETE_VALID_VALUE, INDEX_TABLE_DELETE_VALID_VALUE);
-            }) {
+    private ThreadLocal<DefaultValueParser<Integer>> integerDefaultValueParser = CommonUtils.createThreadLocal(
+            new Supplier<DefaultValueParser<Integer>>() {
                 @Override
-                protected String getVal(Map<String, Object> confMap, String key) {
-                    return CommonUtils.getStringVal(confMap, key);
+                public DefaultValueParser<Integer> get() {
+                    return new DefaultValueParser<>(new BiConsumer<Map<String, Integer[]>, Map<String, String>>() {
+                        @Override
+                        public void accept(Map<String, Integer[]> defaultValue, Map<String, String> keyMap) {
+                            defaultValue.put(INDEX_DEFAULT_PAGE_SIZE, new Integer[2]);
+                            keyMap.put(INDEX_DEFAULT_PAGE_SIZE, INDEX_TABLE_PAGE_SIZE);
+                        }
+                    });
                 }
             });
+
+    private ThreadLocal<DefaultValueParser<String>> stringDefaultValueParser = CommonUtils.createThreadLocal(
+            new Supplier<DefaultValueParser<String>>() {
+
+                @Override
+                public DefaultValueParser<String> get() {
+                    return new DefaultValueParser<String>(new BiConsumer<Map<String, String[]>, Map<String, String>>() {
+                        @Override
+                        public void accept(Map<String, String[]> defaultValue, Map<String, String> keyMap) {
+                            defaultValue.put(INDEX_DEFAULT_SCHEMA, new String[2]);
+                            defaultValue.put(INDEX_DEFAULT_DB_ADDRESS, new String[2]);
+                            defaultValue.put(INDEX_DEFAULT_DELETE_FIELD, new String[2]);
+                            defaultValue.put(INDEX_DEFAULT_DELETE_VALID_VALUE, new String[2]);
+
+                            keyMap.put(INDEX_DEFAULT_SCHEMA, INDEX_TABLE_SCHEMA);
+                            keyMap.put(INDEX_DEFAULT_DB_ADDRESS, INDEX_TABLE_DB_ADDRESS);
+                            keyMap.put(INDEX_DEFAULT_DELETE_FIELD, INDEX_TABLE_DELETE_FIELD);
+                            keyMap.put(INDEX_DEFAULT_DELETE_VALID_VALUE, INDEX_TABLE_DELETE_VALID_VALUE);
+                        }
+                    }) {
+
+                        @Override
+                        protected String getVal(Map<String, Object> confMap, String key) {
+                            return CommonUtils.getStringVal(confMap, key);
+                        }
+
+                    };
+                }
+            });
+
 
     private TypeConfigInfo parseType(IndexTypeDesc typeDesc, Map<String, Object> typeConf) {
         List<Map<String, Object>> tablesConf = CommonUtils.getList(typeConf, INDEX_TYPE_INCLUDE_TABLE);
@@ -115,15 +137,26 @@ public class IndexConfigParser implements IndexConfigParse {
             throw new IndexConfigException("index: " + index + " config there is no config value: " + INDEX_INCLUDE_TYPE);
         }
         Set<TypeConfigInfo> result = new HashSet<>();
-        types.forEach(typeConfig -> {
+        for (Map<String, Object> typeConfig : types) {
             String type = CommonUtils.getStringVal(typeConfig, INDEX_TYPE_TYPE);
             if (type == null) {
-                throw new IndexConfigException("index: " + index + " type config there is a type no have " + INDEX_TYPE_TYPE + " value");
+                throw new IndexConfigException("index: " + index + " type config there is a type no have "
+                        + INDEX_TYPE_TYPE + " value");
             }
             IndexTypeDesc typeDesc = new IndexTypeDesc(index, type);
             TypeConfigInfo typeInfo = parseType(typeDesc, typeConfig);
             if (typeInfo != null) result.add(typeInfo);
-        });
+        }
         return result;
+    }
+
+    @Override
+    public Set<TypeConfigInfo> parseAll(Map<String, Map<String, Object>> configMap) {
+        Set<TypeConfigInfo> set = new HashSet<>();
+        for (Map.Entry<String, Map<String, Object>> e : configMap.entrySet()) {
+            Set<TypeConfigInfo> parseRet = parse(e.getKey(), e.getValue());
+            if (!CommonUtils.isEmpty(parseRet)) set.addAll(parseRet);
+        }
+        return set;
     }
 }

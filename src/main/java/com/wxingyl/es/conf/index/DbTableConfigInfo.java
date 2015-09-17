@@ -109,7 +109,8 @@ public class DbTableConfigInfo {
             throw new IndexConfigException("table_name conf is null of " + typeInfo);
         }
         String[] strArray = new String[2];
-        strDvp.getDefaultValue(config).forEach((k, v) -> {
+        for (Map.Entry<String, String> e : strDvp.getDefaultValue(config).entrySet()) {
+            String k = e.getKey(), v = e.getValue();
             switch (k) {
                 case INDEX_TABLE_SCHEMA:
                     strArray[0] = v;
@@ -124,7 +125,7 @@ public class DbTableConfigInfo {
                     deleteValidValue = v;
                     break;
             }
-        });
+        }
         if (deleteField != null && deleteValidValue == null) {
             throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " delete_field: "
                     + deleteField + ", but delete_valid_value is null");
@@ -140,7 +141,7 @@ public class DbTableConfigInfo {
             relationField = relationField.toLowerCase();
         }
         table = new DbTableDesc(strArray[1], strArray[0], tableName);
-        pageSize = intDvp.getDefaultValue(config).getOrDefault(INDEX_TABLE_PAGE_SIZE, 2500);
+        pageSize = CommonUtils.getOrDefault(intDvp.getDefaultValue(config), INDEX_TABLE_PAGE_SIZE, 2500);
         masterAlias = CommonUtils.getStringVal(config, INDEX_TABLE_MASTER_ALIAS);
         forbidFields = getFields(config, INDEX_TABLE_FORBID_FIELDS);
         fields = getFields(config, INDEX_TABLE_FIELDS);
@@ -184,21 +185,25 @@ public class DbTableConfigInfo {
             queryConditions.add(QueryCondition.buildSingle(deleteField, SqlQueryOperator.EQ, deleteValidValue));
         }
         if (list != null) {
-            list.forEach(v -> {
+            for (String v : list) {
                 QueryCondition condition = QueryCondition.build(v);
                 if (condition == null) {
                     throw new IndexConfigException(DbTableConfigInfo.this + " config, " + INDEX_TABLE_QUERY_CONDITION
                             + " value: " + v + " is invalid");
                 }
                 queryConditions.add(condition);
-            });
+            }
         }
     }
 
     private Set<String> getFields(Map<String, Object> map, String key) {
         List<String> list = CommonUtils.getList(map, key);
-        if (CommonUtils.isEmpty(list)) return null;
-        return list.stream().collect(HashSet::new, (c, s) -> c.add(s.toLowerCase()), Set::addAll);
+        if (list == null) return null;
+        Set<String> ret = new HashSet<>();
+        for (String s : list) {
+            ret.add(s.toLowerCase());
+        }
+        return ret;
     }
 
     void addFiled(String filed) {

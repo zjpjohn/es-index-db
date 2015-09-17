@@ -4,11 +4,11 @@ import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.db.query.TableQueryInfo;
 import com.wxingyl.es.db.*;
 import com.wxingyl.es.db.query.SqlQueryHandle;
+import com.wxingyl.es.util.BiConsumer;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.Tuple;
 
 import java.util.*;
-import java.util.function.BiConsumer;
 
 /**
  * Created by xing on 15/8/24.
@@ -38,9 +38,9 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
     public List<TableBaseInfo> getTableInfo(String tableName) {
         if (allTableInfo == null) getAllTableInfo();
         List<TableBaseInfo> list = new ArrayList<>();
-        allTableInfo.forEach(v -> {
+        for (TableBaseInfo v : allTableInfo) {
             if (v.getTable().getTable().equals(tableName)) list.add(v);
-        });
+        }
         return list;
     }
 
@@ -119,13 +119,13 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
                                    BiConsumer<TableQueryInfo, List<String>> masterAliasVerify) {
             DefaultIndexTypeBean bean = new DefaultIndexTypeBean();
             bean.type = type;
-            tableMap.values().forEach(v -> {
+            for (Tuple<TableQueryInfo.Builder, DbTableFieldDesc> v : tableMap.values()) {
                 v.v1().masterAliasVerify(masterAliasVerify);
                 DbTableFieldDesc field = v.v2();
-                if (field == null) return;
+                if (field == null) continue;
                 TableQueryInfo.Builder builder = tableMap.get(field.newDbTableDesc()).v1();
                 builder.addSlave(v.v1(), field.getField());
-            });
+            }
             bean.masterTable = tableMap.get(masterTable).v1().build();
             tableMap.clear();
             bean.priority = priority;

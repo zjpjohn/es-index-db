@@ -39,7 +39,9 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
         appendSelectSql(sb, param.getFields(), param.getTable(), param.isFieldEscape());
         if (param.getConditions() != null) {
             sb.append(" WHERE ");
-            param.getConditions().forEach(c -> c.appendQuerySql(sb, queryStatementStructure));
+            for (QueryCondition c : param.getConditions()) {
+                c.appendQuerySql(sb, queryStatementStructure);
+            }
         }
         if (param.getOrderBy() != null) {
             appendOrderBySql(sb, param.getOrderBy());
@@ -56,13 +58,15 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
 
     private void appendOrderBySql(StringBuilder sb, Map<String, SortOrder> order) {
         sb.append(" ORDER BY ");
-        order.forEach((k, v) -> {
+        for (Map.Entry<String, SortOrder> e : order.entrySet()) {
+            String k = e.getKey();
+            SortOrder v = e.getValue();
             sb.append('`').append(k).append("`");
             if (v != null) {
                 sb.append(' ').append(v);
             }
             sb.append(", ");
-        });
+        }
         sb.delete(sb.length() - 2, sb.length());
     }
 
@@ -72,9 +76,13 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
             sb.append('*');
         } else {
             if (fieldEscape) {
-                fields.forEach(f -> queryStatementStructure.appendField(sb, f).append(", "));
+                for (String f : fields) {
+                    queryStatementStructure.appendField(sb, f).append(", ");
+                }
             } else {
-                fields.forEach(f -> sb.append(f).append(", "));
+                for (String f : fields) {
+                    sb.append(f).append(", ");
+                }
             }
             sb.delete(sb.length() - 2, sb.length());
         }
@@ -83,26 +91,32 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
 
     private void appendWhereCondition(StringBuilder sb, Set<QueryCondition> conditions) {
         sb.append(" WHERE ");
-        conditions.forEach(c -> {
+        for (QueryCondition c : conditions) {
             c.appendQuerySql(sb, queryStatementStructure);
             sb.append(" AND ");
-        });
+        }
         sb.delete(sb.length() - 5, sb.length());
     }
 
     @Override
     protected Set<String> loadAllTables(String schema) throws Exception {
         List<Map<String, Object>> result = getQueryRunner().query("SHOW TABLES IN `" + schema + '`', DEFAULT_MAP_LIST_HANDLER);
-        final Set<String> tables = new HashSet<>();
-        result.forEach(m -> m.values().forEach(v -> tables.add(v.toString())));
+        Set<String> tables = new HashSet<>();
+        for (Map<String, Object> m : result) {
+            for (Object v : m.values()) {
+                tables.add(v.toString());
+            }
+        }
         return tables;
     }
 
     @Override
     protected Set<String> loadAllFields(DbTableDesc table) throws Exception {
         List<Map<String, Object>> result = getQueryRunner().query("SHOW COLUMNS FROM " + schemaTableSql(table), DEFAULT_MAP_LIST_HANDLER);
-        final Set<String> fields = new HashSet<>();
-        result.forEach(m -> fields.add(m.get("field").toString()));
+        Set<String> fields = new HashSet<>();
+        for (Map<String, Object> m : result) {
+            fields.add(m.get("field").toString());
+        }
         return fields;
     }
 

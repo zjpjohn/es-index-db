@@ -4,10 +4,7 @@ import com.wxingyl.es.db.result.TableQueryResult;
 import org.elasticsearch.common.collect.ArrayListMultimap;
 import org.elasticsearch.common.collect.Multimap;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by xing on 15/9/2.
@@ -40,8 +37,13 @@ public class DbQueryDependResult {
     }
 
     public Set<Object> getValuesForField(String field) {
-        return tableQueryResult.getDbData().stream().filter(v -> v.get(field) != null)
-                .collect(HashSet::new, (c, v) -> c.add(v.get(field)), Set::addAll);
+        Set<Object> ret = new HashSet<>();
+        for (Map<String, Object> v : tableQueryResult.getDbData()) {
+            if (v.get(field) != null) {
+                ret.add(v.get(field));
+            }
+        }
+        return ret;
     }
 
     public void addSlaveResult(String masterField, DbQueryDependResult slaveRet) {
@@ -63,7 +65,9 @@ public class DbQueryDependResult {
     private void addAllTableResult(List<TableQueryResult> list, DbQueryDependResult result) {
         list.add(result.tableQueryResult);
         if (result.slaveResult != null) {
-            result.slaveResult.values().forEach(v -> addAllTableResult(list, v));
+            for (DbQueryDependResult v : result.slaveResult.values()) {
+                addAllTableResult(list, v);
+            }
         }
     }
 }

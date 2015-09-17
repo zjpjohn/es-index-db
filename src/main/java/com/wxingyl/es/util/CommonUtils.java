@@ -5,7 +5,6 @@ import com.wxingyl.es.db.DbTableFieldDesc;
 import com.wxingyl.es.index.doc.DocFields;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 /**
  * Created by xing on 15/8/17.
@@ -33,6 +32,15 @@ public abstract class CommonUtils {
 
     public static boolean isEmpty(Map map) {
         return map == null || map.isEmpty();
+    }
+
+    /**
+     * it is different from jdk1.8 of Map.getOrDefault
+     * If the key -> value is null, will return defaultVal
+     */
+    public static <K, V> V getOrDefault(Map<K, V> map, K key, V defaultVal) {
+        V v;
+        return (v = map.get(key)) == null ? defaultVal : v;
     }
 
     public static <T> List<List<T>> groupList(Collection<T> collection, int pageSize) {
@@ -66,11 +74,11 @@ public abstract class CommonUtils {
         if (list.isEmpty()) {
             return null;
         } else if (list.get(0) instanceof String) {
-            final List<T> ret = new ArrayList<>(list.size());
-            list.forEach(v -> {
+            List<T> ret = new ArrayList<>(list.size());
+            for (T v : list) {
                 String val;
                 if ((val = emptyTrim(v.toString())) != null) ret.add((T) val);
-            });
+            }
             return ret;
         } else {
             return list;
@@ -108,7 +116,7 @@ public abstract class CommonUtils {
     public static Map<Object, List<Map<String, Object>>> groupListMap(List<Map<String, Object>> data,
                                                                       String keyField, boolean removeKeyField) {
         Map<Object, List<Map<String, Object>>> group = new HashMap<>();
-        data.forEach(map -> {
+        for (Map<String, Object> map : data) {
             Object obj = map.get(keyField);
             List<Map<String, Object>> list = group.get(obj);
             if (list == null) {
@@ -116,7 +124,7 @@ public abstract class CommonUtils {
             }
             if (removeKeyField) map.remove(keyField);
             list.add(map);
-        });
+        }
         return group;
     }
 
@@ -148,7 +156,7 @@ public abstract class CommonUtils {
         return new RwLock<>(lockObj);
     }
 
-    public static <T> ThreadLocal<T> createThreadLocal(Supplier<T> supplier) {
+    public static <T> ThreadLocal<T> createThreadLocal(final Supplier<T> supplier) {
         if (supplier == null) return new ThreadLocal<>();
         else return new ThreadLocal<T>() {
             @Override

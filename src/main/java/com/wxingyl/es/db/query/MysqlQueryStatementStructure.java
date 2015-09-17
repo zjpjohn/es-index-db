@@ -31,9 +31,15 @@ public class MysqlQueryStatementStructure implements SqlQueryStatementStructure 
         appendField(sb, condition.getField());
         if (condition.getOp() == SqlQueryOperator.NIN) sb.append(" NOT");
         sb.append(" IN (");
-        condition.getValue().forEach(v -> appendValue(sb, v).append(", "));
+        for (String v : condition.getValue()) {
+            appendValue(sb, v).append(", ");
+        }
         sb.delete(sb.length()-2, sb.length());
         sb.append(")");
         return sb;
+    }
+
+    private StringBuilder appendValue(StringBuilder sb, String value) {
+        return sb.append('\'').append(value).append('\'');
     }
 }

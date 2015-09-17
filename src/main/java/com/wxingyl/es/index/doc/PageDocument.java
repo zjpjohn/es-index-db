@@ -4,7 +4,6 @@ import com.wxingyl.es.db.result.NumberFieldValueProcessor;
 import com.wxingyl.es.index.TypeBaseInfo;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Created by xing on 15/9/6.
@@ -36,7 +35,7 @@ public class PageDocument implements Iterable<DocFields> {
 
     public Map<Object, List<DocFields>> groupByKeyField(boolean removeKeyField) {
         Map<Object, List<DocFields>> group = new HashMap<>();
-        docs.forEach(doc -> {
+        for (DocFields doc : docs) {
             Object val = doc.get(baseInfo.getKeyField());
             List<DocFields> list = group.get(val);
             if (list == null) {
@@ -44,7 +43,7 @@ public class PageDocument implements Iterable<DocFields> {
             }
             if (removeKeyField) doc.remove(baseInfo.getKeyField());
             list.add(doc);
-        });
+        }
         return group;
     }
 
@@ -62,11 +61,4 @@ public class PageDocument implements Iterable<DocFields> {
         return docs.iterator();
     }
 
-    @Override
-    public void forEach(Consumer<? super DocFields> action) {
-        Objects.requireNonNull(action);
-        for (DocFields doc : docs) {
-            action.accept(doc);
-        }
-    }
 }

@@ -2,9 +2,7 @@ package com.wxingyl.es.conf.ds;
 
 import com.wxingyl.es.conf.ConfigParse;
 import com.wxingyl.es.db.DataSourceBean;
-import com.wxingyl.es.util.CommonUtils;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,12 +20,5 @@ public interface DataSourceParserManager extends ConfigParse<DataSourceBean> {
 
     boolean addDataSourceConfigParser(DataSourceConfigParse parser);
 
-    default Set<DataSourceBean> parseAll(Map<String, Map<String, Object>> configMap) {
-        Set<DataSourceBean> set = new HashSet<>();
-        configMap.forEach((k, v) -> {
-            Set<DataSourceBean> parseRet = parse(k, v);
-            if (!CommonUtils.isEmpty(parseRet)) set.addAll(parseRet);
-        });
-        return set;
-    }
+    Set<DataSourceBean> parseAll(Map<String, Map<String, Object>> configMap);
 }

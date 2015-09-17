@@ -3,11 +3,14 @@ package com.wxingyl.es.index.version;
 import com.wxingyl.es.exception.IndexDocException;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.EsUtils;
+import com.wxingyl.es.util.Supplier;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,11 +29,14 @@ public class DefaultIndexVersionManager implements IndexVersionManager {
 
     public DefaultIndexVersionManager(Client client) {
         indicesAdminClient = client.admin().indices();
-        getIndexRequest = CommonUtils.createThreadLocal(() -> {
-            GetIndexRequest indexRequest = new GetIndexRequest();
-            indexRequest.indices("_all");
-            indexRequest.addFeatures(GetIndexRequest.Feature.MAPPINGS, GetIndexRequest.Feature.SETTINGS);
-            return indexRequest;
+        getIndexRequest = CommonUtils.createThreadLocal(new Supplier<GetIndexRequest>() {
+            @Override
+            public GetIndexRequest get() {
+                GetIndexRequest indexRequest = new GetIndexRequest();
+                indexRequest.indices("_all");
+                indexRequest.addFeatures(GetIndexRequest.Feature.MAPPINGS, GetIndexRequest.Feature.SETTINGS);
+                return indexRequest;
+            }
         });
     }
 
@@ -70,13 +76,13 @@ public class DefaultIndexVersionManager implements IndexVersionManager {
         VersionIndex nextVersion = new VersionIndex(curTopVersion.getVersion() + 1, curTopVersion.getIndexName());
         nextVersion.initConfig(curTopVersion.getMappings(), curTopVersion.getSettings());
         Map<String, String> typeMapping = new HashMap<>();
-        nextVersion.getMappings().forEach(v -> {
+        for (ObjectObjectCursor<String, MappingMetaData> v : nextVersion.getMappings()) {
             try {
                 typeMapping.put(v.key, v.value.source().string());
             } catch (IOException e) {
                 throw new IndexDocException("copy mapping failed, nextVersion: " + nextVersion, e);
             }
-        });
+        }
         EsUtils.createNewIndex(indicesAdminClient, nextVersion.getVersionIndexName(), nextVersion.getSettings(), typeMapping);
         return nextVersion;
     }

@@ -2,9 +2,9 @@ package com.wxingyl.es.index;
 
 import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.util.CommonUtils;
+import com.wxingyl.es.util.Function;
 
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Created by xing on 15/9/7.
@@ -16,18 +16,31 @@ public enum IndexSlaveResultMergeEnum {
      * slave result as list, no matter what slave result is only one
      * Note: it is default
      */
-    LIST(list -> CommonUtils.isEmpty(list) ? null : list),
+    LIST(new Function<List, Object>() {
+        @Override
+        public Object apply(List list) {
+            return CommonUtils.isEmpty(list) ? null : list;
+        }
+    }),
     /**
      * slave result as one, when slave result number more than one, we get list.get(0)
      */
-    SINGLE(list -> CommonUtils.isEmpty(list) ? null : list.get(0)),
+    SINGLE(new Function<List, Object>() {
+        @Override
+        public Object apply(List list) {
+            return CommonUtils.isEmpty(list) ? null : list.get(0);
+        }
+    }),
     /**
      * depend on slave result, only one result is single, multi result is list
      */
-    AUTO(list -> {
-        if (CommonUtils.isEmpty(list)) return null;
-        else if (list.size() == 1) return list.get(0);
-        else return list;
+    AUTO(new Function<List, Object>() {
+        @Override
+        public Object apply(List list) {
+            if (CommonUtils.isEmpty(list)) return null;
+            else if (list.size() == 1) return list.get(0);
+            else return list;
+        }
     }),
     /**
      * slave result as one, and auto merge slave result to master table

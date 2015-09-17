@@ -2,7 +2,6 @@ package com.wxingyl.es.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 /**
  * Created by xing on 15/8/24.
@@ -23,7 +22,9 @@ public class DefaultValueParser<T> {
      * @param level start from 0
      */
     public void addDefaultValue(Map<String, Object> confMap, int level) {
-        defaultValue.forEach((k, v) -> {
+        for (Map.Entry<String, T[]> e : defaultValue.entrySet()) {
+            String k = e.getKey();
+            T[] v = e.getValue();
             T val = getVal(confMap, k);
             if (val != null) {
                 v[level] = val;
@@ -33,7 +34,7 @@ public class DefaultValueParser<T> {
                 v[0] = null;
             }
             if (confMap.containsKey(k)) confMap.remove(k);
-        });
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -46,7 +47,9 @@ public class DefaultValueParser<T> {
      */
     public Map<String, T> getDefaultValue(Map<String, Object> confMap) {
         Map<String, T> value = new HashMap<>();
-        keyMap.forEach((k, v) -> {
+        for (Map.Entry<String, String> e : keyMap.entrySet()) {
+            String k = e.getKey();
+            String v = e.getValue();
             T val = getVal(confMap, v);
             if (val == null) {
                 T[] array = defaultValue.get(k);
@@ -56,7 +59,7 @@ public class DefaultValueParser<T> {
                 value.put(v, val);
                 confMap.remove(v);
             }
-        });
+        }
         return value;
     }
 }

@@ -122,26 +122,30 @@ public abstract class AbstractConfigManager implements ConfigManager {
 
     protected void addIndexTypeBean(Set<IndexTypeBean> beanSet) {
         if (CommonUtils.isEmpty(beanSet)) return;
-        beanSet.forEach(k -> {
+        for (IndexTypeBean k : beanSet) {
             SortedSet<IndexTypeBean> set = indexTypeMap.get(k.getType().getIndex());
             if (set == null) {
                 indexTypeMap.put(k.getType().getIndex(), set = new TreeSet<>());
             }
             set.add(k);
-        });
-        indexTypeListeners.forEach(l -> l.onChange(beanSet));
+        }
+        for (Listener<Set<IndexTypeBean>> l : indexTypeListeners) {
+            l.onChange(beanSet);
+        }
     }
 
     protected void addDataSourceBean(Set<DataSourceBean> beanSet) {
         if (CommonUtils.isEmpty(beanSet)) return;
-        beanSet.forEach(k -> {
+        for (DataSourceBean k : beanSet) {
             Set<DataSourceBean> set = dataSourceMap.get(k.getSchema());
             if (set == null) {
                 dataSourceMap.put(k.getSchema(), set = new HashSet<>());
             }
             set.add(k);
-        });
-        dataSourceListeners.forEach(l -> l.onChange(beanSet));
+        }
+        for (Listener<Set<DataSourceBean>> l : dataSourceListeners) {
+            l.onChange(beanSet);
+        }
     }
 
     protected Map<String, Set<DataSourceBean>> getDataSourceMap() {

@@ -32,6 +32,16 @@ public class DataSourceParseFactory implements DataSourceParserManager {
     }
 
     @Override
+    public Set<DataSourceBean> parseAll(Map<String, Map<String, Object>> configMap) {
+        Set<DataSourceBean> set = new HashSet<>();
+        for (Map.Entry<String, Map<String, Object>> e : configMap.entrySet()) {
+            Set<DataSourceBean> parseRet = parse(e.getKey(), e.getValue());
+            if (!CommonUtils.isEmpty(parseRet)) set.addAll(parseRet);
+        }
+        return set;
+    }
+
+    @Override
     public Set<DataSourceBean> parse(String configName, Map<String, Object> config) {
         String driverClassName = CommonUtils.getStringVal(config, ConfigKeyName.DS_DRIVER_CLASS_NAME);
         if (driverClassName == null) {

@@ -15,6 +15,7 @@ import com.wxingyl.es.index.version.IndexVersionManager;
 import com.wxingyl.es.index.version.VersionIndex;
 import com.wxingyl.es.index.version.VersionIndexTypeBean;
 import com.wxingyl.es.util.CommonUtils;
+import com.wxingyl.es.util.Function;
 import com.wxingyl.es.util.RwLock;
 import org.elasticsearch.client.Client;
 
@@ -53,7 +54,7 @@ public class IndexManager {
 
     private Map<String, IndexVersionManager> indexVersionManagerMap = new HashMap<>();
 
-    private RwLock<List<String>> fillingIndex = CommonUtils.createRwLock(new LinkedList<>());
+    private RwLock<LinkedList<String>> fillingIndex = CommonUtils.createRwLock(new LinkedList<String>());
 
     public IndexManager(Client client, ConfigManager configManager) {
         this(client, configManager, new DefaultIndexDocFactory());
@@ -85,10 +86,10 @@ public class IndexManager {
         if (isCreatingIndex()) {
             throw new IllegalStateException("now creating index, can not register BulkIndexGenerate");
         }
-        bulkIndexGenerate.supportType().forEach(v -> {
+        for (IndexTypeDesc v : bulkIndexGenerate.supportType()) {
             if (v == null) return;
             bulkIndexGeneratorMap.put(v, bulkIndexGenerate);
-        });
+        }
     }
 
     public void registerIndexVersionManager(IndexVersionManager indexVersionManager) {
@@ -114,7 +115,7 @@ public class IndexManager {
         Objects.requireNonNull(type);
         Map<String, Long> numMap = innerIndexFill(index, type, 1);
         if (numMap == null) return 0;
-        else return numMap.getOrDefault(type, 0l);
+        else return CommonUtils.getOrDefault(numMap, type, 0l);
     }
 
     public Map<String, Long> indexFill(String index) {
@@ -122,13 +123,12 @@ public class IndexManager {
     }
 
     /**
-     *
-     * @param index index name
-     * @param type if type == null, it mean create all type below the index
+     * @param index         index name
+     * @param type          if type == null, it mean create all type below the index
      * @param concurrentNum concurrent thread num, if num > 1, executorService must not null
      * @return Map, key: type, value: document total num
      */
-    public Map<String, Long> innerIndexFill(String index, String type, int concurrentNum) {
+    public Map<String, Long> innerIndexFill(final String index, String type, int concurrentNum) {
         Objects.requireNonNull(index);
         if (concurrentNum < 1) concurrentNum = 1;
         if (concurrentNum > 1 && executorService == null) {
@@ -149,10 +149,21 @@ public class IndexManager {
 
         if (CommonUtils.isEmpty(typeBeanSet)) return null;
 
-        if (fillingIndex.readOp(list -> list.contains(index))) {
+        if (fillingIndex.readOp(new Function<LinkedList<String>, Boolean>() {
+            @Override
+            public Boolean apply(LinkedList<String> input) {
+                return input.contains(index);
+            }
+        })) {
             return null;
         }
-        fillingIndex.writeOp(list -> list.add(index));
+        fillingIndex.writeOp(new Function<LinkedList<String>, Object>() {
+            @Override
+            public Object apply(LinkedList<String> input) {
+                input.add(index);
+                return null;
+            }
+        });
 
         VersionIndexTypeBean topVersionIndex = getVersionIndex(index);
         final VersionIndexTypeBean createVersionIndex;
@@ -177,16 +188,22 @@ public class IndexManager {
                 typeDocNum.put(typeBean.getType().getType(), num);
             }
         } finally {
-            fillingIndex.writeOp(list -> list.remove(index));
+            fillingIndex.writeOp(new Function<LinkedList<String>, Object>() {
+                @Override
+                public Object apply(LinkedList<String> input) {
+                    input.remove(index);
+                    return null;
+                }
+            });
         }
         return typeDocNum;
     }
 
-    private long createIndexConcurrent(IndexTypeBean typeBean, int concurrentNum) {
+    private long createIndexConcurrent(final IndexTypeBean typeBean, int concurrentNum) {
         long totalNum;
         SqlQueryCommon masterCommon = typeBean.getMasterTable().getQueryCommon();
         try {
-             totalNum = typeBean.getMasterTable().getQueryHandler().countKeyField(masterCommon);
+            totalNum = typeBean.getMasterTable().getQueryHandler().countKeyField(masterCommon);
         } catch (SQLException e) {
             throw new IndexDocException("count num of master table: " + typeBean.getMasterTable().getQueryCommon()
                     + " have sqlException", e);
@@ -202,7 +219,13 @@ public class IndexManager {
         for (int i = 0; i < concurrentNum; i++) {
             final int finalStartPage = startPage;
             final int finalEndPage = startPage + unitPageNum;
-            callableList.add(() -> createIndex(typeBean, finalStartPage, finalEndPage));
+            callableList.add(new Callable<Long>() {
+
+                @Override
+                public Long call() throws Exception {
+                    return createIndex(typeBean, finalStartPage, finalEndPage);
+                }
+            });
             startPage = finalEndPage;
         }
         try {
@@ -229,8 +252,8 @@ public class IndexManager {
             long num = 0;
             while (docItr.hasNext()) {
                 PageDocument document = docItr.next();
-                num += bulkIndexGeneratorMap.getOrDefault(document.getBaseInfo().getType(),
-                        defaultBulkIndexGenerator).bulkInsert(client, document);
+                num += CommonUtils.getOrDefault(bulkIndexGeneratorMap, document.getBaseInfo().getType(),
+                        defaultBulkIndexGenerator) .bulkInsert(client, document);
             }
             return num;
         } finally {
@@ -268,7 +291,12 @@ public class IndexManager {
 
 
     private boolean isCreatingIndex() {
-        return !fillingIndex.readOp(List::isEmpty);
+        return fillingIndex.readOp(new Function<LinkedList<String>, Boolean>() {
+            @Override
+            public Boolean apply(LinkedList<String> input) {
+                return !input.isEmpty();
+            }
+        });
     }
 
     class IndexVersionManagerWrapper implements IndexVersionManager {

@@ -2,10 +2,9 @@ package com.wxingyl.es.conf.ds;
 
 import com.wxingyl.es.conf.ConfigKeyName;
 import com.wxingyl.es.db.DataSourceBean;
-import com.wxingyl.es.exception.DataSourceConfigException;
 import com.wxingyl.es.db.query.SqlQueryHandle;
+import com.wxingyl.es.exception.DataSourceConfigException;
 import com.wxingyl.es.util.CommonUtils;
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.elasticsearch.common.collect.Tuple;
 
 import javax.sql.DataSource;
@@ -28,6 +27,7 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
 
     /**
      * parse single type db
+     *
      * @param config one of schemas config value, it contain url, username, password or db_names
      * @return DataSourceBean set, a schema have an obj
      */
@@ -40,13 +40,15 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
         List<String> dbNames = CommonUtils.getList(config, ConfigKeyName.DS_DB_NAMES);
         Tuple<String, String> jdbcInfo = parseJdbcInfo(url);
         if (dbNames == null && jdbcInfo.v2() == null) {
-            throw new DataSourceConfigException("datasource config: " + configName + " can't find schema for jdbc url: " + url );
+            throw new DataSourceConfigException("datasource config: " + configName + " can't find schema for jdbc url: " + url);
         }
         SqlQueryHandle sqlQueryHandle = createSqlQueryHandler(dataSource, config);
         if (dbNames != null) {
-            dbNames.forEach(v -> ret.add(DataSourceBean.build(jdbcInfo.v1(), v)
-                    .queryHandle(sqlQueryHandle)
-                    .build()));
+            for (String v : dbNames) {
+                ret.add(DataSourceBean.build(jdbcInfo.v1(), v)
+                        .queryHandle(sqlQueryHandle)
+                        .build());
+            }
         } else {
             ret.add(DataSourceBean.build(jdbcInfo.v1(), jdbcInfo.v2())
                     .queryHandle(sqlQueryHandle)
@@ -63,9 +65,10 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
 
     /**
      * parse jdbc url, return ip address and schema name
+     *
      * @param jdbcUrl jdbc url
      * @return v1: ip address, include ip, port
-     *         v2: if there is schema name, return
+     * v2: if there is schema name, return
      */
     protected abstract Tuple<String, String> parseJdbcInfo(String jdbcUrl);
 
@@ -85,6 +88,16 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
             throw new DataSourceConfigException("config " + ConfigKeyName.DS_QUERY_HANDLE_CLS + ": " + className
                     + " create failed", e);
         }
+    }
+
+    @Override
+    public Set<DataSourceBean> parseSchemas(String name, List<Map<String, Object>> schemaList) {
+        Set<DataSourceBean> set = new HashSet<>();
+        for (Map<String, Object> schema : schemaList) {
+            Set<DataSourceBean> parseRet = parse(name, schema);
+            if (!CommonUtils.isEmpty(parseRet)) set.addAll(parseRet);
+        }
+        return set;
     }
 
     @Override

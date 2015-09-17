@@ -3,6 +3,7 @@ package com.wxingyl.es.db.query;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.db.TableBaseInfo;
+import com.wxingyl.es.util.BiConsumer;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.ImmutableListMultimap;
 import org.elasticsearch.common.collect.ImmutableMultimap;
@@ -11,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 /**
  * Created by xing on 15/9/1.
@@ -35,7 +35,8 @@ public class TableQueryInfo {
      */
     private ImmutableMultimap<String, TableQueryInfo> slaveQuery;
 
-    private TableQueryInfo() {}
+    private TableQueryInfo() {
+    }
 
     public SqlQueryHandle getQueryHandler() {
         return queryHandler;
@@ -60,7 +61,9 @@ public class TableQueryInfo {
         if (list == null) return;
         list.add(queryCommon.getTableBaseInfo());
         if (slaveQuery != null) {
-            slaveQuery.values().forEach(v -> v.allTableQueryBaseInfo(list));
+            for (TableQueryInfo v : slaveQuery.values()) {
+                v.allTableQueryBaseInfo(list);
+            }
         }
     }
 
@@ -116,12 +119,12 @@ public class TableQueryInfo {
             obj.queryHandler = queryHandler;
             obj.rsh = rsh;
             if (!slaveMap.isEmpty()) {
-                final List<String> masterAlias = new ArrayList<>(slaveMap.size());
-                final ImmutableListMultimap.Builder<String, TableQueryInfo> mapBuilder = ImmutableListMultimap.builder();
-                slaveMap.forEach((k, v) -> {
-                    mapBuilder.put(v, k.build());
-                    masterAlias.add(k.queryCommon.getMasterAlias());
-                });
+                List<String> masterAlias = new ArrayList<>(slaveMap.size());
+                ImmutableListMultimap.Builder<String, TableQueryInfo> mapBuilder = ImmutableListMultimap.builder();
+                for (Map.Entry<Builder, String> e : slaveMap.entrySet()) {
+                    mapBuilder.put(e.getValue(), e.getKey().build());
+                    masterAlias.add(e.getKey().queryCommon.getMasterAlias());
+                }
                 obj.slaveQuery = mapBuilder.build();
                 masterAliasVerify.accept(obj, masterAlias);
             }

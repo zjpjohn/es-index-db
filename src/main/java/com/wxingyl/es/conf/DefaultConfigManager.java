@@ -11,11 +11,11 @@ import com.wxingyl.es.db.query.SqlQueryHandle;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.DefaultIndexTypeBean;
 import com.wxingyl.es.db.query.TableQueryInfo;
+import com.wxingyl.es.util.BiConsumer;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.function.BiConsumer;
 
 /**
  * Created by xing on 15/8/24.
@@ -39,7 +39,12 @@ public class DefaultConfigManager extends AbstractConfigManager {
         dataSourceConfigFactory = new DataSourceParseFactory();
         dataSourceConfigFactory.addDataSourceConfigParser(new MysqlDataSourceConfigParser());
         resultSetHandlerFactory = DefaultResultSetHandlerFactory.INSTANCE;
-        masterAliasVerify = this::verifyMasterAliasRepeat;
+        masterAliasVerify = new BiConsumer<TableQueryInfo, List<String>>() {
+            @Override
+            public void accept(TableQueryInfo tableQueryInfo, List<String> list) {
+                verifyMasterAliasRepeat(tableQueryInfo, list);
+            }
+        };
     }
 
     @Override
@@ -94,20 +99,21 @@ public class DefaultConfigManager extends AbstractConfigManager {
         } catch (ExecutionException e) {
             throw new IndexConfigException("get table: " + table + " fields have crash: " + e.getMessage(), e);
         }
-        final Map<String, Integer> countMap = new HashMap<>();
-        aliasList.forEach(v -> {
+        Map<String, Integer> countMap = new HashMap<>();
+        for (String v : aliasList) {
             if (allField.contains(v)) {
                 throw new IndexConfigException(String.format("index table %s has exist %s, you need rename %s value",
                         table, v, ConfigKeyName.INDEX_TABLE_MASTER_ALIAS));
             }
-            countMap.put(v, countMap.getOrDefault(v, 0) + 1);
-        });
+            countMap.put(v, CommonUtils.getOrDefault(countMap, v, 0) + 1);
+        }
         StringBuilder sb = new StringBuilder();
-        countMap.forEach((k, v) -> {
+        for (Map.Entry<String, Integer> e : countMap.entrySet()) {
+            Integer v = e.getValue();
             if (v > 1) {
-                sb.append(k).append(": ").append(v).append(' ');
+                sb.append(e.getKey()).append(": ").append(v).append(' ');
             }
-        });
+        }
         if (sb.length() > 0) {
             throw new IndexConfigException(String.format("index table %s config %s value has same value: %s",
                     table, ConfigKeyName.INDEX_TABLE_MASTER_ALIAS, sb));

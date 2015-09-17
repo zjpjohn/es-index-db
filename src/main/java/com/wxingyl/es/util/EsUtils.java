@@ -19,10 +19,10 @@ public abstract class EsUtils {
         indicesAdminClient.create(new CreateIndexRequest(index, settings));
         if (CommonUtils.isEmpty(typeMapping)) return;
         PutMappingRequest mappingRequest = Requests.putMappingRequest(index);
-        typeMapping.forEach((k, v) -> {
-            mappingRequest.type(k);
-            mappingRequest.source(v);
+        for (Map.Entry<String, String> e : typeMapping.entrySet()) {
+            mappingRequest.type(e.getKey());
+            mappingRequest.source(e.getValue());
             indicesAdminClient.putMapping(mappingRequest);
-        });
+        }
     }
 }

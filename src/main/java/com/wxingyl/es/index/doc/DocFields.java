@@ -92,11 +92,11 @@ public class DocFields {
 
     public static List<DocFields> build(List<Map<String, Object>> data) {
         List<DocFields> list = new ArrayList<>(data.size());
-        data.forEach(map -> {
+        for (Map<String, Object> map : data) {
             DocFields fields = new DocFields(map.size());
             fields.putAll(map);
             list.add(fields);
-        });
+        }
         return list;
     }
 }

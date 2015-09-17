@@ -2,9 +2,7 @@ package com.wxingyl.es.conf.ds;
 
 import com.wxingyl.es.conf.ConfigParse;
 import com.wxingyl.es.db.DataSourceBean;
-import com.wxingyl.es.util.CommonUtils;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,12 +25,6 @@ public interface DataSourceConfigParse extends ConfigParse<DataSourceBean> {
      * @param schemaList this database contain schema list
      * @return parse result
      */
-    default Set<DataSourceBean> parseSchemas(String name, List<Map<String, Object>> schemaList) {
-        Set<DataSourceBean> set = new HashSet<>();
-        schemaList.forEach(schema -> {
-            Set<DataSourceBean> parseRet = parse(name, schema);
-            if (!CommonUtils.isEmpty(parseRet)) set.addAll(parseRet);
-        });
-        return set;
-    }
+    Set<DataSourceBean> parseSchemas(String name, List<Map<String, Object>> schemaList);
+
 }
