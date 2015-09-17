@@ -48,9 +48,8 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
             DbQueryDependResult masterResult = new DbQueryDependResult(queryResult);
             slaveQuery(masterResult, slaveQuery);
             masterParam.addPage();
-            hasNext = masterResult.needContinue();
-            if (hasNext && endPage > 0) {
-                hasNext = masterParam.getPage() < endPage;
+            if (!masterResult.needContinue() || (endPage > 0 && masterParam.getPage() >= endPage)) {
+                hasNext = false;
             }
             return masterResult;
         } catch (SQLException e) {

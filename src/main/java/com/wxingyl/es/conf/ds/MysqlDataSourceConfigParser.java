@@ -5,6 +5,8 @@ import com.wxingyl.es.db.query.SqlQueryHandle;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.elasticsearch.common.collect.Tuple;
 
+import javax.sql.DataSource;
+
 /**
  * Created by xing on 15/8/17.
  * default mysql parse
@@ -13,12 +15,22 @@ public class MysqlDataSourceConfigParser extends AbstractDataSourceConfigParser 
 
 
     @Override
+    protected DataSource createDataSource(String url, String userName, String password) {
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setDriverClassName(getSupportDriverClassName());
+        dataSource.setUrl(url);
+        dataSource.setUsername(userName);
+        dataSource.setPassword(password);
+        return dataSource;
+    }
+
+    @Override
     protected String getSupportDriverClassName() {
         return "com.mysql.jdbc.Driver";
     }
 
     @Override
-    protected SqlQueryHandle createSqlQueryHandler(BasicDataSource dataSource) {
+    protected SqlQueryHandle createSqlQueryHandler(DataSource dataSource) {
         return new MysqlQueryHandler(dataSource);
     }
 

@@ -35,11 +35,8 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
     public Set<DataSourceBean> parse(String configName, Map<String, Object> config) {
         final Set<DataSourceBean> ret = new HashSet<>();
         String url = CommonUtils.getStringVal(config, ConfigKeyName.DS_URL);
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(getSupportDriverClassName());
-        dataSource.setUrl(url);
-        dataSource.setUsername(CommonUtils.getStringVal(config, ConfigKeyName.DS_USERNAME));
-        dataSource.setPassword(CommonUtils.getStringVal(config, ConfigKeyName.DS_PASSWORD));
+        DataSource dataSource = createDataSource(url, CommonUtils.getStringVal(config, ConfigKeyName.DS_USERNAME),
+                CommonUtils.getStringVal(config, ConfigKeyName.DS_PASSWORD));
         List<String> dbNames = CommonUtils.getList(config, ConfigKeyName.DS_DB_NAMES);
         Tuple<String, String> jdbcInfo = parseJdbcInfo(url);
         if (dbNames == null && jdbcInfo.v2() == null) {
@@ -58,9 +55,11 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
         return ret;
     }
 
+    protected abstract DataSource createDataSource(String url, String userName, String password);
+
     protected abstract String getSupportDriverClassName();
 
-    protected abstract SqlQueryHandle createSqlQueryHandler(BasicDataSource dataSource);
+    protected abstract SqlQueryHandle createSqlQueryHandler(DataSource dataSource);
 
     /**
      * parse jdbc url, return ip address and schema name
@@ -71,7 +70,7 @@ public abstract class AbstractDataSourceConfigParser implements DataSourceConfig
     protected abstract Tuple<String, String> parseJdbcInfo(String jdbcUrl);
 
     @SuppressWarnings("unchecked")
-    private SqlQueryHandle createSqlQueryHandler(BasicDataSource dataSource, Map<String, Object> config) {
+    private SqlQueryHandle createSqlQueryHandler(DataSource dataSource, Map<String, Object> config) {
         String className = CommonUtils.getStringVal(config, ConfigKeyName.DS_QUERY_HANDLE_CLS);
         if (className == null) return createSqlQueryHandler(dataSource);
         try {

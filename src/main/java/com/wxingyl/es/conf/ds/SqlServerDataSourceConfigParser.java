@@ -6,6 +6,8 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.lang3.StringUtils;
 
+import javax.sql.DataSource;
+
 /**
  * Created by xing on 15/8/24.
  * default sqlserver parse
@@ -13,12 +15,22 @@ import org.elasticsearch.common.lang3.StringUtils;
 public class SqlServerDataSourceConfigParser extends AbstractDataSourceConfigParser {
 
     @Override
+    protected DataSource createDataSource(String url, String userName, String password) {
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setDriverClassName(getSupportDriverClassName());
+        dataSource.setUrl(url);
+        dataSource.setUsername(userName);
+        dataSource.setPassword(password);
+        return dataSource;
+    }
+
+    @Override
     protected String getSupportDriverClassName() {
         return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     }
 
     @Override
-    protected SqlQueryHandle createSqlQueryHandler(BasicDataSource dataSource) {
+    protected SqlQueryHandle createSqlQueryHandler(DataSource dataSource) {
         return new SqlServerQueryHandler(dataSource);
     }
 
