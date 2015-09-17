@@ -170,7 +170,7 @@ public class IndexManager {
                 }
                 long num;
                 if (concurrentNum == 1) {
-                    num = createIndex(typeBean, 0);
+                    num = createIndex(typeBean, 0, 0);
                 } else {
                     num = createIndexConcurrent(typeBean, concurrentNum);
                 }
@@ -194,15 +194,16 @@ public class IndexManager {
         long unitNum = totalNum / concurrentNum;
         int pageSize = masterCommon.getPageSize();
         //if every unit num < pageSize, don't need multi thread
-        if (unitNum < pageSize) return createIndex(typeBean, 0);
-        long totalPage = totalNum / pageSize + totalNum % pageSize == 0 ? 0 : 1;
+        if (unitNum < pageSize) return createIndex(typeBean, 0, 0);
+        int totalPage = totalNum / pageSize + totalNum % pageSize == 0 ? 0 : 1;
         int unitPageNum = totalPage / concurrentNum + totalPage % concurrentNum == 0 ? 0 : 1;
         int startPage = 0;
         List<Callable<Long>> callableList = new ArrayList<>(concurrentNum);
         for (int i = 0; i < concurrentNum; i++) {
             final int finalStartPage = startPage;
-            callableList.add(() -> createIndex(typeBean, finalStartPage));
-            startPage += unitPageNum;
+            final int finalEndPage = startPage + unitPageNum;
+            callableList.add(() -> createIndex(typeBean, finalStartPage, finalEndPage));
+            startPage = finalEndPage;
         }
         try {
             List<Future<Long>> futureList = executorService.invokeAll(callableList);
@@ -220,10 +221,10 @@ public class IndexManager {
         }
     }
 
-    private long createIndex(IndexTypeBean typeBean, int startPage) {
+    private long createIndex(IndexTypeBean typeBean, int startPage, int endPage) {
         PageDocumentIterator docItr = null;
         try {
-            docItr = indexDocFactory.indexDocCreate(typeBean, startPage);
+            docItr = indexDocFactory.indexDocCreate(typeBean, startPage, endPage);
             docItr.startFillIndex();
             long num = 0;
             while (docItr.hasNext()) {

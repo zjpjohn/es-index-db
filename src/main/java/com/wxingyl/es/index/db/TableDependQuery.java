@@ -24,10 +24,13 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
 
     private boolean hasNext = true;
 
-    public TableDependQuery(TableQueryInfo masterTable, int startPage) {
+    private final int endPage;
+
+    public TableDependQuery(TableQueryInfo masterTable, int startPage, int endPage) {
         masterParam = new SqlQueryParam(masterTable, startPage);
         masterQueryHandler = masterTable.getQueryHandler();
         slaveQuery = masterTable.getSlaveQuery();
+        this.endPage = endPage;
     }
 
     @Override
@@ -46,6 +49,9 @@ public class TableDependQuery implements Iterator<DbQueryDependResult> {
             slaveQuery(masterResult, slaveQuery);
             masterParam.addPage();
             hasNext = masterResult.needContinue();
+            if (hasNext && endPage > 0) {
+                hasNext = masterParam.getPage() < endPage;
+            }
             return masterResult;
         } catch (SQLException e) {
             hasNext = false;

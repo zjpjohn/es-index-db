@@ -20,14 +20,14 @@ public class DefaultIndexDocFactory extends AbstractIndexDocFactory {
     }
 
     @Override
-    public PageDocumentIterator indexDocCreate(IndexTypeBean typeBean, int startPage) {
-        return new DefaultItr(typeBean, startPage);
+    public PageDocumentIterator indexDocCreate(IndexTypeBean typeBean, int startPage, int endPage) {
+        return new DefaultItr(typeBean, startPage, endPage);
     }
 
     class DefaultItr extends Itr {
 
-        DefaultItr(IndexTypeBean typeBean, int startPage) {
-            super(typeBean, startPage);
+        DefaultItr(IndexTypeBean typeBean, int startPage, int endPage) {
+            super(typeBean, startPage, endPage);
             if (docPostProcessor == null) {
                 docPostProcessor = defaultDocPostProcessor;
             }

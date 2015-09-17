@@ -68,9 +68,9 @@ public abstract class AbstractIndexDocFactory implements IndexDocFactory {
 
         protected DocPostProcessor docPostProcessor;
 
-        protected Itr(IndexTypeBean typeBean, int startPage) {
+        protected Itr(IndexTypeBean typeBean, int startPage, int endPage) {
             type = typeBean.getType();
-            query = new TableDependQuery(typeBean.getMasterTable(), startPage);
+            query = new TableDependQuery(typeBean.getMasterTable(), startPage, endPage);
             docPostProcessor = getDocPostProcessor(type);
         }
 
