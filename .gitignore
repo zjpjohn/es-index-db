@@ -11,6 +11,8 @@
 *.ear
 
 /target
+findex/target
+rtindex/target
 /.settings
 /.classpath
 /.project
