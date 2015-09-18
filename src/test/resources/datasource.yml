@@ -1,8 +1,0 @@
-# user-defined name, it can be used config different db : mysql, sqlserver, or oracle
-mysql:
-  driver_class_name: com.mysql.jdbc.Driver
-  schemas:
-      url: 'jdbc:mysql://127.0.0.1:3306?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull'
-      username: xing
-      password: 12qaQA
-      db_names: [tqdb_base, sea]
