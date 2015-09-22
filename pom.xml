@@ -6,7 +6,7 @@
 
     <groupId>com.wxingyl.es</groupId>
     <artifactId>index-db</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0-alpha.3</version>
     <modules>
         <module>findex</module>
         <module>rtindex</module>
