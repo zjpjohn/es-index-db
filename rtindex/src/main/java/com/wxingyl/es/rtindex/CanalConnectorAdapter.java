@@ -1,5 +1,6 @@
-package com.wxingyl.es.rindex;
+package com.wxingyl.es.rtindex;
 
+import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
 
@@ -20,5 +21,7 @@ public interface CanalConnectorAdapter {
     void rollback(long batchId) throws CanalClientException;
 
     void disConnect() throws CanalClientException;
+
+    boolean supportEventType(CanalEntry.EventType eventType);
 
 }

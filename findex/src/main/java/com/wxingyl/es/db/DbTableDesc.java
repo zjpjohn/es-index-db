@@ -3,6 +3,7 @@ package com.wxingyl.es.db;
 /**
  * Created by xing on 15/8/27.
  * db table describe
+ * the urlAddress can null, so when DbTableDesc as key, you should carefully
  */
 public class DbTableDesc {
 

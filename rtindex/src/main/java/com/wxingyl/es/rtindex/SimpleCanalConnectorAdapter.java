@@ -1,14 +1,18 @@
-package com.wxingyl.es.rindex;
+package com.wxingyl.es.rtindex;
 
 import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.client.CanalConnectors;
 import com.alibaba.otter.canal.common.utils.AddressUtils;
+import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,6 +20,16 @@ import java.util.concurrent.TimeUnit;
  * simple canal connector adapter
  */
 public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
+
+    private static final Set<CanalEntry.EventType> SUPPORT_TYPES;
+
+    static {
+        Set<CanalEntry.EventType> set = new HashSet<>();
+        set.add(CanalEntry.EventType.UPDATE);
+        set.add(CanalEntry.EventType.DELETE);
+        set.add(CanalEntry.EventType.INSERT);
+        SUPPORT_TYPES = Collections.unmodifiableSet(set);
+    }
 
     private String destination;
 
@@ -67,6 +81,11 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
     @Override
     public void disConnect() throws CanalClientException {
         canalConnector.disconnect();
+    }
+
+    @Override
+    public boolean supportEventType(CanalEntry.EventType eventType) {
+        return SUPPORT_TYPES.contains(eventType);
     }
 
     public Long getTimeout() {
