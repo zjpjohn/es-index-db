@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  * Created by xing on 15/9/22.
  * simple canal connector adapter
  */
-public class SimpleCanalConnectorAdapter implements CanalConnectorAdapt {
+public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
 
     private String destination;
 

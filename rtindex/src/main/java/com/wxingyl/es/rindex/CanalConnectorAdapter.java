@@ -7,7 +7,7 @@ import com.alibaba.otter.canal.protocol.exception.CanalClientException;
  * Created by xing on 15/9/22.
  * canal connector adapt
  */
-public interface CanalConnectorAdapt {
+public interface CanalConnectorAdapter {
 
     String getDestination();
 
