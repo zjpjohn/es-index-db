@@ -14,7 +14,9 @@
     <packaging>pom</packaging>
 
     <name>es-index-db</name>
-    <description>A easy way to create index of elasticsearch from database, and real time update index when database updated</description>
+    <description>A easy way to create index of elasticsearch from database, and real time update index when database
+        updated
+    </description>
 
     <scm>
         <url>https://github.com/wxingyl/db-river-elasticsearch</url>
@@ -56,11 +58,6 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.wxingyl.es</groupId>
-                <artifactId>rtindex</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
                 <version>1.7.2</version>
@@ -82,12 +79,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-dbcp2</artifactId>
                 <version>2.1</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba.otter</groupId>
-                <artifactId>canal.client</artifactId>
-                <version>1.0.17</version>
                 <scope>provided</scope>
             </dependency>
         </dependencies>
@@ -122,5 +113,20 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>tqmall-snapshots</id>
+            <name>tqmall snapshots</name>
+            <url>http://build.tqmall.com/nexus/content/repositories/snapshots
+            </url>
+        </snapshotRepository>
+        <repository>
+            <id>tqmall-releases</id>
+            <name>tqmall releases</name>
+            <url>http://build.tqmall.com/nexus/content/repositories/releases
+            </url>
+        </repository>
+    </distributionManagement>
 
 </project>

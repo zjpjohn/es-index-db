@@ -1,10 +1,7 @@
 package com.wxingyl.es;
 
-import com.wxingyl.es.conf.ConfigManager;
 import com.wxingyl.es.conf.DefaultConfigManager;
 import com.wxingyl.es.index.IndexManager;
-import com.wxingyl.es.index.doc.DefaultIndexDocFactory;
-import com.wxingyl.es.index.doc.IndexDocFactory;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
