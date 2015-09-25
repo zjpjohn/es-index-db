@@ -123,7 +123,7 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
                 v.v1().masterAliasVerify(masterAliasVerify);
                 DbTableFieldDesc field = v.v2();
                 if (field == null) continue;
-                TableQueryInfo.Builder builder = tableMap.get(field.newDbTableDesc()).v1();
+                TableQueryInfo.Builder builder = tableMap.get(field.getTableDesc()).v1();
                 builder.addSlave(v.v1(), field.getField());
             }
             bean.masterTable = tableMap.get(masterTable).v1().build();

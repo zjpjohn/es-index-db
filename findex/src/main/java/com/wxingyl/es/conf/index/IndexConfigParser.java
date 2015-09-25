@@ -43,12 +43,10 @@ public class IndexConfigParser implements IndexConfigParse {
                         @Override
                         public void accept(Map<String, String[]> defaultValue, Map<String, String> keyMap) {
                             defaultValue.put(INDEX_DEFAULT_SCHEMA, new String[2]);
-                            defaultValue.put(INDEX_DEFAULT_DB_ADDRESS, new String[2]);
                             defaultValue.put(INDEX_DEFAULT_DELETE_FIELD, new String[2]);
                             defaultValue.put(INDEX_DEFAULT_DELETE_VALID_VALUE, new String[2]);
 
                             keyMap.put(INDEX_DEFAULT_SCHEMA, INDEX_TABLE_SCHEMA);
-                            keyMap.put(INDEX_DEFAULT_DB_ADDRESS, INDEX_TABLE_DB_ADDRESS);
                             keyMap.put(INDEX_DEFAULT_DELETE_FIELD, INDEX_TABLE_DELETE_FIELD);
                             keyMap.put(INDEX_DEFAULT_DELETE_VALID_VALUE, INDEX_TABLE_DELETE_VALID_VALUE);
                         }
@@ -91,7 +89,7 @@ public class IndexConfigParser implements IndexConfigParse {
                 masterTable = tableDesc;
             }
             if ((masterTable.getSchema() == null && masterTable.getTable().equals(tableDesc.getTable()))
-                    || tableDesc.equalsIgnoreUrlAddress(masterTable)) {
+                    || tableDesc.equals(masterTable)) {
                 if (masterTableInfo != null) {
                     throw new IndexConfigException(info + " config find other master table");
                 }
@@ -115,7 +113,7 @@ public class IndexConfigParser implements IndexConfigParse {
                         masterTableInfo.getRelationField());
             } else {
                 masterField = CommonUtils.getDbTableField(e.getValue(), masterTable);
-                DbTableConfigInfo info = tableInfoMap.get(masterField.newDbTableDesc());
+                DbTableConfigInfo info = tableInfoMap.get(masterField.getTableDesc());
                 if (info == null) {
                     throw new IndexConfigException("In table: " + e.getKey() + ", " + INDEX_TABLE_MASTER_FIELD
                             + " config, can not find table: " + e.getKey().getMasterField());

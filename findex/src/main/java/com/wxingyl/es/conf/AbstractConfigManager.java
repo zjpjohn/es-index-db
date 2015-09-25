@@ -24,9 +24,9 @@ import java.util.*;
 public abstract class AbstractConfigManager implements ConfigManager {
 
     /**
-     * key: schema name, value: set DataSourceBean
+     * key: schema name, value: DataSourceBean
      */
-    private Map<String, Set<DataSourceBean>> dataSourceMap = new HashMap<>();
+    private Map<String, DataSourceBean> dataSourceMap = new HashMap<>();
     /**
      * key: index name, value: set IndexTypeBean
      */
@@ -73,16 +73,9 @@ public abstract class AbstractConfigManager implements ConfigManager {
     }
 
     @Override
-    public DataSourceBean findDataSourceBean(String schema, String urlAddress) {
+    public DataSourceBean findDataSourceBean(String schema) {
         Objects.requireNonNull(schema);
-        Set<DataSourceBean> set = dataSourceMap.get(schema);
-        if (CommonUtils.isEmpty(set)) return null;
-        for (DataSourceBean ds : set) {
-            if (urlAddress == null || urlAddress.equalsIgnoreCase(ds.getUrlAddress())) {
-                return ds;
-            }
-        }
-        return null;
+        return dataSourceMap.get(schema);
     }
 
     @Override
@@ -137,18 +130,14 @@ public abstract class AbstractConfigManager implements ConfigManager {
     protected void addDataSourceBean(Set<DataSourceBean> beanSet) {
         if (CommonUtils.isEmpty(beanSet)) return;
         for (DataSourceBean k : beanSet) {
-            Set<DataSourceBean> set = dataSourceMap.get(k.getSchema());
-            if (set == null) {
-                dataSourceMap.put(k.getSchema(), set = new HashSet<>());
-            }
-            set.add(k);
+            dataSourceMap.put(k.getSchema(), k);
         }
         for (Listener<Set<DataSourceBean>> l : dataSourceListeners) {
             l.onChange(beanSet);
         }
     }
 
-    protected Map<String, Set<DataSourceBean>> getDataSourceMap() {
+    protected Map<String, DataSourceBean> getDataSourceMap() {
         return dataSourceMap;
     }
 

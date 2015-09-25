@@ -39,16 +39,6 @@ public class TableBaseInfo {
         return mergeType;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TableBaseInfo)) return false;
-
-        TableBaseInfo baseInfo = (TableBaseInfo) o;
-
-        return table.equals(baseInfo.table);
-    }
-
     protected void init(SqlQueryCommon sqlQueryCommon) {
         table = sqlQueryCommon.getTable();
         keyField = sqlQueryCommon.getKeyField();
@@ -61,11 +51,6 @@ public class TableBaseInfo {
         keyField = other.keyField;
         masterAlias = other.masterAlias;
         mergeType = other.mergeType;
-    }
-
-    @Override
-    public int hashCode() {
-        return table.hashCode();
     }
 
     public static TableBaseInfo build(SqlQueryCommon sqlQueryCommon) {

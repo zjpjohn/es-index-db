@@ -63,9 +63,9 @@ public class DefaultConfigManager extends AbstractConfigManager {
         return set;
     }
 
-    private SqlQueryHandle verifyTypeTableConfig(TypeConfigInfo type, DbTableConfigInfo info) {
+    protected SqlQueryHandle verifyTypeTableConfig(TypeConfigInfo type, DbTableConfigInfo info) {
         DbTableDesc table = info.getTable();
-        DataSourceBean dataSourceBean = findDataSourceBean(table.getSchema(), table.getUrlAddress());
+        DataSourceBean dataSourceBean = findDataSourceBean(table.getSchema());
         if (dataSourceBean == null) {
             throw new IndexConfigException("Index config: " + type + ", " + table + " can't find datasource config");
         }
@@ -73,7 +73,6 @@ public class DefaultConfigManager extends AbstractConfigManager {
         Set<String> allFields;
         try {
             //to verify every table is really exist
-            handle.getAllTables(table.getSchema());
             allFields = handle.getAllFields(info.getTable());
         } catch (ExecutionException e) {
             throw new IndexConfigException("get " + info + " tables and fields have crash: " + e.getMessage(), e);
@@ -91,7 +90,7 @@ public class DefaultConfigManager extends AbstractConfigManager {
         return handle;
     }
 
-    private void verifyMasterAliasRepeat(TableQueryInfo tableQueryInfo, List<String> aliasList) {
+    protected void verifyMasterAliasRepeat(TableQueryInfo tableQueryInfo, List<String> aliasList) {
         final Set<String> allField;
         DbTableDesc table = tableQueryInfo.getQueryCommon().getTable();
         try {

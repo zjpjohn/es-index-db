@@ -21,5 +21,9 @@
             <version>1.0.17</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+        </dependency>
     </dependencies>
 </project>

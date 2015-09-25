@@ -99,18 +99,6 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     }
 
     @Override
-    protected Set<String> loadAllTables(String schema) throws Exception {
-        List<Map<String, Object>> result = getQueryRunner().query("SHOW TABLES IN `" + schema + '`', DEFAULT_MAP_LIST_HANDLER);
-        Set<String> tables = new HashSet<>();
-        for (Map<String, Object> m : result) {
-            for (Object v : m.values()) {
-                tables.add(v.toString());
-            }
-        }
-        return tables;
-    }
-
-    @Override
     protected Set<String> loadAllFields(DbTableDesc table) throws Exception {
         List<Map<String, Object>> result = getQueryRunner().query("SHOW COLUMNS FROM " + schemaTableSql(table), DEFAULT_MAP_LIST_HANDLER);
         Set<String> fields = new HashSet<>();

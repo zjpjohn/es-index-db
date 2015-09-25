@@ -3,6 +3,7 @@ package com.wxingyl.es.util;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.DbTableFieldDesc;
 import com.wxingyl.es.index.doc.DocFields;
+import org.elasticsearch.common.base.Supplier;
 
 import java.util.*;
 
@@ -32,6 +33,10 @@ public abstract class CommonUtils {
 
     public static boolean isEmpty(Map map) {
         return map == null || map.isEmpty();
+    }
+
+    public static String tableToString(DbTableDesc table) {
+        return table.getSchema() + '.' + table.getTable();
     }
 
     /**
@@ -90,9 +95,9 @@ public abstract class CommonUtils {
         if (value == null) return null;
         int index;
         if ((index = value.indexOf('.')) > 0) {
-            return new DbTableDesc(null, value.substring(0, index), value.substring(index + 1));
+            return new DbTableDesc(value.substring(0, index), value.substring(index + 1));
         } else {
-            return new DbTableDesc(null, null, value);
+            return new DbTableDesc(null, value);
         }
     }
 
@@ -110,7 +115,7 @@ public abstract class CommonUtils {
             defaultTableName = value.substring(index + 1);
             defaultSchema = value.substring(0, index);
         }
-        return new DbTableFieldDesc(new DbTableDesc(defaultTable.getUrlAddress(), defaultSchema, defaultTableName), field);
+        return new DbTableFieldDesc(new DbTableDesc(defaultSchema, defaultTableName), field);
     }
 
     public static Map<Object, List<Map<String, Object>>> groupListMap(List<Map<String, Object>> data,
@@ -152,8 +157,8 @@ public abstract class CommonUtils {
         }
     }
 
-    public static <T> RwLock<T> createRwLock(T lockObj) {
-        return new RwLock<>(lockObj);
+    public static <T> RwLock<T> createRwLock(Supplier<T> supplier) {
+        return new RwLock<>(supplier.get());
     }
 
     public static <T> ThreadLocal<T> createThreadLocal(final Supplier<T> supplier) {

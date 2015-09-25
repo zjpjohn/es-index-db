@@ -12,6 +12,7 @@ import org.elasticsearch.common.cache.LoadingCache;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -25,8 +26,6 @@ public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
 
     private QueryRunner queryRunner;
 
-    private LoadingCache<String, Set<String>> schemaTablesCache;
-
     private LoadingCache<DbTableDesc, Set<String>> tableFieldsCache;
 
     protected SqlQueryStatementStructure queryStatementStructure;
@@ -34,22 +33,13 @@ public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
     public AbstractSqlQueryHandler(DataSource dataSource, SqlQueryStatementStructure queryStatementStructure) {
         queryRunner = new QueryRunner(dataSource);
         this.queryStatementStructure = queryStatementStructure;
-        schemaTablesCache = CacheBuilder.newBuilder()
-                .weakKeys()
-                .weakValues()
-                .build(new CacheLoader<String, Set<String>>() {
-                    @Override
-                    public Set<String> load(String schema) throws Exception {
-                        return loadAllTables(schema);
-                    }
-                });
         tableFieldsCache = CacheBuilder.newBuilder()
                 .weakKeys()
                 .weakValues()
                 .build(new CacheLoader<DbTableDesc, Set<String>>() {
                     @Override
                     public Set<String> load(DbTableDesc table) throws Exception {
-                        return loadAllFields(table);
+                        return Collections.unmodifiableSet(loadAllFields(table));
                     }
                 });
     }
@@ -67,14 +57,7 @@ public abstract class AbstractSqlQueryHandler implements SqlQueryHandle {
 
     protected abstract String createSql(BaseQueryParam param);
 
-    protected abstract Set<String> loadAllTables(String schema) throws Exception;
-
     protected abstract Set<String> loadAllFields(DbTableDesc table) throws Exception;
-
-    @Override
-    public Set<String> getAllTables(String schema) throws ExecutionException {
-        return schemaTablesCache.get(schema);
-    }
 
     @Override
     public Set<String> getAllFields(DbTableDesc table) throws ExecutionException {

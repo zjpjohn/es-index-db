@@ -44,8 +44,6 @@ public interface ConfigKeyName {
 
     String INDEX_TABLE_SCHEMA = "schema";
 
-    String INDEX_TABLE_DB_ADDRESS = "db_address";
-
     String INDEX_TABLE_DELETE_FIELD = "delete_field";
 
     String INDEX_TABLE_DELETE_VALID_VALUE = "delete_valid_value";

@@ -3,6 +3,10 @@ package com.wxingyl.es.rtindex;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
+import com.google.protobuf.InvalidProtocolBufferException;
+import org.elasticsearch.common.collect.Tuple;
+
+import java.util.List;
 
 /**
  * Created by xing on 15/9/22.
@@ -22,6 +26,8 @@ public interface CanalConnectorAdapter {
 
     void disConnect() throws CanalClientException;
 
-    boolean supportEventType(CanalEntry.EventType eventType);
+    Tuple<String, List<CanalEntry.RowData>> filterEntry(CanalEntry.Entry e) throws Exception;
+
+    void setStartRtIndexTime(long startRtIndexTime);
 
 }
