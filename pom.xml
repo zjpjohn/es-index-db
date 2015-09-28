@@ -48,7 +48,7 @@
             <dependency>
                 <groupId>com.wxingyl.es</groupId>
                 <artifactId>findex</artifactId>
-                <version>1.0-alpha.3</version>
+                <version>1.0-alpha.4</version>
             </dependency>
             <dependency>
                 <groupId>org.elasticsearch</groupId>
