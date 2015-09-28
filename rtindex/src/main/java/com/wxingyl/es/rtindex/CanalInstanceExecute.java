@@ -85,8 +85,19 @@ public class CanalInstanceExecute implements Runnable {
         } finally {
             running = false;
             dealCanalMessage.dataList.clear();
+            dealCanalMessage.callableList.clear();
             //this must last
             canalConnector.disConnect();
+            typeActionInfoLock.readOp(new Function<Set<TypeRtIndexActionInfo>, Void>() {
+                @Override
+                public Void apply(Set<TypeRtIndexActionInfo> input) {
+                    for (TypeRtIndexActionInfo action : input) {
+                        action.actionData.clear();
+                        action.haveData = false;
+                    }
+                    return null;
+                }
+            });
         }
     }
 
