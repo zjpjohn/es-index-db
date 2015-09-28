@@ -26,6 +26,6 @@ public interface TypeRtIndexAction {
      * @param instance canal instance name
      * @param tableGroupData change data, key: schema.table
      */
-    void dealDataChange(String instance, Map<String, List<CanalEntry.RowData>> tableGroupData);
+    void dealDataChange(String instance, Map<DbTableDesc, List<ChangeDataEntry>> tableGroupData);
 
 }

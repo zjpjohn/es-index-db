@@ -7,6 +7,7 @@ import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.wxingyl.es.db.DbTableDesc;
 import org.elasticsearch.common.collect.Tuple;
 
 import java.net.InetSocketAddress;
@@ -93,7 +94,7 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
     }
 
     @Override
-    public Tuple<String, List<CanalEntry.RowData>> filterEntry(CanalEntry.Entry e) throws InvalidProtocolBufferException {
+    public Tuple<DbTableDesc, List<CanalEntry.RowData>> filterEntry(CanalEntry.Entry e) throws InvalidProtocolBufferException {
         CanalEntry.Header header = e.getHeader();
         if (e.getEntryType() != CanalEntry.EntryType.ROWDATA
                 || header.getExecuteTime() <= startRtIndexTime
@@ -101,7 +102,7 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
                 || !SUPPORT_TYPES.contains(header.getEventType())) {
             return null;
         }
-        String table = dbTableCache.getTableStr(header.getSchemaName(), header.getTableName());
+        DbTableDesc table = dbTableCache.getTableStr(header.getSchemaName(), header.getTableName());
         CanalEntry.RowChange rowChange = CanalEntry.RowChange.parseFrom(e.getStoreValue());
         if (rowChange.getIsDdl()) return null;
         return Tuple.tuple(table, rowChange.getRowDatasList());
@@ -121,23 +122,23 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
 
     private class DbTableCache {
 
-        Map<String, Map<String, String>> cacheMap = new HashMap<>();
+        Map<String, Map<String, DbTableDesc>> cacheMap = new HashMap<>();
 
         int count;
 
         int max = 1024;
 
-        String getTableStr(String schema, String table) {
-            Map<String, String> map = cacheMap.get(schema);
+        DbTableDesc getTableStr(String schema, String table) {
+            Map<String, DbTableDesc> map = cacheMap.get(schema);
             if (map == null) {
                 cacheMap.put(schema, map = new HashMap<>());
             }
-            String desc = map.get(table);
+            DbTableDesc desc = map.get(table);
             if (desc == null) {
                 if (count > max) {
                     reduce();
                 }
-                map.put(table, desc = schema + '.' + table);
+                map.put(table, desc = new DbTableDesc(schema, table));
                 count++;
             }
             return desc;
@@ -152,7 +153,7 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
             Iterator<String> it;
             int delCount = 0;
             int min = max >> 1;
-            for (Map<String, String> map : cacheMap.values()) {
+            for (Map<String, DbTableDesc> map : cacheMap.values()) {
                 if (map.isEmpty() || delCount > min) continue;
                 it = map.keySet().iterator();
                 while (it.hasNext()) {

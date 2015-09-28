@@ -1,6 +1,7 @@
 package com.wxingyl.es.rtindex;
 
 import com.wxingyl.es.conf.ConfigManager;
+import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.IndexTypeDesc;
 
 import java.util.List;
@@ -14,5 +15,5 @@ public interface RtIndexConfigManager extends ConfigManager {
     /**
      * @return fields list is unmodifiable
      */
-    List<String> getTableFields(IndexTypeDesc type, String table);
+    List<String> getTableFields(IndexTypeDesc type, DbTableDesc table);
 }

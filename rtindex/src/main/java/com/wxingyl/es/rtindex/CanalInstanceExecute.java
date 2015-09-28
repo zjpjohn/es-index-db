@@ -15,6 +15,8 @@ import org.elasticsearch.common.collect.Lists;
 import org.elasticsearch.common.collect.Tuple;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by xing on 15/9/23.
@@ -32,6 +34,8 @@ public class CanalInstanceExecute implements Runnable {
     private DealCanalMessage dealCanalMessage = new DealCanalMessage();
 
     private String instanceName;
+
+    private ExecutorService executorService;
 
     private RwLock<Set<TypeRtIndexActionInfo>> typeActionInfoLock = CommonUtils.createRwLock(new Supplier<Set<TypeRtIndexActionInfo>>() {
         @Override
@@ -58,26 +62,18 @@ public class CanalInstanceExecute implements Runnable {
         running = true;
         //here need update
         instanceName = canalConnector.getDestination();
-        Map<String, List<CanalEntry.RowData>> tableGroupData = new LinkedHashMap<>();
-        dealCanalMessage.orgTableGroupData = tableGroupData;
         try {
             while (running) {
                 Message message = canalConnector.getWithoutAck();
                 try {
                     if (message.getId() > 0 && !message.getEntries().isEmpty()) {
                         for (CanalEntry.Entry e : message.getEntries()) {
-                            Tuple<String, List<CanalEntry.RowData>> tuple = canalConnector.filterEntry(e);
+                            Tuple<DbTableDesc, List<CanalEntry.RowData>> tuple = canalConnector.filterEntry(e);
                             if (tuple == null) continue;
-                            List<CanalEntry.RowData> list = tableGroupData.get(tuple.v1());
-                            if (list == null) {
-                                tableGroupData.put(tuple.v1(), list = new LinkedList<>());
-                            }
-                            list.addAll(tuple.v2());
+                            dealCanalMessage.dataList.add(new ChangeDataEntry(tuple.v1(), e.getHeader().getEventType(), tuple.v2()));
                         }
                         typeActionInfoLock.readOp(dealCanalMessage);
-                        for(List<CanalEntry.RowData> l : tableGroupData.values()) {
-                            l.clear();
-                        }
+                        dealCanalMessage.dataList.clear();
                     }
                     canalConnector.ack(message.getId());
                 } catch (Throwable e) {
@@ -88,7 +84,7 @@ public class CanalInstanceExecute implements Runnable {
             }
         } finally {
             running = false;
-            tableGroupData.clear();
+            dealCanalMessage.dataList.clear();
             //this must last
             canalConnector.disConnect();
         }
@@ -117,9 +113,7 @@ public class CanalInstanceExecute implements Runnable {
             });
         }
         final TypeRtIndexActionInfo actionInfo = new TypeRtIndexActionInfo(action, type.getType());
-        for (DbTableDesc table : supportTables) {
-            actionInfo.putTableField(table);
-        }
+        actionInfo.putTableField(supportTables);
         typeActionInfoLock.writeOp(new Function<Set<TypeRtIndexActionInfo>, Void>() {
             @Override
             public Void apply(Set<TypeRtIndexActionInfo> input) {
@@ -127,6 +121,10 @@ public class CanalInstanceExecute implements Runnable {
                 return null;
             }
         });
+    }
+
+    public void setExecutorService(ExecutorService executorService) {
+        this.executorService = executorService;
     }
 
     public void stop() {
@@ -139,16 +137,48 @@ public class CanalInstanceExecute implements Runnable {
 
         IndexTypeDesc type;
 
-        Map<String, List<String>> tableFieldMap = new HashMap<>();
+        Map<DbTableDesc, List<String>> tableFieldMap = new HashMap<>();
+
+        Map<DbTableDesc, List<ChangeDataEntry>> actionData = new HashMap<>();
+
+        private boolean haveData;
+
+        private Callable<Void> callable = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                try {
+                    action.dealDataChange(instanceName, actionData);
+                } finally {
+                    for (List<ChangeDataEntry> list : actionData.values()) {
+                        list.clear();
+                    }
+                    haveData = false;
+                }
+                return null;
+            }
+        };
 
         TypeRtIndexActionInfo(TypeRtIndexAction action, IndexTypeDesc type) {
             this.action = action;
             this.type = type;
         }
 
-        void putTableField(DbTableDesc t) {
-            String table = CommonUtils.tableToString(t);
-            tableFieldMap.put(table, configManager.getTableFields(type, table));
+        void addActionData(DbTableDesc table, ChangeDataEntry entry) {
+            List<ChangeDataEntry> data = actionData.get(table);
+            if (data == null) {
+                actionData.put(table, data = new LinkedList<>());
+            }
+            data.add(entry);
+            haveData = true;
+        }
+
+        void putTableField(List<DbTableDesc> supportTables) {
+            for (DbTableDesc t : supportTables) {
+                List<String> fields = configManager.getTableFields(type, t);
+                if (fields != null) {
+                    tableFieldMap.put(t, fields);
+                }
+            }
         }
 
         @Override
@@ -169,22 +199,68 @@ public class CanalInstanceExecute implements Runnable {
     }
 
     private class DealCanalMessage implements Function<Set<TypeRtIndexActionInfo>, Void> {
-        //key: schema.table
-        Map<String, List<CanalEntry.RowData>> orgTableGroupData;
 
-        Map<String, List<CanalEntry.RowData>> tableGroupData = new HashMap<>();
+        List<ChangeDataEntry> dataList = new LinkedList<>();
+
+        List<Callable<Void>> callableList = new ArrayList<>();
+
+        private void initActionData(TypeRtIndexActionInfo actionInfo) {
+            for (ChangeDataEntry e : dataList) {
+                DbTableDesc table = e.getTable();
+                List<String> fields = actionInfo.tableFieldMap.get(e.getTable());
+                if (fields == null) continue;
+                if (e.getEventType() == CanalEntry.EventType.UPDATE && !fields.isEmpty()) {
+                    List<CanalEntry.RowData> dataList = null;
+                    for (CanalEntry.RowData r : e.getRowData()) {
+                        boolean need = false;
+                        for (CanalEntry.Column c : r.getAfterColumnsList()) {
+                            if (fields.contains(c.getName()) && c.getUpdated()) {
+                                need = true;
+                                break;
+                            }
+                        }
+                        if (!need) {
+                            if (dataList == null) {
+                                dataList = new LinkedList<>(e.getRowData());
+                            }
+                            dataList.remove(r);
+                        }
+                    }
+                    if (dataList == null) {
+                        actionInfo.addActionData(table, e);
+                    } else if (!dataList.isEmpty()) {
+                        actionInfo.addActionData(table, new ChangeDataEntry(table, CanalEntry.EventType.UPDATE,
+                                Collections.unmodifiableList(dataList)));
+                    }
+                } else {
+                    actionInfo.addActionData(table, e);
+                }
+            }
+        }
 
         @Override
         public Void apply(Set<TypeRtIndexActionInfo> actions) {
-
+            //init action
             for (TypeRtIndexActionInfo actionInfo : actions) {
-                tableGroupData.clear();
-                for (String table : orgTableGroupData.keySet()) {
-//                    actionInfo.tableFieldMap
+                initActionData(actionInfo);
+                if (actionInfo.haveData) {
+                    callableList.add(actionInfo.callable);
                 }
-                actionInfo.action.dealDataChange(instanceName, tableGroupData);
             }
-            tableGroupData.clear();
+            if (callableList.isEmpty()) return null;
+            try {
+                if (executorService == null) {
+                    for (Callable<Void> call : callableList) {
+                        call.call();
+                    }
+                } else {
+                    executorService.invokeAll(callableList);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage(), e);
+            } finally {
+                callableList.clear();
+            }
             return null;
         }
     }
