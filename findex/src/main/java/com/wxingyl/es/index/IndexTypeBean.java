@@ -20,4 +20,9 @@ public interface IndexTypeBean extends Comparable<IndexTypeBean> {
     List<TableBaseInfo> getAllTableInfo();
 
     int getPriority();
+
+    int hashCode();
+
+    boolean equals(Object o);
+
 }

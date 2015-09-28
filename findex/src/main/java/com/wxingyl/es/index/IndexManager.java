@@ -15,9 +15,10 @@ import com.wxingyl.es.index.version.IndexVersionManager;
 import com.wxingyl.es.index.version.VersionIndex;
 import com.wxingyl.es.index.version.VersionIndexTypeBean;
 import com.wxingyl.es.util.CommonUtils;
-import com.wxingyl.es.util.Function;
 import com.wxingyl.es.util.RwLock;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.base.Function;
+import org.elasticsearch.common.base.Supplier;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -54,7 +55,12 @@ public class IndexManager {
 
     private Map<String, IndexVersionManager> indexVersionManagerMap = new HashMap<>();
 
-    private RwLock<LinkedList<String>> fillingIndex = CommonUtils.createRwLock(new LinkedList<String>());
+    private RwLock<List<String>> fillingIndex = CommonUtils.createRwLock(new Supplier<List<String>>() {
+        @Override
+        public List<String> get() {
+            return new LinkedList<>();
+        }
+    });
 
     public IndexManager(Client client, ConfigManager configManager) {
         this(client, configManager, new DefaultIndexDocFactory());
@@ -149,17 +155,17 @@ public class IndexManager {
 
         if (CommonUtils.isEmpty(typeBeanSet)) return null;
 
-        if (fillingIndex.readOp(new Function<LinkedList<String>, Boolean>() {
+        if (fillingIndex.readOp(new Function<List<String>, Boolean>() {
             @Override
-            public Boolean apply(LinkedList<String> input) {
+            public Boolean apply(List<String> input) {
                 return input.contains(index);
             }
         })) {
             return null;
         }
-        fillingIndex.writeOp(new Function<LinkedList<String>, Object>() {
+        fillingIndex.writeOp(new Function<List<String>, Object>() {
             @Override
-            public Object apply(LinkedList<String> input) {
+            public Object apply(List<String> input) {
                 input.add(index);
                 return null;
             }
@@ -188,9 +194,9 @@ public class IndexManager {
                 typeDocNum.put(typeBean.getType().getType(), num);
             }
         } finally {
-            fillingIndex.writeOp(new Function<LinkedList<String>, Object>() {
+            fillingIndex.writeOp(new Function<List<String>, Object>() {
                 @Override
-                public Object apply(LinkedList<String> input) {
+                public Object apply(List<String> input) {
                     input.remove(index);
                     return null;
                 }
@@ -291,9 +297,9 @@ public class IndexManager {
 
 
     private boolean isCreatingIndex() {
-        return fillingIndex.readOp(new Function<LinkedList<String>, Boolean>() {
+        return fillingIndex.readOp(new Function<List<String>, Boolean>() {
             @Override
-            public Boolean apply(LinkedList<String> input) {
+            public Boolean apply(List<String> input) {
                 return !input.isEmpty();
             }
         });

@@ -1,8 +1,11 @@
 package com.wxingyl.es.db;
 
+import com.wxingyl.es.util.CommonUtils;
+
 /**
  * Created by xing on 15/8/27.
  * db table describe
+ * the urlAddress can null, so when DbTableDesc as key, you should carefully
  */
 public class DbTableDesc {
 
@@ -10,12 +13,9 @@ public class DbTableDesc {
 
     private String table;
 
-    private String urlAddress;
-
-    public DbTableDesc(String urlAddress, String schema, String table) {
+    public DbTableDesc(String schema, String table) {
         this.schema = schema;
         this.table = table;
-        this.urlAddress = urlAddress;
     }
 
     public String getSchema() {
@@ -26,16 +26,6 @@ public class DbTableDesc {
         return table;
     }
 
-    public String getUrlAddress() {
-        return urlAddress;
-    }
-
-    public boolean equalsIgnoreUrlAddress(DbTableDesc tableDesc) {
-        if (this == tableDesc) return true;
-        if (!schema.equals(tableDesc.schema)) return false;
-        return table.equals(tableDesc.table);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -44,24 +34,18 @@ public class DbTableDesc {
         DbTableDesc tableDesc = (DbTableDesc) o;
 
         if (!schema.equals(tableDesc.schema)) return false;
-        if (!table.equals(tableDesc.table)) return false;
-        return !(urlAddress != null ? !urlAddress.equals(tableDesc.urlAddress) : tableDesc.urlAddress != null);
+        return table.equals(tableDesc.table);
     }
 
     @Override
     public int hashCode() {
         int result = schema.hashCode();
         result = 31 * result + table.hashCode();
-        result = 31 * result + (urlAddress != null ? urlAddress.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        return "DbTableDesc{" +
-                "schema='" + schema + '\'' +
-                ", table='" + table + '\'' +
-                ", urlAddress='" + urlAddress + '\'' +
-                '}';
+        return '[' + CommonUtils.tableToString(this) + ']';
     }
 }

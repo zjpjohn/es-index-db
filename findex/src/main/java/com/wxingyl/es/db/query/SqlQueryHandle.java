@@ -26,12 +26,8 @@ public interface SqlQueryHandle {
     long countKeyField(SqlQueryCommon common) throws SQLException;
 
     /**
-     * get all tables in the schema
-     */
-    Set<String> getAllTables(String schema) throws ExecutionException;
-
-    /**
      * get all fields in the schema.table
+     * @return all fields, return set is unmodifiableSet
      */
     Set<String> getAllFields(DbTableDesc table) throws ExecutionException;
 

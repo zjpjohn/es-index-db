@@ -82,22 +82,6 @@ public class SqlQueryCommon {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SqlQueryCommon)) return false;
-
-        SqlQueryCommon that = (SqlQueryCommon) o;
-
-        return table.equals(that.table);
-
-    }
-
-    @Override
-    public int hashCode() {
-        return table.hashCode();
-    }
-
-    @Override
     public String toString() {
         return "PrepareSqlQuery{" +
                 "commonSql='" + commonSql + '\'' +

@@ -32,11 +32,6 @@ public class SqlServerQueryHandler extends AbstractSqlQueryHandler {
     }
 
     @Override
-    protected Set<String> loadAllTables(String schema) throws Exception {
-        return null;
-    }
-
-    @Override
     protected Set<String> loadAllFields(DbTableDesc table) throws Exception {
         return null;
     }

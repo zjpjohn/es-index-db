@@ -3,13 +3,13 @@ package com.wxingyl.es.index.version;
 import com.wxingyl.es.exception.IndexDocException;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.EsUtils;
-import com.wxingyl.es.util.Supplier;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.common.base.Supplier;
 import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
 
 import java.io.IOException;

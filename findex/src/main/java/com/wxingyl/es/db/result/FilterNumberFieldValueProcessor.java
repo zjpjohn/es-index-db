@@ -4,9 +4,10 @@ import com.wxingyl.es.conf.ConfigManager;
 import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.util.CommonUtils;
-import com.wxingyl.es.util.Function;
 import com.wxingyl.es.util.Listener;
 import com.wxingyl.es.util.RwLock;
+import org.elasticsearch.common.base.Function;
+import org.elasticsearch.common.base.Supplier;
 
 import java.util.*;
 
@@ -16,19 +17,24 @@ import java.util.*;
  */
 public class FilterNumberFieldValueProcessor extends NumberFieldValueProcessor implements Listener<Set<IndexTypeBean>> {
 
-    private RwLock<HashSet<String>> keyFieldSetLock;
+    private RwLock<Set<String>> keyFieldSetLock;
 
     public FilterNumberFieldValueProcessor(ConfigManager configManager) {
         super();
         configManager.registerIndexTypeListener(this);
-        keyFieldSetLock = CommonUtils.createRwLock(new HashSet<String>());
+        keyFieldSetLock = CommonUtils.createRwLock(new Supplier<Set<String>>() {
+            @Override
+            public Set<String> get() {
+                return new HashSet<>();
+            }
+        });
     }
 
     @Override
     public Object handle(final String fieldName, Object value) {
-        if (!keyFieldSetLock.readOp(new Function<HashSet<String>, Boolean>() {
+        if (!keyFieldSetLock.readOp(new Function<Set<String>, Boolean>() {
             @Override
-            public Boolean apply(HashSet<String> input) {
+            public Boolean apply(Set<String> input) {
                 return input.contains(fieldName);
             }
         })) return value;
@@ -43,9 +49,9 @@ public class FilterNumberFieldValueProcessor extends NumberFieldValueProcessor i
                 changedFields.add(v.getKeyField());
             }
         }
-        keyFieldSetLock.writeOp(new Function<HashSet<String>, Void>() {
+        keyFieldSetLock.writeOp(new Function<Set<String>, Void>() {
             @Override
-            public Void apply(HashSet<String> input) {
+            public Void apply(Set<String> input) {
                 input.addAll(changedFields);
                 return null;
             }

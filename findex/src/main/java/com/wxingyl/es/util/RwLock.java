@@ -1,5 +1,7 @@
 package com.wxingyl.es.util;
 
+import org.elasticsearch.common.base.Function;
+
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 

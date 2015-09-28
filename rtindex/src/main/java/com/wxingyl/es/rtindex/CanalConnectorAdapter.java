@@ -1,7 +1,13 @@
-package com.wxingyl.es.rindex;
+package com.wxingyl.es.rtindex;
 
+import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.wxingyl.es.db.DbTableDesc;
+import org.elasticsearch.common.collect.Tuple;
+
+import java.util.List;
 
 /**
  * Created by xing on 15/9/22.
@@ -20,5 +26,9 @@ public interface CanalConnectorAdapter {
     void rollback(long batchId) throws CanalClientException;
 
     void disConnect() throws CanalClientException;
+
+    Tuple<DbTableDesc, List<CanalEntry.RowData>> filterEntry(CanalEntry.Entry e) throws Exception;
+
+    void setStartRtIndexTime(long startRtIndexTime);
 
 }

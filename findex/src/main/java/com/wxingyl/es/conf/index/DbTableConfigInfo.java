@@ -43,7 +43,7 @@ public class DbTableConfigInfo {
     private IndexSlaveResultMergeEnum mergeType;
 
     public void setMasterField(DbTableFieldDesc masterField) {
-        if (masterField.newDbTableDesc().equals(table)) {
+        if (masterField.getTableDesc().equals(table)) {
             throw new IndexConfigException("Index type config: " + toString() + ", " + INDEX_TABLE_MASTER_FIELD
                     + " value can't local table");
         }
@@ -108,15 +108,12 @@ public class DbTableConfigInfo {
         if (tableName == null) {
             throw new IndexConfigException("table_name conf is null of " + typeInfo);
         }
-        String[] strArray = new String[2];
+        String schema = null;
         for (Map.Entry<String, String> e : strDvp.getDefaultValue(config).entrySet()) {
             String k = e.getKey(), v = e.getValue();
             switch (k) {
                 case INDEX_TABLE_SCHEMA:
-                    strArray[0] = v;
-                    break;
-                case INDEX_TABLE_DB_ADDRESS:
-                    strArray[1] = v;
+                    schema = v;
                     break;
                 case INDEX_TABLE_DELETE_FIELD:
                     deleteField = v == null ? null : v.toLowerCase();
@@ -130,7 +127,7 @@ public class DbTableConfigInfo {
             throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " delete_field: "
                     + deleteField + ", but delete_valid_value is null");
         }
-        if (strArray[0] == null) {
+        if (schema == null) {
             throw new IndexConfigException(typeInfo + " conf, table_name: " + tableName + " can't find schema");
         }
         relationField = CommonUtils.getStringVal(config, INDEX_TABLE_RELATION_FIELD);
@@ -140,7 +137,7 @@ public class DbTableConfigInfo {
         } else {
             relationField = relationField.toLowerCase();
         }
-        table = new DbTableDesc(strArray[1], strArray[0], tableName);
+        table = new DbTableDesc(schema, tableName);
         pageSize = CommonUtils.getOrDefault(intDvp.getDefaultValue(config), INDEX_TABLE_PAGE_SIZE, 2500);
         masterAlias = CommonUtils.getStringVal(config, INDEX_TABLE_MASTER_ALIAS);
         forbidFields = getFields(config, INDEX_TABLE_FORBID_FIELDS);

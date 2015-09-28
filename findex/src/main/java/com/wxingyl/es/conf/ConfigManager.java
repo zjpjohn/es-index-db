@@ -28,7 +28,7 @@ public interface ConfigManager {
 
     boolean registerIndexTypeListener(Listener<Set<IndexTypeBean>> listener);
 
-    DataSourceBean findDataSourceBean(String schema, String urlAddress);
+    DataSourceBean findDataSourceBean(String schema);
 
     IndexTypeBean findIndexTypeBean(IndexTypeDesc type);
 
