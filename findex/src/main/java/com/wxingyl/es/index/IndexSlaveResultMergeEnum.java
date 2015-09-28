@@ -2,7 +2,7 @@ package com.wxingyl.es.index;
 
 import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.util.CommonUtils;
-import com.wxingyl.es.util.Function;
+import org.elasticsearch.common.base.Function;
 
 import java.util.List;
 

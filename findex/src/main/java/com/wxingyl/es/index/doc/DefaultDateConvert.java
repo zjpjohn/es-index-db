@@ -2,7 +2,7 @@ package com.wxingyl.es.index.doc;
 
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DateConvert;
-import com.wxingyl.es.util.Supplier;
+import org.elasticsearch.common.base.Supplier;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

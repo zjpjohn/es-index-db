@@ -7,7 +7,7 @@ import com.wxingyl.es.db.DbTableFieldDesc;
 import com.wxingyl.es.util.BiConsumer;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
-import com.wxingyl.es.util.Supplier;
+import org.elasticsearch.common.base.Supplier;
 
 import java.util.*;
 

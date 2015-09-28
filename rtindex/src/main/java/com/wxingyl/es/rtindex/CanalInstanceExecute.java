@@ -142,7 +142,7 @@ public class CanalInstanceExecute implements Runnable {
         running = false;
     }
 
-    private class TypeRtIndexActionInfo {
+    private class TypeRtIndexActionInfo implements Callable<Void> {
 
         TypeRtIndexAction action;
 
@@ -154,20 +154,18 @@ public class CanalInstanceExecute implements Runnable {
 
         private boolean haveData;
 
-        private Callable<Void> callable = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                try {
-                    action.dealDataChange(instanceName, actionData);
-                } finally {
-                    for (List<ChangeDataEntry> list : actionData.values()) {
-                        list.clear();
-                    }
-                    haveData = false;
+        @Override
+        public Void call() throws Exception {
+            try {
+                action.dealDataChange(instanceName, actionData);
+            } finally {
+                for (List<ChangeDataEntry> list : actionData.values()) {
+                    list.clear();
                 }
-                return null;
+                haveData = false;
             }
-        };
+            return null;
+        }
 
         TypeRtIndexActionInfo(TypeRtIndexAction action, IndexTypeDesc type) {
             this.action = action;
@@ -255,7 +253,7 @@ public class CanalInstanceExecute implements Runnable {
             for (TypeRtIndexActionInfo actionInfo : actions) {
                 initActionData(actionInfo);
                 if (actionInfo.haveData) {
-                    callableList.add(actionInfo.callable);
+                    callableList.add(actionInfo);
                 }
             }
             if (callableList.isEmpty()) return null;
