@@ -2,6 +2,7 @@ package com.wxingyl.es.rtindex;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
+import com.wxingyl.es.action.RtIndexAction;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.exception.RtIndexDealException;
@@ -60,27 +61,10 @@ public class CanalInstanceExecute implements Runnable {
         })) return;
         canalConnector.connect();
         running = true;
-        //here need update
         instanceName = canalConnector.getDestination();
         try {
             while (running) {
-                Message message = canalConnector.getWithoutAck();
-                try {
-                    if (message.getId() > 0 && !message.getEntries().isEmpty()) {
-                        for (CanalEntry.Entry e : message.getEntries()) {
-                            Tuple<DbTableDesc, List<CanalEntry.RowData>> tuple = canalConnector.filterEntry(e);
-                            if (tuple == null) continue;
-                            dealCanalMessage.dataList.add(new ChangeDataEntry(tuple.v1(), e.getHeader().getEventType(), tuple.v2()));
-                        }
-                        typeActionInfoLock.readOp(dealCanalMessage);
-                        dealCanalMessage.dataList.clear();
-                    }
-                    canalConnector.ack(message.getId());
-                } catch (Throwable e) {
-                    canalConnector.rollback(message.getId());
-                    throw new RtIndexDealException("deal real time index: " + canalConnector.getDestination()
-                            + " have exception", e);
-                }
+                typeActionInfoLock.readOp(dealCanalMessage);
             }
         } finally {
             running = false;
@@ -106,30 +90,42 @@ public class CanalInstanceExecute implements Runnable {
     }
 
     /**
-     * register rtIndex action, if {@link TypeRtIndexAction#supportTable(String)} have change, you can recall this function,
+     * register rtIndex action, if {@link RtIndexAction#supportTable(String)} have change, you can recall this function,
      * it will replace action
      * @param action reIndex action, deal data change, if you recall this function, action obj should same obj of first call
      */
-    public void registerTypeRtIndexAction(TypeRtIndexAction action) {
-        Objects.requireNonNull(action);
-        IndexTypeBean type = action.supportType(instanceName);
-        Objects.requireNonNull(type);
-        List<DbTableDesc> supportTables = action.supportTable(instanceName);
-        if (CommonUtils.isEmpty(supportTables)) {
-            supportTables = Lists.transform(type.getAllTableInfo(), new Function<TableBaseInfo, DbTableDesc>() {
-                @Override
-                public DbTableDesc apply(TableBaseInfo input) {
-                    return input.getTable();
-                }
-            });
-        }
-        final TypeRtIndexActionInfo actionInfo = new TypeRtIndexActionInfo(action, type.getType());
-        actionInfo.putTableField(supportTables);
+    public void registerTypeRtIndexAction(RtIndexAction action) {
+        final TypeRtIndexActionInfo actionInfo = initActionInfo(action);
         typeActionInfoLock.writeOp(new Function<Set<TypeRtIndexActionInfo>, Void>() {
             @Override
             public Void apply(Set<TypeRtIndexActionInfo> input) {
                 input.add(actionInfo);
                 return null;
+            }
+        });
+    }
+
+    /**
+     * @return true: had replace, false: before can not find, curAction not add
+     */
+    public boolean replaceTypeRtIndexAction(final RtIndexAction before, RtIndexAction curAction) {
+        final TypeRtIndexActionInfo actionInfo = initActionInfo(curAction);
+        return typeActionInfoLock.writeOp(new Function<Set<TypeRtIndexActionInfo>, Boolean>() {
+            @Override
+            public Boolean apply(Set<TypeRtIndexActionInfo> input) {
+                TypeRtIndexActionInfo rmObj = null;
+                for (TypeRtIndexActionInfo e : input) {
+                    if (e.action.equals(before)) {
+                        rmObj = e;
+                        break;
+                    }
+                }
+                if (rmObj == null) return false;
+                else {
+                    input.remove(rmObj);
+                    input.add(actionInfo);
+                    return true;
+                }
             }
         });
     }
@@ -142,9 +138,28 @@ public class CanalInstanceExecute implements Runnable {
         running = false;
     }
 
+    private TypeRtIndexActionInfo initActionInfo(RtIndexAction action) {
+        Objects.requireNonNull(action);
+        IndexTypeBean type = action.supportType(instanceName);
+        Objects.requireNonNull(type);
+        List<DbTableDesc> supportTables = action.supportTable(instanceName);
+        Objects.requireNonNull(supportTables);
+        if (supportTables.isEmpty()) {
+            supportTables = Lists.transform(type.getAllTableInfo(), new Function<TableBaseInfo, DbTableDesc>() {
+                @Override
+                public DbTableDesc apply(TableBaseInfo input) {
+                    return input.getTable();
+                }
+            });
+        }
+        TypeRtIndexActionInfo actionInfo = new TypeRtIndexActionInfo(action, type.getType());
+        actionInfo.putTableField(supportTables);
+        return actionInfo;
+    }
+
     private class TypeRtIndexActionInfo implements Callable<Void> {
 
-        TypeRtIndexAction action;
+        RtIndexAction action;
 
         IndexTypeDesc type;
 
@@ -167,7 +182,7 @@ public class CanalInstanceExecute implements Runnable {
             return null;
         }
 
-        TypeRtIndexActionInfo(TypeRtIndexAction action, IndexTypeDesc type) {
+        TypeRtIndexActionInfo(RtIndexAction action, IndexTypeDesc type) {
             this.action = action;
             this.type = type;
         }
@@ -249,26 +264,38 @@ public class CanalInstanceExecute implements Runnable {
 
         @Override
         public Void apply(Set<TypeRtIndexActionInfo> actions) {
-            //init action
-            for (TypeRtIndexActionInfo actionInfo : actions) {
-                initActionData(actionInfo);
-                if (actionInfo.haveData) {
-                    callableList.add(actionInfo);
-                }
-            }
-            if (callableList.isEmpty()) return null;
+            Message message = canalConnector.getWithoutAck();
             try {
-                if (executorService == null) {
-                    for (Callable<Void> call : callableList) {
-                        call.call();
+                if (message.getId() > 0 && !message.getEntries().isEmpty()) {
+                    for (CanalEntry.Entry e : message.getEntries()) {
+                        Tuple<DbTableDesc, List<CanalEntry.RowData>> tuple = canalConnector.filterEntry(e);
+                        if (tuple == null) continue;
+                        dataList.add(new ChangeDataEntry(tuple.v1(), e.getHeader().getEventType(), tuple.v2()));
                     }
-                } else {
-                    executorService.invokeAll(callableList);
+                    //init action
+                    for (TypeRtIndexActionInfo actionInfo : actions) {
+                        initActionData(actionInfo);
+                        if (actionInfo.haveData) {
+                            callableList.add(actionInfo);
+                        }
+                    }
+                    if (callableList.isEmpty()) return null;
+                    if (executorService == null || callableList.size() == 1) {
+                        for (Callable<Void> call : callableList) {
+                            call.call();
+                        }
+                    } else {
+                        executorService.invokeAll(callableList);
+                    }
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e.getMessage(), e);
+                canalConnector.ack(message.getId());
+            } catch (Throwable e) {
+                canalConnector.rollback(message.getId());
+                throw new RtIndexDealException("deal real time index: " + instanceName
+                        + " have exception", e);
             } finally {
                 callableList.clear();
+                dataList.clear();
             }
             return null;
         }

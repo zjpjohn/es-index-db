@@ -3,7 +3,6 @@ package com.wxingyl.es.rtindex;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.wxingyl.es.db.DbTableDesc;
 import org.elasticsearch.common.collect.Tuple;
 
