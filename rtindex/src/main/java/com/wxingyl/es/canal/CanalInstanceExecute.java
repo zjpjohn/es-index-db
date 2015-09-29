@@ -1,4 +1,4 @@
-package com.wxingyl.es.rtindex;
+package com.wxingyl.es.canal;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
@@ -70,8 +70,6 @@ public class CanalInstanceExecute implements Runnable {
             running = false;
             dealCanalMessage.dataList.clear();
             dealCanalMessage.callableList.clear();
-            //this must last
-            canalConnector.disConnect();
             typeActionInfoLock.readOp(new Function<Set<TypeRtIndexActionInfo>, Void>() {
                 @Override
                 public Void apply(Set<TypeRtIndexActionInfo> input) {
@@ -82,6 +80,8 @@ public class CanalInstanceExecute implements Runnable {
                     return null;
                 }
             });
+            //this must last
+            canalConnector.disConnect();
         }
     }
 

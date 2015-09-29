@@ -1,4 +1,4 @@
-package com.wxingyl.es.rtindex;
+package com.wxingyl.es.canal;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.wxingyl.es.db.DbTableDesc;

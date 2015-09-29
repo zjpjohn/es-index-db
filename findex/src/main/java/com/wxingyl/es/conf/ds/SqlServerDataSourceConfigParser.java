@@ -2,9 +2,9 @@ package com.wxingyl.es.conf.ds;
 
 import com.wxingyl.es.db.query.SqlQueryHandle;
 import com.wxingyl.es.db.query.SqlServerQueryHandler;
+import com.wxingyl.es.util.CommonUtils;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.elasticsearch.common.collect.Tuple;
-import org.elasticsearch.common.lang3.StringUtils;
 
 import javax.sql.DataSource;
 
@@ -52,10 +52,10 @@ public class SqlServerDataSourceConfigParser extends AbstractDataSourceConfigPar
     }
 
     private String getSchemaName(String jdbcUrlArgs) {
-        String[] array = StringUtils.split(jdbcUrlArgs, ';');
+        String[] array = CommonUtils.split(jdbcUrlArgs, ';');
         if (array == null || array.length == 0) return null;
         for (String s : array) {
-            String[] arr = s.split("=");
+            String[] arr = CommonUtils.split(s, '=');
             if (arr[0].equalsIgnoreCase("DatabaseName")) return arr[1];
         }
         return null;

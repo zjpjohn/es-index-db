@@ -1,4 +1,4 @@
-package com.wxingyl.es.rtindex;
+package com.wxingyl.es.canal;
 
 import com.wxingyl.es.conf.DefaultConfigManager;
 import com.wxingyl.es.conf.index.DbTableConfigInfo;

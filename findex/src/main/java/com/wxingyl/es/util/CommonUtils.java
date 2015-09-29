@@ -13,6 +13,8 @@ import java.util.*;
  */
 public abstract class CommonUtils {
 
+    public static final String[] EMPTY_STRING_ARRAY = new String[0];
+
     public static boolean isEmpty(String s) {
         return s == null || s.isEmpty();
     }
@@ -169,5 +171,38 @@ public abstract class CommonUtils {
                 return supplier.get();
             }
         };
+    }
+
+    public static String[] split(final String str) {
+        return split(str, ',');
+    }
+
+    public static String[] split(final String str, final char separatorChar) {
+        if (str == null) {
+            return null;
+        }
+        final int len = str.length();
+        if (len == 0) {
+            return EMPTY_STRING_ARRAY;
+        }
+        final List<String> list = new ArrayList<>();
+        int i = 0, start = 0;
+        boolean match = false;
+        while (i < len) {
+            if (str.charAt(i) == separatorChar) {
+                if (match) {
+                    list.add(str.substring(start, i));
+                    match = false;
+                }
+                start = ++i;
+                continue;
+            }
+            match = true;
+            i++;
+        }
+        if (match) {
+            list.add(str.substring(start, i));
+        }
+        return list.toArray(new String[list.size()]);
     }
 }

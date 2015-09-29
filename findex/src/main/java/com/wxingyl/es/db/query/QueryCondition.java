@@ -1,8 +1,8 @@
 package com.wxingyl.es.db.query;
 
+import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.common.collect.ImmutableSet;
 import org.elasticsearch.common.collect.Tuple;
-import org.elasticsearch.common.lang3.StringUtils;
 
 import java.util.Set;
 
@@ -54,7 +54,7 @@ public abstract class QueryCondition<T> {
     public abstract StringBuilder appendQuerySql(StringBuilder sb, SqlQueryStatementStructure structure);
 
     public static QueryCondition build(String queryStr) {
-        String[] queries = queryStr.split(":");
+        String[] queries = CommonUtils.split(queryStr, ':');
         if (queries.length < 3) return null;
         SqlQueryOperator op;
         if (queries[1].isEmpty()) {
@@ -66,7 +66,7 @@ public abstract class QueryCondition<T> {
         if (op == SqlQueryOperator.RANGE) {
             return buildRange(queries[0], op, Tuple.tuple(queries[2], queries[3]));
         } else if (op == SqlQueryOperator.IN || op == SqlQueryOperator.NIN) {
-            return buildList(queries[0], op, ImmutableSet.copyOf(StringUtils.split(queries[2])));
+            return buildList(queries[0], op, ImmutableSet.copyOf(CommonUtils.split(queries[2])));
         } else {
             return buildSingle(queries[0], op, queries[2]);
         }

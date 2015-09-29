@@ -2,7 +2,7 @@ package com.wxingyl.es.action;
 
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.IndexTypeBean;
-import com.wxingyl.es.rtindex.ChangeDataEntry;
+import com.wxingyl.es.canal.ChangeDataEntry;
 
 import java.util.List;
 import java.util.Map;
