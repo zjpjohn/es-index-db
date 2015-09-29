@@ -80,7 +80,7 @@ public class CanalInstanceExecute implements Runnable {
                     return null;
                 }
             });
-            //this must last
+            //at last is a good choice
             canalConnector.disConnect();
         }
     }

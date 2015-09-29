@@ -4,7 +4,7 @@ import com.wxingyl.es.exception.IndexDocException;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.index.doc.DocFields;
 import com.wxingyl.es.index.TypeBaseInfo;
-import com.wxingyl.es.index.doc.DefaultDateConvert;
+import com.wxingyl.es.util.DefaultDateConvert;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;

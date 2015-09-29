@@ -2,7 +2,6 @@ package com.wxingyl.es.action;
 
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.IndexTypeBean;
-import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.util.*;
@@ -15,33 +14,27 @@ public abstract class AbstractRtIndexAction implements DeployRtIndexAction {
 
     /**
      * In an action, a canal instance should only one index/type
+     * key: canal instance name, value: index/type entry
      */
-    protected Map<IndexTypeDesc, Entry> actionMap = new HashMap<>();
+    protected Map<String, TypeEntry> actionMap = new HashMap<>();
 
     @Override
     public List<DbTableDesc> supportTable(String instance) {
-        List<DbTableDesc> list;
-        for (Entry e : actionMap.values()) {
-            if ((list = e.instanceTableMap.get(instance)) != null) {
-                if (list.isEmpty()) return list;
-                else return Collections.unmodifiableList(list);
-            }
-        }
-        return null;
+        TypeEntry entry = actionMap.get(instance);
+        if (entry == null) return null;
+        else if (entry.supportTable.isEmpty()) return Collections.emptyList();
+        else return Collections.unmodifiableList(entry.supportTable);
     }
 
     @Override
     public IndexTypeBean supportType(String instance) {
-        for (Entry e : actionMap.values()) {
-            if (e.instanceTableMap.get(instance) != null)
-                return e.typeBean;
-        }
-        return null;
+        TypeEntry entry = actionMap.get(instance);
+        return entry == null ? null : entry.typeBean;
     }
 
     @Override
     public void registerTableAction(String instance, IndexTypeBean typeBean, List<DbTableDesc> tables) {
-        if(CommonUtils.isEmpty(tables)) throw new IllegalArgumentException("tables can not empty");
+        if (CommonUtils.isEmpty(tables)) throw new IllegalArgumentException("tables can not empty");
         addTableAction(instance, typeBean, tables);
     }
 
@@ -51,44 +44,35 @@ public abstract class AbstractRtIndexAction implements DeployRtIndexAction {
     }
 
     private void addTableAction(String instance, IndexTypeBean typeBean, List<DbTableDesc> tables) {
-        IndexTypeBean orgType = supportType(instance);
-        if (!(orgType == null || orgType.getType().equals(typeBean.getType()))) {
+        TypeEntry entry = actionMap.get(instance);
+        if (!(entry == null || entry.typeBean.getType().equals(typeBean.getType()))) {
             throw new IllegalArgumentException("tables can not empty");
         }
-        IndexTypeDesc type = typeBean.getType();
-        Entry entry = actionMap.get(type);
         if (entry == null) {
-            entry = new Entry(typeBean);
-            actionMap.put(type, entry);
+            actionMap.put(instance, entry = new TypeEntry(instance, typeBean));
         }
+
         if (tables.isEmpty()) {
-            entry.instanceTableMap.put(instance, tables);
+            entry.supportTable = tables;
         } else {
-            List<DbTableDesc> tableList = entry.instanceTableMap.get(instance);
-            if (tableList == null) {
-                tableList = new ArrayList<>();
-                entry.instanceTableMap.put(instance, tableList);
+            if (entry.supportTable == null) {
+                entry.supportTable = new ArrayList<>();
             }
-            tableList.addAll(tables);
+            entry.supportTable.addAll(tables);
         }
     }
 
-    protected static class Entry {
+    protected static class TypeEntry {
+
+        protected String instance;
 
         protected IndexTypeBean typeBean;
 
-        protected Map<String, List<DbTableDesc>> instanceTableMap = new HashMap<>();
+        protected List<DbTableDesc> supportTable;
 
-        public Entry(IndexTypeBean typeBean) {
+        public TypeEntry(String instance, IndexTypeBean typeBean) {
             this.typeBean = typeBean;
-        }
-
-        public Map<String, List<DbTableDesc>> getInstanceTableMap() {
-            return instanceTableMap;
-        }
-
-        public IndexTypeBean getTypeBean() {
-            return typeBean;
+            this.instance = instance;
         }
     }
 }

@@ -1,7 +1,5 @@
-package com.wxingyl.es.index.doc;
+package com.wxingyl.es.util;
 
-import com.wxingyl.es.util.CommonUtils;
-import com.wxingyl.es.util.DateConvert;
 import org.elasticsearch.common.base.Supplier;
 
 import java.text.ParseException;

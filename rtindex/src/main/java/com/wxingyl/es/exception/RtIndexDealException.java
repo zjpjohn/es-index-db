@@ -6,6 +6,10 @@ package com.wxingyl.es.exception;
  */
 public class RtIndexDealException extends RuntimeException {
 
+    public RtIndexDealException(String message) {
+        super(message);
+    }
+
     public RtIndexDealException(String message, Throwable cause) {
         super(message, cause);
     }

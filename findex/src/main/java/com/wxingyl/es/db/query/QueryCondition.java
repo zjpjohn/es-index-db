@@ -1,9 +1,11 @@
 package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.util.CommonUtils;
+import com.wxingyl.es.util.valtransfer.StrValueTransfer;
 import org.elasticsearch.common.collect.ImmutableSet;
 import org.elasticsearch.common.collect.Tuple;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -34,6 +36,8 @@ public abstract class QueryCondition<T> {
     public T getValue() {
         return value;
     }
+
+    public abstract <E> boolean verifyValue(String inValue, StrValueTransfer<E> transfer);
 
     @Override
     public boolean equals(Object o) {
@@ -97,6 +101,30 @@ public abstract class QueryCondition<T> {
         }
 
         @Override
+        public <E> boolean verifyValue(String inValue, StrValueTransfer<E> transfer) {
+            SqlQueryOperator op = getOp();
+            if (op == SqlQueryOperator.EQ) {
+                return value.equals(inValue);
+            } else if (op == SqlQueryOperator.NE) {
+                return !value.equals(inValue);
+            }
+            E val = transfer.apply(value), inVal = transfer.apply(inValue);
+            Objects.requireNonNull(val);
+            Objects.requireNonNull(inVal);
+            int comp = transfer.compare(inVal, val);
+            if (op == SqlQueryOperator.GT) {
+                return comp > 0;
+            } else if (op == SqlQueryOperator.GE) {
+                return comp >= 0;
+            } else if (op == SqlQueryOperator.LT) {
+                return comp < 0;
+            } else if (op == SqlQueryOperator.LE) {
+                return comp <= 0;
+            }
+            return false;
+        }
+
+        @Override
         public StringBuilder appendQuerySql(StringBuilder sb, SqlQueryStatementStructure structure) {
             return structure.singleValueAppend(sb, this);
         }
@@ -110,6 +138,16 @@ public abstract class QueryCondition<T> {
         }
 
         @Override
+        public <E> boolean verifyValue(String inValue, StrValueTransfer<E> transfer) {
+            E left = transfer.apply(value.v1()), right = transfer.apply(value.v2());
+            Objects.requireNonNull(left);
+            Objects.requireNonNull(right);
+            E inVal = transfer.apply(inValue);
+            Objects.requireNonNull(inVal);
+            return transfer.compare(inVal, left) >= 0 && transfer.compare(inVal, right) <= 0;
+        }
+
+        @Override
         public StringBuilder appendQuerySql(StringBuilder sb, SqlQueryStatementStructure structure) {
             return structure.rangeValueAppend(sb, this);
         }
@@ -120,6 +158,12 @@ public abstract class QueryCondition<T> {
 
         public ListQueryCondition(String field, SqlQueryOperator op) {
             super(field, op);
+        }
+
+        @Override
+        public <E> boolean verifyValue(String inValue, StrValueTransfer<E> transfer) {
+            boolean ret = value.contains(inValue);
+            return getOp() == SqlQueryOperator.IN ? ret : !ret;
         }
 
         @Override
