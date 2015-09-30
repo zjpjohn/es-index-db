@@ -1,4 +1,4 @@
-package com.wxingyl.es.util.valtransfer;
+package com.wxingyl.es.util.transfer;
 
 import org.elasticsearch.common.base.Function;
 

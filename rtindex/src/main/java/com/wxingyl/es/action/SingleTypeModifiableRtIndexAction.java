@@ -8,7 +8,7 @@ import java.util.List;
  * Created by xing on 15/9/29.
  * this action only have a index/type
  */
-public interface SingleTypeDeployRtIndexAction extends RtIndexAction {
+public interface SingleTypeModifiableRtIndexAction extends RtIndexAction {
 
     void registerTableAction(String instance, List<DbTableDesc> tables);
 
@@ -16,4 +16,6 @@ public interface SingleTypeDeployRtIndexAction extends RtIndexAction {
      * register all table of this type for instance
      */
     void registerTableAction(String instance);
+
+    void setTableAction(DbTableDesc table, TableAction action);
 }

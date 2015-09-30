@@ -37,7 +37,7 @@ public class SqlQueryParam {
             for (Object o : list) {
                 values.add(o.toString());
             }
-            queryCondition = QueryCondition.buildList(queryCommon.getKeyField(), SqlQueryOperator.IN, values);
+            queryCondition = QueryCondition.buildList(queryCommon.getBaseInfo().getKeyField(), SqlQueryOperator.IN, values);
         }
     }
 

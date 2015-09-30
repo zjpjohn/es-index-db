@@ -62,7 +62,7 @@ public class TableQueryResult {
             TableQueryResult ret = new TableQueryResult();
             ret.pageSize = common.getPageSize();
             ret.dbData = dbData;
-            ret.baseInfo = common.getTableBaseInfo();
+            ret.baseInfo = common.getBaseInfo();
             return ret;
         }
 

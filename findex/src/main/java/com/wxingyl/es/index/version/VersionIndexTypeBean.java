@@ -1,9 +1,10 @@
 package com.wxingyl.es.index.version;
 
-import com.wxingyl.es.db.TableBaseInfo;
+import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.query.TableQueryInfo;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 
 import java.util.List;
 
@@ -43,13 +44,13 @@ public class VersionIndexTypeBean implements IndexTypeBean {
     }
 
     @Override
-    public List<TableBaseInfo> getTableInfo(String tableName) {
-        return indexTypeBean.getTableInfo(tableName);
+    public SqlQueryCommon getTableQueryInfo(DbTableDesc table) {
+        return indexTypeBean.getTableQueryInfo(table);
     }
 
     @Override
-    public List<TableBaseInfo> getAllTableInfo() {
-        return indexTypeBean.getAllTableInfo();
+    public List<SqlQueryCommon> getAllTableQueryInfo() {
+        return indexTypeBean.getAllTableQueryInfo();
     }
 
     @Override

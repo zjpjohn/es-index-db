@@ -1,5 +1,6 @@
 package com.wxingyl.es.action;
 
+import com.wxingyl.es.canal.ChangeDataEntry;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.util.CommonUtils;
@@ -10,13 +11,18 @@ import java.util.*;
  * Created by xing on 15/9/29.
  * SingleTypeDeployRtIndexAction abstract implement
  */
-public abstract class AbstractSingleTypeDeployRtIndexAction implements SingleTypeDeployRtIndexAction {
+public class SingleTypeRtIndexAction implements SingleTypeModifiableRtIndexAction {
 
     private IndexTypeBean type;
 
+    /**
+     * key: canal instance, value: support tables
+     */
     protected Map<String, List<DbTableDesc>> tableActionMap = new HashMap<>();
 
-    public AbstractSingleTypeDeployRtIndexAction(IndexTypeBean type) {
+    protected Map<DbTableDesc, TableActionEntry> tableActionEntryMap = new HashMap<>();
+
+    public SingleTypeRtIndexAction(IndexTypeBean type) {
         this.type = type;
     }
 
@@ -46,5 +52,21 @@ public abstract class AbstractSingleTypeDeployRtIndexAction implements SingleTyp
     @Override
     public IndexTypeBean supportType(String instance) {
         return type;
+    }
+
+    @Override
+    public void setTableAction(DbTableDesc table, TableAction action) {
+        tableActionEntryMap.put(table, TableActionEntry.build(type, table, action));
+    }
+
+    @Override
+    public void dealDataChange(String instance, Map<DbTableDesc, List<ChangeDataEntry>> tableGroupData) {
+        for (DbTableDesc table : tableGroupData.keySet()) {
+            TableActionEntry entry = tableActionEntryMap.get(table);
+            if (entry == null) {
+                throw new IllegalStateException("type: " + type.getType() + ", table: " + table + " don't set TableAction object");
+            }
+            entry.onAction(tableGroupData.get(table));
+        }
     }
 }

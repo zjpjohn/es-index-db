@@ -1,7 +1,9 @@
 package com.wxingyl.es.index;
 
+import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.db.query.TableQueryInfo;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 
 import java.util.List;
 
@@ -15,9 +17,9 @@ public interface IndexTypeBean extends Comparable<IndexTypeBean> {
 
     TableQueryInfo getMasterTable();
 
-    List<TableBaseInfo> getTableInfo(String tableName);
+    SqlQueryCommon getTableQueryInfo(DbTableDesc table);
 
-    List<TableBaseInfo> getAllTableInfo();
+    List<SqlQueryCommon> getAllTableQueryInfo();
 
     int getPriority();
 

@@ -1,5 +1,6 @@
 package com.wxingyl.es.db;
 
+import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.index.IndexSlaveResultMergeEnum;
 
@@ -9,19 +10,19 @@ import com.wxingyl.es.index.IndexSlaveResultMergeEnum;
  */
 public class TableBaseInfo {
 
-    private DbTableDesc table;
+    protected DbTableDesc table;
 
     /**
      * the field is primary key, its value should be unique in table
      */
-    private String keyField;
+    protected String keyField;
     /**
      * when {@link #mergeType} is {@link IndexSlaveResultMergeEnum#MERGE}, masterAlias is prefix name of field which is have
      * conflict
      */
-    private String masterAlias;
+    protected String masterAlias;
 
-    private IndexSlaveResultMergeEnum mergeType;
+    protected IndexSlaveResultMergeEnum mergeType;
 
     public DbTableDesc getTable() {
         return table;
@@ -39,23 +40,12 @@ public class TableBaseInfo {
         return mergeType;
     }
 
-    protected void init(SqlQueryCommon sqlQueryCommon) {
-        table = sqlQueryCommon.getTable();
-        keyField = sqlQueryCommon.getKeyField();
-        masterAlias = sqlQueryCommon.getMasterAlias();
-        mergeType = sqlQueryCommon.getMergeType();
-    }
-
-    protected void init(TableBaseInfo other) {
-        table = other.table;
-        keyField = other.keyField;
-        masterAlias = other.masterAlias;
-        mergeType = other.mergeType;
-    }
-
-    public static TableBaseInfo build(SqlQueryCommon sqlQueryCommon) {
+    public static TableBaseInfo build(DbTableConfigInfo tableInfo) {
         TableBaseInfo baseInfo = new TableBaseInfo();
-        baseInfo.init(sqlQueryCommon);
+        baseInfo.table = tableInfo.getTable();
+        baseInfo.keyField = tableInfo.getRelationField();
+        baseInfo.masterAlias = tableInfo.getMasterAlias();
+        baseInfo.mergeType = tableInfo.getMergeType();
         return baseInfo;
     }
 }

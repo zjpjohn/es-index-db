@@ -4,10 +4,10 @@ import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
 import com.wxingyl.es.action.RtIndexAction;
 import com.wxingyl.es.db.DbTableDesc;
-import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.exception.RtIndexDealException;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.RwLock;
 import org.elasticsearch.common.base.Function;
@@ -145,9 +145,9 @@ public class CanalInstanceExecute implements Runnable {
         List<DbTableDesc> supportTables = action.supportTable(instanceName);
         Objects.requireNonNull(supportTables);
         if (supportTables.isEmpty()) {
-            supportTables = Lists.transform(type.getAllTableInfo(), new Function<TableBaseInfo, DbTableDesc>() {
+            supportTables = Lists.transform(type.getAllTableQueryInfo(), new Function<SqlQueryCommon, DbTableDesc>() {
                 @Override
-                public DbTableDesc apply(TableBaseInfo input) {
+                public DbTableDesc apply(SqlQueryCommon input) {
                     return input.getTable();
                 }
             });

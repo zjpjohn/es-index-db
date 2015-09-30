@@ -4,6 +4,7 @@ import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.db.query.TableQueryInfo;
 import com.wxingyl.es.db.*;
 import com.wxingyl.es.db.query.SqlQueryHandle;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.util.BiConsumer;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.Tuple;
@@ -20,7 +21,7 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
 
     private TableQueryInfo masterTable;
 
-    private List<TableBaseInfo> allTableInfo;
+    private Map<DbTableDesc, SqlQueryCommon> allTableQueryInfo;
 
     private int priority;
 
@@ -35,26 +36,24 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
     }
 
     @Override
-    public List<TableBaseInfo> getTableInfo(String tableName) {
-        if (allTableInfo == null) getAllTableInfo();
-        List<TableBaseInfo> list = new ArrayList<>();
-        for (TableBaseInfo v : allTableInfo) {
-            if (v.getTable().getTable().equals(tableName)) list.add(v);
-        }
-        return list;
+    public SqlQueryCommon getTableQueryInfo(DbTableDesc table) {
+        return allTableQueryInfo.get(table);
     }
 
     /**
      * @return unmodifiable list
      */
     @Override
-    public List<TableBaseInfo> getAllTableInfo() {
-        if (allTableInfo == null) {
-            List<TableBaseInfo> list = new ArrayList<>();
-            masterTable.allTableQueryBaseInfo(list);
-            allTableInfo = Collections.unmodifiableList(list);
+    public List<SqlQueryCommon> getAllTableQueryInfo() {
+        if (allTableQueryInfo == null) {
+            List<SqlQueryCommon> list = new ArrayList<>();
+            masterTable.allSqlQueryCommon(list);
+            allTableQueryInfo = new HashMap<>();
+            for (SqlQueryCommon common : list) {
+                allTableQueryInfo.put(common.getTable(), common);
+            }
         }
-        return allTableInfo;
+        return Collections.unmodifiableList(new ArrayList<>(allTableQueryInfo.values()));
     }
 
     @Override

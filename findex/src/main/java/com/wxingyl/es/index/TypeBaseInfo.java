@@ -33,11 +33,14 @@ public class TypeBaseInfo extends TableBaseInfo {
         return result;
     }
 
-    public static TypeBaseInfo build(TableBaseInfo oldBaseInfo, IndexTypeDesc type) {
-        if (oldBaseInfo instanceof TypeBaseInfo) return (TypeBaseInfo) oldBaseInfo;
-        TypeBaseInfo baseInfo = new TypeBaseInfo();
-        baseInfo.init(oldBaseInfo);
-        baseInfo.type = type;
-        return baseInfo;
+    public static TypeBaseInfo build(TableBaseInfo orgObj, IndexTypeDesc type) {
+        if (orgObj instanceof TypeBaseInfo) return (TypeBaseInfo) orgObj;
+        TypeBaseInfo ret = new TypeBaseInfo();
+        ret.table = orgObj.getTable();
+        ret.keyField = orgObj.getKeyField();
+        ret.masterAlias = orgObj.getMasterAlias();
+        ret.mergeType = orgObj.getMergeType();
+        ret.type = type;
+        return ret;
     }
 }

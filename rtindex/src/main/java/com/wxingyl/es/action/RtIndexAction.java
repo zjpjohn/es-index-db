@@ -14,9 +14,9 @@ import java.util.Map;
 public interface RtIndexAction {
 
     /**
-     * Note: if return Empty or null, will user {@link IndexTypeBean#getAllTableInfo()}
+     * Note: if return Empty or null, will user {@link IndexTypeBean#getAllTableQueryInfo()}
      * @param instance canal instance name
-     * @return support tables, if return Empty, will user {@link IndexTypeBean#getAllTableInfo()},
+     * @return support tables, if return Empty, will user {@link IndexTypeBean#getAllTableQueryInfo()},
      *          return null, don't support
      */
     List<DbTableDesc> supportTable(String instance);
@@ -24,8 +24,9 @@ public interface RtIndexAction {
     IndexTypeBean supportType(String instance);
 
     /**
+     * the param tableGroupData.value is List<ChangeDataEntry>, it can modify
      * @param instance canal instance name
-     * @param tableGroupData change data, key: schema.table
+     * @param tableGroupData change data, key: schema.table, value: change data
      */
     void dealDataChange(String instance, Map<DbTableDesc, List<ChangeDataEntry>> tableGroupData);
 

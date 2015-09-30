@@ -27,7 +27,7 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
     protected String createCountSql(SqlQueryCommon common) {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT COUNT(1) FROM ").append(schemaTableSql(common.getTable()));
-        if (!CommonUtils.isEmpty(common.getConditions())) {
+        if (common.getConditions() != null) {
             appendWhereCondition(sb, common.getConditions());
         }
         return sb.toString();

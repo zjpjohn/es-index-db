@@ -1,8 +1,8 @@
 package com.wxingyl.es.db.result;
 
 import com.wxingyl.es.conf.ConfigManager;
-import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.index.IndexTypeBean;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.Listener;
 import com.wxingyl.es.util.RwLock;
@@ -15,9 +15,11 @@ import java.util.*;
  * Created by xing on 15/9/9.
  * only handle table key field
  */
-public class FilterNumberFieldValueProcessor extends NumberFieldValueProcessor implements Listener<Set<IndexTypeBean>> {
+public class FilterNumberFieldValueProcessor extends NumberFieldValueProcessor implements Listener<Set<IndexTypeBean>>, Function<Set<String>, Boolean> {
 
     private RwLock<Set<String>> keyFieldSetLock;
+
+    private ThreadLocal<String> local = CommonUtils.createThreadLocal(null);
 
     public FilterNumberFieldValueProcessor(ConfigManager configManager) {
         super();
@@ -31,13 +33,13 @@ public class FilterNumberFieldValueProcessor extends NumberFieldValueProcessor i
     }
 
     @Override
-    public Object handle(final String fieldName, Object value) {
-        if (!keyFieldSetLock.readOp(new Function<Set<String>, Boolean>() {
-            @Override
-            public Boolean apply(Set<String> input) {
-                return input.contains(fieldName);
-            }
-        })) return value;
+    public Object handle(String fieldName, Object value) {
+        local.set(fieldName);
+        try {
+            if (!keyFieldSetLock.readOp(this)) return value;
+        } finally {
+            local.remove();
+        }
         return super.handle(fieldName, value);
     }
 
@@ -45,8 +47,8 @@ public class FilterNumberFieldValueProcessor extends NumberFieldValueProcessor i
     public void onChange(Set<IndexTypeBean> message) {
         final List<String> changedFields = new LinkedList<>();
         for (IndexTypeBean type : message) {
-            for (TableBaseInfo v : type.getAllTableInfo()) {
-                changedFields.add(v.getKeyField());
+            for (SqlQueryCommon v : type.getAllTableQueryInfo()) {
+                changedFields.add(v.getBaseInfo().getKeyField());
             }
         }
         keyFieldSetLock.writeOp(new Function<Set<String>, Void>() {
@@ -57,4 +59,10 @@ public class FilterNumberFieldValueProcessor extends NumberFieldValueProcessor i
             }
         });
     }
+
+    @Override
+    public Boolean apply(Set<String> input) {
+        return input.contains(local.get());
+    }
+
 }

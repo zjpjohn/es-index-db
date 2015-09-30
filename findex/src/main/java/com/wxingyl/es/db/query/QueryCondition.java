@@ -1,7 +1,7 @@
 package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.util.CommonUtils;
-import com.wxingyl.es.util.valtransfer.StrValueTransfer;
+import com.wxingyl.es.util.transfer.StrValueTransfer;
 import org.elasticsearch.common.collect.ImmutableSet;
 import org.elasticsearch.common.collect.Tuple;
 

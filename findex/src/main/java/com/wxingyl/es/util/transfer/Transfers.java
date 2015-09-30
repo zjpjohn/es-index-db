@@ -1,4 +1,4 @@
-package com.wxingyl.es.util.valtransfer;
+package com.wxingyl.es.util.transfer;
 
 import com.wxingyl.es.util.DefaultDateConvert;
 
@@ -10,6 +10,25 @@ import java.util.Date;
  * string value transfer builder
  */
 public abstract class Transfers {
+
+    @SuppressWarnings("unchecked")
+    public static <T> StrValueTransfer<T> getTransfer(Class<T> cls) {
+        if (cls == Integer.class || cls == Integer.TYPE) {
+            return (StrValueTransfer<T>) IntegerStrValueTransfer.INSTANCE;
+        } else if (cls == String.class) {
+            return (StrValueTransfer<T>) StringStrValueTransfer.INSTANCE;
+        } else if (cls == Long.class || cls == Long.TYPE) {
+            return (StrValueTransfer<T>) LongStrValueTransfer.INSTANCE;
+        } else if (cls == Double.class || cls == Double.TYPE) {
+            return (StrValueTransfer<T>) DoubleStrValueTransfer.INSTANCE;
+        } else if (cls == BigDecimal.class) {
+            return (StrValueTransfer<T>) BigDecimalStrValueTransfer.INSTANCE;
+        } else if (cls == Date.class) {
+            return (StrValueTransfer<T>) DateStrValueTransfer.INSTANCE;
+        } else {
+            return null;
+        }
+    }
 
     public static StrValueTransfer<String> stringTransfer() {
         return StringStrValueTransfer.INSTANCE;

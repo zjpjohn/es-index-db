@@ -1,11 +1,12 @@
 package com.wxingyl.es.index.db;
 
+import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.db.query.QueryCondition;
-import com.wxingyl.es.index.IndexSlaveResultMergeEnum;
-import com.wxingyl.es.conf.index.DbTableConfigInfo;
+import com.wxingyl.es.util.CommonUtils;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -15,15 +16,6 @@ import java.util.Set;
  * so we can prepare create common part, no need to create every query
  */
 public class SqlQueryCommon {
-    /**
-     * query table
-     */
-    private DbTableDesc table;
-
-    /**
-     * the field is primary key, its value should be unique in table
-     */
-    private String keyField;
 
     private String commonSql;
 
@@ -33,12 +25,10 @@ public class SqlQueryCommon {
 
     private String orderBy;
 
-    private String masterAlias;
-
-    private TableBaseInfo tableBaseInfo;
-
-    private IndexSlaveResultMergeEnum mergeType;
-
+    private TableBaseInfo baseInfo;
+    /**
+     * unmodifiableSet
+     */
     private Set<QueryCondition> conditions;
 
     public String getOrderBy() {
@@ -58,25 +48,16 @@ public class SqlQueryCommon {
     }
 
     public DbTableDesc getTable() {
-        return table;
+        return baseInfo.getTable();
     }
 
-    public TableBaseInfo getTableBaseInfo() {
-        return tableBaseInfo == null ? tableBaseInfo = TableBaseInfo.build(this) : tableBaseInfo;
+    public TableBaseInfo getBaseInfo() {
+        return baseInfo;
     }
 
-    public String getMasterAlias() {
-        return masterAlias;
-    }
-
-    public IndexSlaveResultMergeEnum getMergeType() {
-        return mergeType;
-    }
-
-    public String getKeyField() {
-        return keyField;
-    }
-
+    /**
+     * @return unmodifiableSet
+     */
     public Set<QueryCondition> getConditions() {
         return conditions;
     }
@@ -87,7 +68,7 @@ public class SqlQueryCommon {
                 "commonSql='" + commonSql + '\'' +
                 ", orderBy='" + orderBy + '\'' +
                 ", pageSize=" + pageSize +
-                ", tableField=" + table +
+                ", table=" + baseInfo.getTable() +
                 '}';
     }
 
@@ -121,7 +102,9 @@ public class SqlQueryCommon {
         }
 
         public Build conditions(Set<QueryCondition> conditions) {
-            this.conditions = conditions;
+            if (!CommonUtils.isEmpty(conditions)) {
+                this.conditions = Collections.unmodifiableSet(conditions);
+            }
             return this;
         }
 
@@ -131,11 +114,8 @@ public class SqlQueryCommon {
             sqlQueryCommon.containWhere = containWhere;
             sqlQueryCommon.orderBy = orderBy;
             sqlQueryCommon.pageSize = tableInfo.getPageSize();
-            sqlQueryCommon.table = tableInfo.getTable();
-            sqlQueryCommon.keyField = tableInfo.getRelationField();
-            sqlQueryCommon.masterAlias = tableInfo.getMasterAlias();
-            sqlQueryCommon.mergeType = tableInfo.getMergeType();
             sqlQueryCommon.conditions = conditions;
+            sqlQueryCommon.baseInfo = TableBaseInfo.build(tableInfo);
             return sqlQueryCommon;
         }
     }

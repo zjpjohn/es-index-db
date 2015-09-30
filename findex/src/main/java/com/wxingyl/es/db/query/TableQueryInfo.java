@@ -2,7 +2,6 @@ package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.index.db.SqlQueryCommon;
-import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.util.BiConsumer;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.elasticsearch.common.collect.ImmutableListMultimap;
@@ -57,12 +56,12 @@ public class TableQueryInfo {
         return queryCommon;
     }
 
-    public void allTableQueryBaseInfo(List<TableBaseInfo> list) {
+    public void allSqlQueryCommon(List<SqlQueryCommon> list) {
         if (list == null) return;
-        list.add(queryCommon.getTableBaseInfo());
+        list.add(queryCommon);
         if (slaveQuery != null) {
             for (TableQueryInfo v : slaveQuery.values()) {
-                v.allTableQueryBaseInfo(list);
+                v.allSqlQueryCommon(list);
             }
         }
     }
@@ -123,7 +122,7 @@ public class TableQueryInfo {
                 ImmutableListMultimap.Builder<String, TableQueryInfo> mapBuilder = ImmutableListMultimap.builder();
                 for (Map.Entry<Builder, String> e : slaveMap.entrySet()) {
                     mapBuilder.put(e.getValue(), e.getKey().build());
-                    masterAlias.add(e.getKey().queryCommon.getMasterAlias());
+                    masterAlias.add(e.getKey().queryCommon.getBaseInfo().getMasterAlias());
                 }
                 obj.slaveQuery = mapBuilder.build();
                 masterAliasVerify.accept(obj, masterAlias);

@@ -1,7 +1,9 @@
 package com.wxingyl.es.action;
 
+import com.wxingyl.es.canal.ChangeDataEntry;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.IndexTypeBean;
+import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.util.CommonUtils;
 
 import java.util.*;
@@ -10,13 +12,15 @@ import java.util.*;
  * Created by xing on 15/9/29.
  * abstract implement class of TypeRtIndexAction
  */
-public abstract class AbstractRtIndexAction implements DeployRtIndexAction {
+public class MultiTypeRtIndexAction implements MultiTypeModifiableRtIndexAction {
 
     /**
      * In an action, a canal instance should only one index/type
      * key: canal instance name, value: index/type entry
      */
     protected Map<String, TypeEntry> actionMap = new HashMap<>();
+
+    protected Map<IndexTypeDesc, Map<DbTableDesc, TableActionEntry>> tableActionEntryMap = new HashMap<>();
 
     @Override
     public List<DbTableDesc> supportTable(String instance) {
@@ -41,6 +45,31 @@ public abstract class AbstractRtIndexAction implements DeployRtIndexAction {
     @Override
     public void registerTableAction(String instance, IndexTypeBean typeBean) {
         addTableAction(instance, typeBean, Collections.<DbTableDesc>emptyList());
+    }
+
+    @Override
+    public void setTableAction(IndexTypeBean typeBean, DbTableDesc table, TableAction action) {
+        Map<DbTableDesc, TableActionEntry> map = tableActionEntryMap.get(typeBean.getType());
+        if (map == null) {
+            tableActionEntryMap.put(typeBean.getType(), map = new HashMap<>());
+        }
+        map.put(table, TableActionEntry.build(typeBean, table, action));
+    }
+
+    @Override
+    public void dealDataChange(String instance, Map<DbTableDesc, List<ChangeDataEntry>> tableGroupData) {
+        IndexTypeDesc typeDesc = actionMap.get(instance).typeBean.getType();
+        Map<DbTableDesc, TableActionEntry> map = tableActionEntryMap.get(typeDesc);
+        if (map == null) {
+            throw new IllegalStateException("type: " + typeDesc + " don't set TableAction object");
+        }
+        for (DbTableDesc table : tableGroupData.keySet()) {
+            TableActionEntry entry = map.get(table);
+            if (entry == null) {
+                throw new IllegalStateException("type: " + typeDesc + ", table: " + table + " don't set TableAction object");
+            }
+            entry.onAction(tableGroupData.get(table));
+        }
     }
 
     private void addTableAction(String instance, IndexTypeBean typeBean, List<DbTableDesc> tables) {
