@@ -97,9 +97,9 @@ public abstract class CommonUtils {
         if (value == null) return null;
         int index;
         if ((index = value.indexOf('.')) > 0) {
-            return new DbTableDesc(value.substring(0, index), value.substring(index + 1));
+            return TableDescCache.getTableDesc(value.substring(0, index), value.substring(index + 1));
         } else {
-            return new DbTableDesc(null, value);
+            return TableDescCache.getTableDesc(null, value);
         }
     }
 
@@ -117,7 +117,7 @@ public abstract class CommonUtils {
             defaultTableName = value.substring(index + 1);
             defaultSchema = value.substring(0, index);
         }
-        return new DbTableFieldDesc(new DbTableDesc(defaultSchema, defaultTableName), field);
+        return new DbTableFieldDesc(TableDescCache.getTableDesc(defaultSchema, defaultTableName), field);
     }
 
     public static Map<Object, List<Map<String, Object>>> groupListMap(List<Map<String, Object>> data,

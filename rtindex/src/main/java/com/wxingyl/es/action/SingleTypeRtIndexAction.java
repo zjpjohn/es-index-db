@@ -64,7 +64,8 @@ public class SingleTypeRtIndexAction implements SingleTypeModifiableRtIndexActio
         for (DbTableDesc table : tableGroupData.keySet()) {
             TableActionEntry entry = tableActionEntryMap.get(table);
             if (entry == null) {
-                throw new IllegalStateException("type: " + type.getType() + ", table: " + table + " don't set TableAction object");
+                throw new IllegalStateException("type: " + type.getType() + ", table: " + table
+                        + " don't set TableAction object");
             }
             entry.onAction(tableGroupData.get(table));
         }

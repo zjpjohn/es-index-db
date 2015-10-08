@@ -11,11 +11,11 @@ import java.util.Set;
  * Created by xing on 15/9/6.
  * should singleton obj
  */
-public class DefaultIndexDocFactory extends AbstractIndexDocFactory {
+public class DefaultIndexDocTransfer extends AbstractIndexDocTransfer {
 
     private DocPostProcessor defaultDocPostProcessor;
 
-    public DefaultIndexDocFactory() {
+    public DefaultIndexDocTransfer() {
         defaultDocPostProcessor = new DefaultDocPostProcessor();
     }
 

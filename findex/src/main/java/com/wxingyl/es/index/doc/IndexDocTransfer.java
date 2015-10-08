@@ -5,9 +5,9 @@ import com.wxingyl.es.index.db.TableQueryResultHandle;
 
 /**
  * Created by xing on 15/9/7.
- * index manager
+ * index document factory, transfer db query result to document
  */
-public interface IndexDocFactory {
+public interface IndexDocTransfer {
 
     /**
      * index type fill document for type

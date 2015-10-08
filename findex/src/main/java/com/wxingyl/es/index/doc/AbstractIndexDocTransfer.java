@@ -19,7 +19,7 @@ import java.util.Objects;
  * Created by xing on 15/9/7.
  * define some register function
  */
-public abstract class AbstractIndexDocFactory implements IndexDocFactory {
+public abstract class AbstractIndexDocTransfer implements IndexDocTransfer {
 
     private Map<IndexTypeDesc, DocPostProcessor> docPostProcessorMap = new HashMap<>();
 

@@ -8,6 +8,7 @@ import com.alibaba.otter.canal.protocol.Message;
 import com.alibaba.otter.canal.protocol.exception.CanalClientException;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.util.TableDescCache;
 import org.elasticsearch.common.collect.Tuple;
 
 import java.net.InetSocketAddress;
@@ -34,8 +35,6 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
     private String destination;
 
     private CanalConnector canalConnector;
-
-    private DbTableCache dbTableCache = new DbTableCache();
 
     private int batchSize = 1000;
     /**
@@ -85,7 +84,6 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
     @Override
     public void disConnect() throws CanalClientException {
         canalConnector.disconnect();
-        dbTableCache.clear();
     }
 
     @Override
@@ -102,7 +100,7 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
                 || !SUPPORT_TYPES.contains(header.getEventType())) {
             return null;
         }
-        DbTableDesc table = dbTableCache.getTableStr(header.getSchemaName(), header.getTableName());
+        DbTableDesc table = TableDescCache.getTableDesc(header.getSchemaName(), header.getTableName());
         CanalEntry.RowChange rowChange = CanalEntry.RowChange.parseFrom(e.getStoreValue());
         if (rowChange.getIsDdl()) return null;
         return Tuple.tuple(table, rowChange.getRowDatasList());
@@ -120,48 +118,4 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
         this.timeout = timeout;
     }
 
-    private class DbTableCache {
-
-        Map<String, Map<String, DbTableDesc>> cacheMap = new HashMap<>();
-
-        int count;
-
-        int max = 1024;
-
-        DbTableDesc getTableStr(String schema, String table) {
-            Map<String, DbTableDesc> map = cacheMap.get(schema);
-            if (map == null) {
-                cacheMap.put(schema, map = new HashMap<>());
-            }
-            DbTableDesc desc = map.get(table);
-            if (desc == null) {
-                if (count > max) {
-                    reduce();
-                }
-                map.put(table, desc = new DbTableDesc(schema, table));
-                count++;
-            }
-            return desc;
-        }
-
-        void clear() {
-            cacheMap.clear();
-            count = 0;
-        }
-
-        void reduce() {
-            Iterator<String> it;
-            int delCount = 0;
-            int min = max >> 1;
-            for (Map<String, DbTableDesc> map : cacheMap.values()) {
-                if (map.isEmpty() || delCount > min) continue;
-                it = map.keySet().iterator();
-                while (it.hasNext()) {
-                    map.remove(it.next());
-                    if (++delCount > min) break;
-                }
-            }
-        }
-
-    }
 }

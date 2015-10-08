@@ -2,6 +2,7 @@ package com.wxingyl.es;
 
 import com.wxingyl.es.conf.DefaultConfigManager;
 import com.wxingyl.es.index.IndexManager;
+import com.wxingyl.es.index.IndexManagerImpl;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
@@ -30,7 +31,7 @@ public abstract class AbstractIndexDbTest {
                 .put("client.transport.nodes_sampler_interval", "20s")
                 .build());
         client.addTransportAddress(new InetSocketTransportAddress("127.0.0.1", 9300));
-        indexManager = new IndexManager(client, new DefaultConfigManager());
+        indexManager = new IndexManagerImpl(client, new DefaultConfigManager());
         System.out.println("~~~~~~~~~ setup end ~~~~~~~~~~~");
     }
 

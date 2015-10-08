@@ -1,6 +1,7 @@
 package com.wxingyl.es.db;
 
 import com.wxingyl.es.util.CommonUtils;
+import com.wxingyl.es.util.TableDescCache;
 
 /**
  * Created by xing on 15/8/27.

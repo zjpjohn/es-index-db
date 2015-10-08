@@ -22,10 +22,16 @@ public class TableActionEntry {
 
     private TableAction action;
 
+    private TableActionEntry() {
+    }
+
     public TableAction getAction() {
         return action;
     }
 
+    /**
+     * unmodifiableMap
+     */
     public Map<String, QueryCondition> getConditionMap() {
         return conditionMap;
     }
@@ -34,7 +40,7 @@ public class TableActionEntry {
         return table;
     }
 
-    //TODO 创建人物，实时索引更新机制通过改变了什么砸门就修改啥的策略
+    //TODO 创建任务，实时索引更新机制通过改变了什么砸门就修改啥的策略
     public void onAction(List<ChangeDataEntry> data) {
 
     }

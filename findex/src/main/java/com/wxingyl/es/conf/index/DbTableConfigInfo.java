@@ -8,6 +8,7 @@ import com.wxingyl.es.exception.IndexConfigException;
 import com.wxingyl.es.index.IndexSlaveResultMergeEnum;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
+import com.wxingyl.es.util.TableDescCache;
 
 import java.util.*;
 
@@ -137,7 +138,7 @@ public class DbTableConfigInfo {
         } else {
             relationField = relationField.toLowerCase();
         }
-        table = new DbTableDesc(schema, tableName);
+        table = TableDescCache.getTableDesc(schema, tableName);
         pageSize = CommonUtils.getOrDefault(intDvp.getDefaultValue(config), INDEX_TABLE_PAGE_SIZE, 2500);
         masterAlias = CommonUtils.getStringVal(config, INDEX_TABLE_MASTER_ALIAS);
         forbidFields = getFields(config, INDEX_TABLE_FORBID_FIELDS);
