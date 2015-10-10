@@ -4,7 +4,6 @@ import com.wxingyl.es.db.DbTableDesc;
 import org.elasticsearch.common.cache.CacheBuilder;
 import org.elasticsearch.common.cache.CacheLoader;
 import org.elasticsearch.common.cache.LoadingCache;
-import org.elasticsearch.common.collect.Maps;
 
 import java.util.HashMap;
 import java.util.Map;

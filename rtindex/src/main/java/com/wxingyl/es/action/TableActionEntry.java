@@ -1,6 +1,7 @@
 package com.wxingyl.es.action;
 
 import com.wxingyl.es.canal.ChangeDataEntry;
+import com.wxingyl.es.command.UpdateRtCommand;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.query.QueryCondition;
 import com.wxingyl.es.index.IndexTypeBean;
@@ -41,8 +42,8 @@ public class TableActionEntry {
     }
 
     //TODO 创建任务，实时索引更新机制通过改变了什么砸门就修改啥的策略
-    public void onAction(List<ChangeDataEntry> data) {
-
+    public List<UpdateRtCommand> onAction(List<ChangeDataEntry> data) {
+        return null;
     }
 
     public static TableActionEntry build(IndexTypeBean type, DbTableDesc table, TableAction action) {
