@@ -286,7 +286,7 @@ public class IndexManagerImpl implements IndexManager {
             while (docItr.hasNext()) {
                 PageDocument document = docItr.next();
                 num += CommonUtils.getOrDefault(bulkIndexGeneratorMap, document.getBaseInfo().getType(),
-                        defaultBulkIndexGenerator) .bulkInsert(client, document);
+                        defaultBulkIndexGenerator).bulkInsert(client, document);
             }
             return num;
         } finally {

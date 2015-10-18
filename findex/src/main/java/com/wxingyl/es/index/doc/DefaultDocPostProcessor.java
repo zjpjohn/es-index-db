@@ -5,6 +5,7 @@ import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.db.result.TableQueryResult;
 import com.wxingyl.es.util.CommonUtils;
+import com.wxingyl.es.util.EsUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
             Object valObj = mergeType.function(slaveGroup.get(obj));
             if (valObj != null) {
                 if (mergeType == IndexSlaveResultMergeEnum.MERGE) {
-                    CommonUtils.mergeSlaveResult(keyAlias, doc, (Map) valObj);
+                    EsUtils.mergeSlaveResult(keyAlias, doc, (Map) valObj);
                 } else {
                     doc.put(keyAlias, valObj);
                 }
@@ -56,7 +57,7 @@ public class DefaultDocPostProcessor extends AbstractDocPostProcessor {
                 Object obj = mergeType.function(group.get(val));
                 if (obj == null) continue;
                 if (mergeType == IndexSlaveResultMergeEnum.MERGE) {
-                    CommonUtils.mergeSlaveResult(masterAlias, doc, (DocFields) obj);
+                    EsUtils.mergeSlaveResult(masterAlias, doc, (DocFields) obj);
                 } else {
                     doc.put(masterAlias, obj);
                 }

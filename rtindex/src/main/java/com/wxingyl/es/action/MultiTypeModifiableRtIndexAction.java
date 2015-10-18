@@ -2,6 +2,7 @@ package com.wxingyl.es.action;
 
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.IndexTypeBean;
+import com.wxingyl.es.index.IndexTypeDesc;
 
 import java.util.List;
 
@@ -11,9 +12,9 @@ import java.util.List;
  */
 public interface MultiTypeModifiableRtIndexAction extends RtIndexAction {
 
-    void registerTableAction(String instance, IndexTypeBean typeBean, List<DbTableDesc> tables);
+    void registerTable(String instance, IndexTypeBean typeBean, List<DbTableDesc> tables);
 
-    void registerTableAction(String instance, IndexTypeBean typeBean);
+    void registerTable(String instance, IndexTypeBean typeBean);
 
-    void setTableAction(IndexTypeBean typeBean, DbTableDesc table, TableAction action);
+    void setTableAction(IndexTypeDesc type, DbTableDesc table, TableAction action);
 }

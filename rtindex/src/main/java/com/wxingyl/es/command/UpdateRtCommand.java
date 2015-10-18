@@ -1,23 +1,26 @@
 package com.wxingyl.es.command;
 
 import com.wxingyl.es.index.doc.DocFields;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
  * Created by xing on 15/10/8.
- * real-time index update/insert/delete command
+ * update RtCommand
  */
-public interface UpdateRtCommand {
+public interface UpdateRtCommand extends RtCommand {
 
-    void addField(String fieldName, String orgVal, String newVal);
+    void addChangeField(String fieldName, Object orgVal, Object newVal);
 
     SearchResponse query(int pageSize);
 
-    List<DocFields> replaceChange();
+    List<DocFields> replaceChange(SearchResponse queryResponse);
 
-    void updateDoc(List<DocFields> docs);
+    BulkResponse updateDoc(List<DocFields> docs) throws IOException;
 
     boolean needContinue();
 

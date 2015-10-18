@@ -2,7 +2,6 @@ package com.wxingyl.es.util;
 
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.DbTableFieldDesc;
-import com.wxingyl.es.index.doc.DocFields;
 import org.elasticsearch.common.base.Supplier;
 
 import java.util.*;
@@ -35,10 +34,6 @@ public abstract class CommonUtils {
 
     public static boolean isEmpty(Map map) {
         return map == null || map.isEmpty();
-    }
-
-    public static String tableToString(DbTableDesc table) {
-        return table.getSchema() + '.' + table.getTable();
     }
 
     /**
@@ -137,26 +132,6 @@ public abstract class CommonUtils {
 
     public static String getStringVal(Map<String, Object> map, String key) {
         return emptyTrim((String) map.get(key));
-    }
-
-    public static void mergeSlaveResult(String prefixConflict, DocFields masterField, Map<String, Object> slaveField) {
-        for(String key : slaveField.keySet()) {
-            if (masterField.containsKey(key)) {
-                masterField.put(prefixConflict + key, slaveField.get(key));
-            } else {
-                masterField.put(key, slaveField.get(key));
-            }
-        }
-    }
-
-    public static void mergeSlaveResult(String prefixConflict, DocFields masterField, DocFields slaveField) {
-        for(String key : slaveField.keySet()) {
-            if (masterField.containsKey(key)) {
-                masterField.put(prefixConflict + key, slaveField.get(key));
-            } else {
-                masterField.put(key, slaveField.get(key));
-            }
-        }
     }
 
     public static <T> RwLock<T> createRwLock(Supplier<T> supplier) {

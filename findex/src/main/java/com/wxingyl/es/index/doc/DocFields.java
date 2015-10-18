@@ -17,6 +17,10 @@ public class DocFields {
 
     private ThreadLocal<DateConvert> dateConvertLocal = new ThreadLocal<>();
 
+    public DocFields(Map<String, Object> source) {
+        sourceMap = source;
+    }
+
     public DocFields(int initialCapacity) {
         sourceMap = new HashMap<>(initialCapacity);
     }
@@ -46,10 +50,10 @@ public class DocFields {
     }
 
     public XContentBuilder buildXContent(DateConvert dateConvert) throws IOException {
-        dateConvertLocal.set(dateConvert);
+        if (dateConvert != null) dateConvertLocal.set(dateConvert);
         XContentBuilder xContentBuilder = XContentFactory.jsonBuilder();
         fillXContentBuilder(xContentBuilder, sourceMap);
-        dateConvertLocal.remove();
+        if (dateConvert != null) dateConvertLocal.remove();
         return xContentBuilder;
     }
 
@@ -83,7 +87,7 @@ public class DocFields {
             fillXContentBuilder(builder, ((DocFields)val).sourceMap);
         } else if (val instanceof Map) {
             fillXContentBuilder(builder, (Map) val);
-        } else if (val instanceof Date) {
+        } else if (val instanceof Date && dateConvertLocal.get() != null) {
             builder.value(dateConvertLocal.get().format((Date) val));
         } else {
             builder.value(val);

@@ -9,7 +9,7 @@ import java.util.*;
 
 /**
  * Created by xing on 15/9/29.
- * SingleTypeDeployRtIndexAction abstract implement
+ * SingleTypeDeployRtIndexAction, this action only have one index/type, but it may have more than one canal instances
  */
 public class SingleTypeRtIndexAction implements SingleTypeModifiableRtIndexAction {
 
@@ -18,32 +18,32 @@ public class SingleTypeRtIndexAction implements SingleTypeModifiableRtIndexActio
     /**
      * key: canal instance, value: support tables
      */
-    protected Map<String, List<DbTableDesc>> tableActionMap = new HashMap<>();
+    protected Map<String, List<DbTableDesc>> canalTableMap = new HashMap<>();
 
-    protected Map<DbTableDesc, TableActionEntry> tableActionEntryMap = new HashMap<>();
+    protected Map<DbTableDesc, TableAction> tableActionMap = new HashMap<>();
 
     public SingleTypeRtIndexAction(IndexTypeBean type) {
         this.type = type;
     }
 
     @Override
-    public void registerTableAction(String instance, List<DbTableDesc> tables) {
+    public void registerTable(String instance, List<DbTableDesc> tables) {
         if (CommonUtils.isEmpty(tables)) throw new IllegalArgumentException("tables can not empty");
-        List<DbTableDesc> list = tableActionMap.get(instance);
+        List<DbTableDesc> list = canalTableMap.get(instance);
         if (list == null) {
-            tableActionMap.put(instance, list = new ArrayList<>());
+            canalTableMap.put(instance, list = new ArrayList<>());
         }
         list.addAll(tables);
     }
 
     @Override
-    public void registerTableAction(String instance) {
-        tableActionMap.put(instance, Collections.<DbTableDesc>emptyList());
+    public void registerTable(String instance) {
+        canalTableMap.put(instance, Collections.<DbTableDesc>emptyList());
     }
 
     @Override
     public List<DbTableDesc> supportTable(String instance) {
-        List<DbTableDesc> list = tableActionMap.get(instance);
+        List<DbTableDesc> list = canalTableMap.get(instance);
         if (list == null) return null;
         else if (list.isEmpty()) return list;
         else return Collections.unmodifiableList(list);
@@ -56,18 +56,18 @@ public class SingleTypeRtIndexAction implements SingleTypeModifiableRtIndexActio
 
     @Override
     public void setTableAction(DbTableDesc table, TableAction action) {
-        tableActionEntryMap.put(table, TableActionEntry.build(type, table, action));
+        tableActionMap.put(table, action);
     }
 
     @Override
     public void dealDataChange(String instance, Map<DbTableDesc, List<ChangeDataEntry>> tableGroupData) {
         for (DbTableDesc table : tableGroupData.keySet()) {
-            TableActionEntry entry = tableActionEntryMap.get(table);
-            if (entry == null) {
+            TableAction action = tableActionMap.get(table);
+            if (action == null) {
                 throw new IllegalStateException("type: " + type.getType() + ", table: " + table
                         + " don't set TableAction object");
             }
-            entry.onAction(tableGroupData.get(table));
+            action.createCommand(type.getType(), tableGroupData.get(table));
         }
     }
 }

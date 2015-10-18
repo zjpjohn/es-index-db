@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutorService;
  * canal instance executor
  * can not run multi-threads
  */
-public class CanalInstanceExecuteImpl implements CanalInstanceExecute {
+public class DefaultCanalInstanceExecute implements CanalInstanceExecute {
 
     private CanalConnectorAdapter canalConnector;
 
@@ -46,7 +46,7 @@ public class CanalInstanceExecuteImpl implements CanalInstanceExecute {
         }
     });
 
-    public CanalInstanceExecuteImpl(CanalConnectorAdapter canalConnector, IndexManager indexManager) {
+    public DefaultCanalInstanceExecute(CanalConnectorAdapter canalConnector, IndexManager indexManager) {
         this.canalConnector = canalConnector;
         this.configManager = (RtIndexConfigManager) indexManager.getConfigManager();
         this.indexManager = indexManager;
@@ -150,6 +150,7 @@ public class CanalInstanceExecuteImpl implements CanalInstanceExecute {
     public void onChange(IndexTypeEvent message) {
         final IndexTypeDesc type = message.getType();
         final IndexTypeEventTypeEnum eventType = message.getEventType();
+        //we only care INDEX.START_CREATE and INDEX.END_CREATE
         if (eventType != IndexTypeEventTypeEnum.START_CREATE && eventType != IndexTypeEventTypeEnum.END_CREATE) return;
         typeActionInfoLock.readOp(new Function<Set<TypeRtIndexActionInfo>, Void>() {
             @Override
@@ -257,6 +258,9 @@ public class CanalInstanceExecuteImpl implements CanalInstanceExecute {
 
         List<Callable<Void>> callableList = new ArrayList<>();
 
+        /**
+         * if change field is not exist our document field, we no need to handle this change
+         */
         private void initActionData(TypeRtIndexActionInfo actionInfo) {
             for (ChangeDataEntry e : dataList) {
                 DbTableDesc table = e.getTable();

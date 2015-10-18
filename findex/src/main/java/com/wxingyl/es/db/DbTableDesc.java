@@ -47,6 +47,6 @@ public class DbTableDesc {
 
     @Override
     public String toString() {
-        return '[' + CommonUtils.tableToString(this) + ']';
+        return '[' + schema + '.' + table + ']';
     }
 }

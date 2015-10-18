@@ -10,12 +10,12 @@ import java.util.List;
  */
 public interface SingleTypeModifiableRtIndexAction extends RtIndexAction {
 
-    void registerTableAction(String instance, List<DbTableDesc> tables);
+    void registerTable(String instance, List<DbTableDesc> tables);
 
     /**
      * register all table of this type for instance
      */
-    void registerTableAction(String instance);
+    void registerTable(String instance);
 
     void setTableAction(DbTableDesc table, TableAction action);
 }
