@@ -5,12 +5,10 @@ import com.wxingyl.es.canal.ChangeDataEntry;
 import com.wxingyl.es.command.RtCommand;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.query.QueryCondition;
-import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.util.CommonUtils;
-import com.wxingyl.es.util.transfer.StrValTransfers;
-import com.wxingyl.es.util.transfer.StrValueTransfer;
+import com.wxingyl.es.util.transfer.StrValConverts;
+import com.wxingyl.es.util.transfer.StrValueConvert;
 
 import java.util.*;
 
@@ -20,40 +18,22 @@ import java.util.*;
  */
 public abstract class AbstractTableAction implements TableAction {
 
-    private DbTableDesc table;
+    protected final DbTableDesc table;
 
-    protected Map<IndexTypeDesc, Set<QueryCondition>> typeQueryCondition;
+    protected Map<IndexTypeDesc, IndexTypeInfo.TableInfo> typeInfoMap = new HashMap<>();
 
     protected final TableColumnIndex tableColumnIndex = new TableColumnIndex();
 
-    protected Map<QueryCondition, StrValueTransfer> valueTransferMap;
+    protected Map<String, StrValueConvert> valueConvertMap;
 
-    public AbstractTableAction(DbTableDesc table) {
+    public AbstractTableAction(DbTableDesc table, Map<String, StrValueConvert> valueConvertMap) {
         this.table = table;
-    }
-
-    /**
-     * get value Transfer map
-     */
-    protected abstract Map<QueryCondition, StrValueTransfer> initValueTransferMap();
-
-    public void addQueryCondition(IndexTypeBean type) {
-        SqlQueryCommon common = type.getTableQueryInfo(table);
-        Objects.requireNonNull(common);
-        if (common.getConditions() != null) {
-            addQueryCondition(type.getType(), common.getConditions());
-        }
+        this.valueConvertMap = new HashMap<>(valueConvertMap);
     }
 
     @Override
-    public void addQueryCondition(IndexTypeDesc type, Set<QueryCondition> conditions) {
-        if (CommonUtils.isEmpty(conditions)) return;
-        if (typeQueryCondition == null) typeQueryCondition = new HashMap<>();
-        typeQueryCondition.put(type, conditions);
-    }
-
-    public DbTableDesc getTable() {
-        return table;
+    public void addIndexType(IndexTypeInfo typeInfo) {
+        typeInfoMap.put(typeInfo.getTableInfo(table).getType(), typeInfo.getTableInfo(table));
     }
 
     /**
@@ -61,46 +41,30 @@ public abstract class AbstractTableAction implements TableAction {
      * @param list db data
      * @return index doc need return true, not need return false
      */
-    protected boolean commonConditionVerify(IndexTypeDesc type, List<CanalEntry.Column> list) {
-        if (typeQueryCondition == null || typeQueryCondition.get(type) == null) return true;
+    private boolean commonConditionVerify(IndexTypeDesc type, List<CanalEntry.Column> list) {
+        if (CommonUtils.isEmpty(typeInfoMap.get(type).getQueryCondition())) return true;
         if (tableColumnIndex.columnNum() != list.size()) {
             synchronized (tableColumnIndex) {
                 if (tableColumnIndex.columnNum() != list.size()) {
                     tableColumnIndex.reload(list);
-                    if (valueTransferMap == null) {
-                        valueTransferMap = initValueTransferMap();
-                    }
                 }
             }
         }
-        for (QueryCondition qc : typeQueryCondition.get(type)) {
+        for (QueryCondition qc : typeInfoMap.get(type).getQueryCondition()) {
             if (!qc.verifyValue(list.get(tableColumnIndex.getIndex(qc.getField())).getValue(),
-                    valueTransferMap.get(qc) == null ? StrValTransfers.stringTransfer() : valueTransferMap.get(qc))) {
+                    valueConvertMap.get(qc.getField()) == null ? StrValConverts.stringConvert()
+                            : valueConvertMap.get(qc.getField()))) {
                 return false;
             }
         }
         return true;
     }
 
-    protected void deleteCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet) {
+    protected abstract void deleteCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet);
 
-    }
+    protected abstract void insertCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet);
 
-    protected void insertCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet) {
-
-    }
-
-    protected void updateCommand(IndexTypeDesc type, CanalEntry.RowData rowData, List<RtCommand> appendRet) {
-        final int count = rowData.getAfterColumnsCount();
-        List<UpdateRowEntry> changeRows = new LinkedList<>();
-        for (int i = 0; i < count; i++) {
-            CanalEntry.Column column = rowData.getAfterColumns(i);
-            if (column.getUpdated()) {
-                changeRows.add(new UpdateRowEntry(column.getName(), column.getValue(), rowData.getBeforeColumns(i).getValue()));
-            }
-        }
-
-    }
+    protected abstract void updateCommand(IndexTypeDesc type, CanalEntry.RowData rowData, List<RtCommand> appendRet);
 
     @Override
     public List<RtCommand> createCommand(IndexTypeDesc type, List<ChangeDataEntry> data) {
@@ -135,33 +99,6 @@ public abstract class AbstractTableAction implements TableAction {
             }
         }
         return ret;
-    }
-
-    protected class UpdateRowEntry {
-
-        private String column;
-
-        private String beforeVal;
-
-        private String afterVal;
-
-        public UpdateRowEntry(String column, String afterVal, String beforeVal) {
-            this.afterVal = afterVal;
-            this.beforeVal = beforeVal;
-            this.column = column;
-        }
-
-        public String getAfterVal() {
-            return afterVal;
-        }
-
-        public String getBeforeVal() {
-            return beforeVal;
-        }
-
-        public String getColumn() {
-            return column;
-        }
     }
 
 }

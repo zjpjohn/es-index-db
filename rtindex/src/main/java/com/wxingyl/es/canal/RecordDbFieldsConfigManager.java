@@ -5,6 +5,7 @@ import com.wxingyl.es.conf.index.DbTableConfigInfo;
 import com.wxingyl.es.conf.index.TypeConfigInfo;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.query.SqlQueryHandle;
+import com.wxingyl.es.exception.UnknownIndexTypeException;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.util.CommonUtils;
 
@@ -55,11 +56,21 @@ public class RecordDbFieldsConfigManager extends DefaultConfigManager implements
      * @return fields list is unmodifiable, If all column is effect, return {@link Collections#emptyList()}
      *
      */
+    @Override
     public List<String> getTableFields(IndexTypeDesc type, DbTableDesc table) {
         if (typeTableFieldMap.containsKey(type)) {
             return typeTableFieldMap.get(type).get(table);
         } else {
             return null;
+        }
+    }
+
+    @Override
+    public void addTableFields(IndexTypeDesc type, DbTableDesc table, List<String> fields) {
+        if (typeTableFieldMap.containsKey(type)) {
+            addTableFieldList(type, table, fields);
+        } else {
+            throw new UnknownIndexTypeException(type);
         }
     }
 }

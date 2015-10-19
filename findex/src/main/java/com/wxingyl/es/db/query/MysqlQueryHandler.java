@@ -138,8 +138,12 @@ public class MysqlQueryHandler extends AbstractSqlQueryHandler {
             param.getQueryCondition().appendQuerySql(sb, queryStatementStructure);
         }
         sb.append(' ').append(prepareSql.getOrderBy());
-        appendPageSql(sb, Tuple.tuple(param.getPage() * prepareSql.getPageSize(), prepareSql.getPageSize()));
-        return TableQueryResult.build().dbData(getQueryRunner().query(sb.toString(), param.getRsh())).build(prepareSql);
+        if (param.getPage() >= 0) {
+            appendPageSql(sb, Tuple.tuple(param.getPage() * prepareSql.getPageSize(), prepareSql.getPageSize()));
+        }
+        return TableQueryResult.build()
+                .dbData(getQueryRunner().query(sb.toString(), param.getRsh()))
+                .build(prepareSql);
     }
 
 }

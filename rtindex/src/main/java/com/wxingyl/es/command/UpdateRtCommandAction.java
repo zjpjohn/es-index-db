@@ -9,9 +9,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 
@@ -32,17 +30,15 @@ public class UpdateRtCommandAction implements UpdateRtCommand {
 
     private SearchRequestBuilder searchRequestBuilder;
 
-    private Map<String, Object> orgValChangeMap = new HashMap<>();
+    private Map<String, ChangedFieldEntry> changeFieldMap = new HashMap<>();
 
-    private Map<String, Object> newValChangeMap = new HashMap<>();
-
-    private Map<String, String[]> fieldSplitChangeMap = new HashMap<>();
+    private int changeEntryQueryCount;
 
     private boolean needContinue = true;
 
-    private QueryBuilder commonQueryCondition;
+    private List<QueryBuilder> commonQueryCondition;
 
-    private FilterBuilder commonFilterCondition;
+    private List<FilterBuilder> commonFilterCondition;
 
     public UpdateRtCommandAction(Client client, IndexTypeDesc type, String idField) {
         this.client = client;
@@ -51,42 +47,50 @@ public class UpdateRtCommandAction implements UpdateRtCommand {
     }
 
     @Override
-    public void addChangeField(String fieldName, Object orgVal, Object newVal) {
-        if (Objects.equals(orgVal, newVal)) return;
-        String[] fieldSplit = CommonUtils.split(fieldName, '.');
-        if (fieldSplit.length > 1) {
-            fieldSplitChangeMap.put(fieldName, fieldSplit);
+    public void addChangeField(ChangedFieldEntry entry) {
+        if (entry == null) return;
+        if (changeFieldMap.put(entry.getDocFieldName(), entry) == null && !entry.isOnlyReplaceVal()) {
+            changeEntryQueryCount++;
         }
-        orgValChangeMap.put(fieldName, orgVal);
-        newValChangeMap.put(fieldName, newVal);
     }
 
     protected SearchRequestBuilder createSearchRequestBuilder() {
         searchRequestBuilder = client.prepareSearch(type.getIndex())
                 .setTypes(type.getType());
         if (commonQueryCondition != null) {
-            searchRequestBuilder.setQuery(commonQueryCondition);
-        }
-        String[] keys = orgValChangeMap.keySet().toArray(new String[orgValChangeMap.size()]);
-        FilterBuilder filterBuilder;
-        if (keys.length == 1) {
-            filterBuilder = builderFilter(keys[0], orgValChangeMap.get(keys[0]));
-        } else {
-            FilterBuilder[] filters = new FilterBuilder[orgValChangeMap.size()];
-            for (int i = 0; i < keys.length; i++) {
-                filters[i] = builderFilter(keys[i], orgValChangeMap.get(keys[i]));
+            if (commonQueryCondition.size() == 1) {
+                searchRequestBuilder.setQuery(commonQueryCondition.get(0));
+            } else {
+                BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+                for (QueryBuilder qb : commonQueryCondition) {
+                    boolQueryBuilder.must(qb);
+                }
+                searchRequestBuilder.setQuery(boolQueryBuilder);
             }
-            filterBuilder = FilterBuilders.orFilter(filters);
         }
-        searchRequestBuilder.setPostFilter(commonFilterCondition == null ? filterBuilder
-                : FilterBuilders.andFilter(commonFilterCondition, filterBuilder));
+        FilterBuilder[] filters = new FilterBuilder[changeEntryQueryCount];
+        int index = 0;
+        for (ChangedFieldEntry entry : changeFieldMap.values()) {
+            if (entry.isOnlyReplaceVal()) continue;
+            filters[index++] = builderFilter(entry.getDocFieldName(), entry.getBeforeValue());
+        }
+        FilterBuilder filterBuilder = changeEntryQueryCount == 1 ? filters[0] : FilterBuilders.orFilter(filters);
+        if (commonFilterCondition == null) {
+            searchRequestBuilder.setPostFilter(filterBuilder);
+        } else {
+            AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter(filterBuilder);
+            for (FilterBuilder fb : commonFilterCondition) {
+                andFilterBuilder.add(fb);
+            }
+            searchRequestBuilder.setPostFilter(andFilterBuilder);
+        }
         return searchRequestBuilder;
     }
 
 
     @Override
     public SearchResponse query(int pageSize) {
-        if (orgValChangeMap.isEmpty()) return null;
+        if (isInvalid()) return null;
         if (searchRequestBuilder == null) {
             createSearchRequestBuilder();
         }
@@ -107,19 +111,19 @@ public class UpdateRtCommandAction implements UpdateRtCommand {
         List<Map<String, Object>> child = new LinkedList<>();
         for (SearchHit e : searchHits) {
             Map<String, Object> map = e.getSource();
-            for (String fieldName : orgValChangeMap.keySet()) {
-                if (fieldSplitChangeMap.containsKey(fieldName)) {
-                    String[] filedArray = fieldSplitChangeMap.get(fieldName);
-                    EsUtils.findChildSource(map, filedArray, child);
+            for (String fieldName : changeFieldMap.keySet()) {
+                ChangedFieldEntry entry = changeFieldMap.get(fieldName);
+                if (entry.getFieldSplit() != null) {
+                    EsUtils.findChildSource(map, entry.getFieldSplit(), child);
                     if (child.isEmpty()) {
                         continue;
                     }
                     for (Map<String, Object> m : child) {
-                        replaceDoc(m, filedArray[filedArray.length - 1], fieldName);
+                        replaceDoc(m, entry);
                     }
                     child.clear();
                 } else {
-                    replaceDoc(map, fieldName, fieldName);
+                    replaceDoc(map, entry);
                 }
             }
             DocFields docFields = new DocFields(map);
@@ -128,15 +132,14 @@ public class UpdateRtCommandAction implements UpdateRtCommand {
         return retDocs;
     }
 
-    private void replaceDoc(Map<String, Object> doc, String docFieldName, String fieldName) {
-        Object orgVal = orgValChangeMap.get(fieldName);
-        Object docOrgVal = doc.get(docFieldName);
-        if (!Objects.equals(orgVal, docOrgVal)) return;
-        Object newVal = newValChangeMap.get(fieldName);
-        if (newVal == null) {
+    private void replaceDoc(Map<String, Object> doc, ChangedFieldEntry entry) {
+        String docFieldName = entry.getFieldSplit() == null ? entry.getDocFieldName() :
+                entry.getFieldSplit()[entry.getFieldSplit().length - 1];
+        if (!Objects.equals(entry.getBeforeValue(), doc.get(docFieldName))) return;
+        if (entry.getAfterValue() == null) {
             doc.remove(docFieldName);
         } else {
-            doc.put(docFieldName, newVal);
+            doc.put(docFieldName, entry.getAfterValue());
         }
     }
 
@@ -157,8 +160,23 @@ public class UpdateRtCommandAction implements UpdateRtCommand {
     }
 
     @Override
-    public void preQueryDocCondition(QueryBuilder queryBuilder, FilterBuilder filterBuilder) {
-        commonQueryCondition = queryBuilder;
-        commonFilterCondition = filterBuilder;
+    public void addPreQuery(QueryBuilder queryBuilder) {
+        if (queryBuilder == null) return;
+        commonQueryCondition = new LinkedList<>();
+        commonQueryCondition.add(queryBuilder);
     }
+
+    @Override
+    public void addPreFilter(FilterBuilder filterBuilder) {
+        if (filterBuilder == null) return;
+        commonFilterCondition = new LinkedList<>();
+        commonFilterCondition.add(filterBuilder);
+    }
+
+    @Override
+    public boolean isInvalid() {
+        return changeFieldMap.isEmpty() || (changeEntryQueryCount == 0
+                && commonQueryCondition == null && commonFilterCondition == null);
+    }
+
 }

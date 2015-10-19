@@ -36,8 +36,6 @@ public class VersionIndex implements Comparable<VersionIndex> {
         this.settings = settings;
     }
 
-
-
     public void setSettings(Settings settings) {
         this.settings = settings;
     }

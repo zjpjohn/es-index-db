@@ -33,6 +33,10 @@ public class VersionIndexTypeBean implements IndexTypeBean {
         return versionIndex;
     }
 
+    public IndexTypeDesc getSrcType() {
+        return indexTypeBean.getType();
+    }
+
     @Override
     public IndexTypeDesc getType() {
         return aliasType;

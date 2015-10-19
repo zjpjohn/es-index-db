@@ -1,7 +1,7 @@
 package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.util.CommonUtils;
-import com.wxingyl.es.util.transfer.StrValueTransfer;
+import com.wxingyl.es.util.transfer.StrValueConvert;
 import org.elasticsearch.common.collect.ImmutableSet;
 import org.elasticsearch.common.collect.Tuple;
 
@@ -37,7 +37,7 @@ public abstract class QueryCondition<T> {
         return value;
     }
 
-    public abstract <E> boolean verifyValue(String inValue, StrValueTransfer<E> transfer);
+    public abstract <E> boolean verifyValue(String inValue, StrValueConvert<E> transfer);
 
     @Override
     public boolean equals(Object o) {
@@ -101,17 +101,17 @@ public abstract class QueryCondition<T> {
         }
 
         @Override
-        public <E> boolean verifyValue(String inValue, StrValueTransfer<E> transfer) {
+        public <E> boolean verifyValue(String inValue, StrValueConvert<E> convert) {
             SqlQueryOperator op = getOp();
             if (op == SqlQueryOperator.EQ) {
                 return value.equals(inValue);
             } else if (op == SqlQueryOperator.NE) {
                 return !value.equals(inValue);
             }
-            E val = transfer.apply(value), inVal = transfer.apply(inValue);
+            E val = convert.convert(value), inVal = convert.convert(inValue);
             Objects.requireNonNull(val);
             Objects.requireNonNull(inVal);
-            int comp = transfer.compare(inVal, val);
+            int comp = convert.compare(inVal, val);
             if (op == SqlQueryOperator.GT) {
                 return comp > 0;
             } else if (op == SqlQueryOperator.GE) {
@@ -138,13 +138,13 @@ public abstract class QueryCondition<T> {
         }
 
         @Override
-        public <E> boolean verifyValue(String inValue, StrValueTransfer<E> transfer) {
-            E left = transfer.apply(value.v1()), right = transfer.apply(value.v2());
+        public <E> boolean verifyValue(String inValue, StrValueConvert<E> convert) {
+            E left = convert.convert(value.v1()), right = convert.convert(value.v2());
             Objects.requireNonNull(left);
             Objects.requireNonNull(right);
-            E inVal = transfer.apply(inValue);
+            E inVal = convert.convert(inValue);
             Objects.requireNonNull(inVal);
-            return transfer.compare(inVal, left) >= 0 && transfer.compare(inVal, right) <= 0;
+            return convert.compare(inVal, left) >= 0 && convert.compare(inVal, right) <= 0;
         }
 
         @Override
@@ -161,7 +161,7 @@ public abstract class QueryCondition<T> {
         }
 
         @Override
-        public <E> boolean verifyValue(String inValue, StrValueTransfer<E> transfer) {
+        public <E> boolean verifyValue(String inValue, StrValueConvert<E> convert) {
             boolean ret = value.contains(inValue);
             return getOp() == SqlQueryOperator.IN ? ret : !ret;
         }

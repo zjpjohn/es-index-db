@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface UpdateRtCommand extends RtCommand {
 
-    void addChangeField(String fieldName, Object orgVal, Object newVal);
+    void addChangeField(ChangedFieldEntry entry);
 
     SearchResponse query(int pageSize);
 

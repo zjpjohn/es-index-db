@@ -229,9 +229,8 @@ public class DefaultCanalInstanceExecute implements CanalInstanceExecute {
         void putTableField(List<DbTableDesc> supportTables) {
             for (DbTableDesc t : supportTables) {
                 List<String> fields = configManager.getTableFields(type, t);
-                if (fields != null) {
-                    tableFieldMap.put(t, fields);
-                }
+                Objects.requireNonNull(fields);
+                tableFieldMap.put(t, fields);
             }
         }
 

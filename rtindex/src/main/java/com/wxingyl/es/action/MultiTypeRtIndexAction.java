@@ -10,8 +10,8 @@ import java.util.*;
 
 /**
  * Created by xing on 15/9/29.
- * MultiTypeRtIndexAction, In this Action, a canal instance only one index/type,
- * if canal instance need more than one index/type, you should create other RtIndexAction object
+ * MultiTypeRtIndexAction, In this Action, a canal instance only one index/type, but a type can have more than one
+ * canal instance, if a canal instance need more than one index/type, you should create other RtIndexAction object
  */
 public class MultiTypeRtIndexAction implements MultiTypeModifiableRtIndexAction {
 
@@ -75,7 +75,7 @@ public class MultiTypeRtIndexAction implements MultiTypeModifiableRtIndexAction 
 
     private void addTableAction(String instance, IndexTypeBean typeBean, List<DbTableDesc> tables) {
         TypeEntry entry = canalTypeMap.get(instance);
-        if (!(entry == null || entry.typeBean.getType().equals(typeBean.getType()))) {
+        if (entry != null && !entry.typeBean.getType().equals(typeBean.getType())) {
             throw new IllegalArgumentException("tables can not empty");
         }
         if (entry == null) {

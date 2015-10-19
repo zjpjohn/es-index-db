@@ -5,4 +5,5 @@ package com.wxingyl.es.command;
  * Delete Command
  */
 public interface DeleteRtCommand extends RtCommand {
+
 }

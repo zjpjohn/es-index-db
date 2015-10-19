@@ -16,4 +16,6 @@ public interface RtIndexConfigManager extends ConfigManager {
      * @return fields list is unmodifiable
      */
     List<String> getTableFields(IndexTypeDesc type, DbTableDesc table);
+
+    void addTableFields(IndexTypeDesc type, DbTableDesc table, List<String> fields);
 }

@@ -11,6 +11,10 @@ public interface RtCommand {
     /**
      * query which doc to modify
      */
-    void preQueryDocCondition(QueryBuilder queryBuilder, FilterBuilder filterBuilder);
+    void addPreQuery(QueryBuilder queryBuilder);
+
+    void addPreFilter(FilterBuilder filterBuilder);
+
+    boolean isInvalid();
 
 }
