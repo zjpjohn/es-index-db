@@ -32,8 +32,19 @@ public abstract class AbstractTableAction implements TableAction {
     }
 
     @Override
-    public void addIndexType(IndexTypeInfo typeInfo) {
-        typeInfoMap.put(typeInfo.getTableInfo(table).getType(), typeInfo.getTableInfo(table));
+    public void addIndexType(IndexTypeInfo.TableInfo tableInfo) {
+        tableInfo.getTypeActionAdapt().initTableAction(this);
+        typeInfoMap.put(tableInfo.getType(), tableInfo);
+    }
+
+    @Override
+    public TableColumnIndex tableColumnIndex() {
+        return tableColumnIndex;
+    }
+
+    @Override
+    public IndexTypeInfo.TableInfo getTableAction(IndexTypeDesc type) {
+        return typeInfoMap.get(type);
     }
 
     /**

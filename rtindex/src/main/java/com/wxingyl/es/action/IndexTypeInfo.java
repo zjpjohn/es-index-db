@@ -1,7 +1,5 @@
 package com.wxingyl.es.action;
 
-import com.wxingyl.es.command.ChangedFieldEntry;
-import com.wxingyl.es.command.UpdateRtCommand;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.query.QueryCondition;
 import com.wxingyl.es.index.IndexTypeBean;
@@ -32,29 +30,46 @@ public class IndexTypeInfo {
         this.type = type;
     }
 
-    public TableInfo getTableInfo(DbTableDesc table) {
-        TableInfo ret = tableInfoMap.get(table);
-        if (ret == null) {
-            tableInfoMap.put(table, ret = initTableInfo(table));
-        }
-        return ret;
+    public void addTableInfo(TableInfo tableInfo) {
+        tableInfoMap.put(tableInfo.getTable(), tableInfo);
     }
 
-    protected TableInfo initTableInfo(DbTableDesc table) {
-        TableInfo ret = new TableInfo();
-        ret.keyField = type.getTableQueryInfo(table).getBaseInfo().getKeyField();
-        ret.queryCondition = type.getTableQueryInfo(table).getConditions();
-        return ret;
+    public TableInfo addTableInfo(DbTableDesc table, Map<String, String> dbDocFieldMap) {
+        TableInfo info = new TableInfo(table, dbDocFieldMap);
+        tableInfoMap.put(table, info);
+        return info;
+    }
+
+    public TableInfo addTableInfo(DbTableDesc table, TypeTableActionAdapt typeActionAdapt) {
+        TableInfo info = new TableInfo(table, typeActionAdapt);
+        tableInfoMap.put(table, info);
+        return info;
+    }
+
+    public TableInfo getTableInfo(DbTableDesc table) {
+        return tableInfoMap.get(table);
     }
 
     public class TableInfo {
+
+        private DbTableDesc table;
 
         private String keyField;
 
         private Set<QueryCondition> queryCondition;
 
-        //TODO need implement, docField and dbField
-        private Map<String, String> docFieldMap = new HashMap<>();
+        private TypeTableActionAdapt typeActionAdapt;
+
+        public TableInfo(DbTableDesc table, Map<String, String> dbDocFieldMap) {
+            this(table, new DefaultTypeTableActionAdapter(type.getType(), dbDocFieldMap));
+        }
+
+        public TableInfo(DbTableDesc table, TypeTableActionAdapt typeActionAdapt) {
+            this.table = table;
+            keyField = type.getTableQueryInfo(table).getBaseInfo().getKeyField();
+            queryCondition = type.getTableQueryInfo(table).getConditions();
+            this.typeActionAdapt = typeActionAdapt;
+        }
 
         public String getKeyField() {
             return keyField;
@@ -76,13 +91,12 @@ public class IndexTypeInfo {
             return type.getType();
         }
 
-        public String getDocField(String dbField) {
-            return docFieldMap.get(dbField);
+        public TypeTableActionAdapt getTypeActionAdapt() {
+            return typeActionAdapt;
         }
 
-        public void addChangedFieldEntry(String dbField, String beforeVal, String afterValue, UpdateRtCommand rtCommand) {
-            //TODO ChangedFieldEntry.setIsQueryCondition()
-            rtCommand.addChangeField(new ChangedFieldEntry(docFieldMap.get(dbField), beforeVal, afterValue));
+        public DbTableDesc getTable() {
+            return table;
         }
     }
 
