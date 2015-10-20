@@ -15,6 +15,10 @@ public interface RtCommand {
 
     void addPreFilter(FilterBuilder filterBuilder);
 
+    /**
+     * check command is valid, have data config?
+     * @return true is invalid, this command useless run, false is valid, this command have data change
+     */
     boolean isInvalid();
 
 }

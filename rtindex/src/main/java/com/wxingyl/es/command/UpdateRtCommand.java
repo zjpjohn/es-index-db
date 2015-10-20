@@ -2,7 +2,6 @@ package com.wxingyl.es.command;
 
 import com.wxingyl.es.index.doc.DocFields;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 
 import java.io.IOException;

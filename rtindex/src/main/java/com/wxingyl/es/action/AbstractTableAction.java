@@ -32,7 +32,7 @@ public abstract class AbstractTableAction implements TableAction {
     }
 
     @Override
-    public void addIndexType(IndexTypeInfo.TableInfo tableInfo) {
+    public void addTypeTableInfo(IndexTypeInfo.TableInfo tableInfo) {
         tableInfo.getTypeActionAdapt().initTableAction(this);
         typeInfoMap.put(tableInfo.getType(), tableInfo);
     }

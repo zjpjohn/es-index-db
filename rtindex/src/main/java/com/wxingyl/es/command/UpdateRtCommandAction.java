@@ -1,5 +1,6 @@
 package com.wxingyl.es.command;
 
+import com.wxingyl.es.action.IndexTypeInfo;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.index.doc.DocFields;
 import com.wxingyl.es.util.CommonUtils;
@@ -8,7 +9,6 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -20,30 +20,18 @@ import java.util.*;
  * Created by xing on 15/10/10.
  * update real time command action
  */
-public class UpdateRtCommandAction implements UpdateRtCommand {
-
-    private Client client;
-
-    private IndexTypeDesc type;
-
-    private String idField;
+public class UpdateRtCommandAction extends AbstractRtCommand implements UpdateRtCommand {
 
     private SearchRequestBuilder searchRequestBuilder;
 
-    private Map<String, ChangedFieldEntry> changeFieldMap = new HashMap<>();
+    private final Map<String, ChangedFieldEntry> changeFieldMap = new HashMap<>();
 
     private int changeEntryQueryCount;
 
     private boolean needContinue = true;
 
-    private List<QueryBuilder> commonQueryCondition;
-
-    private List<FilterBuilder> commonFilterCondition;
-
-    public UpdateRtCommandAction(Client client, IndexTypeDesc type, String idField) {
-        this.client = client;
-        this.type = type;
-        this.idField = idField;
+    public UpdateRtCommandAction(IndexTypeInfo.TableInfo tableInfo) {
+        super(tableInfo);
     }
 
     @Override
@@ -55,8 +43,9 @@ public class UpdateRtCommandAction implements UpdateRtCommand {
     }
 
     protected SearchRequestBuilder createSearchRequestBuilder() {
-        searchRequestBuilder = client.prepareSearch(type.getIndex())
-                .setTypes(type.getType());
+        searchRequestBuilder = tableInfo.getClient().prepareSearch(tableInfo.getType().getIndex())
+                .setTypes(tableInfo.getType().getType());
+        List<QueryBuilder> commonQueryCondition = getCommonQueryCondition();
         if (commonQueryCondition != null) {
             if (commonQueryCondition.size() == 1) {
                 searchRequestBuilder.setQuery(commonQueryCondition.get(0));
@@ -75,11 +64,11 @@ public class UpdateRtCommandAction implements UpdateRtCommand {
             filters[index++] = builderFilter(entry.getDocFieldName(), entry.getBeforeValue());
         }
         FilterBuilder filterBuilder = changeEntryQueryCount == 1 ? filters[0] : FilterBuilders.orFilter(filters);
-        if (commonFilterCondition == null) {
+        if (getCommonFilterCondition() == null) {
             searchRequestBuilder.setPostFilter(filterBuilder);
         } else {
             AndFilterBuilder andFilterBuilder = FilterBuilders.andFilter(filterBuilder);
-            for (FilterBuilder fb : commonFilterCondition) {
+            for (FilterBuilder fb : getCommonFilterCondition()) {
                 andFilterBuilder.add(fb);
             }
             searchRequestBuilder.setPostFilter(andFilterBuilder);
@@ -146,9 +135,10 @@ public class UpdateRtCommandAction implements UpdateRtCommand {
     @Override
     public BulkResponse updateDoc(List<DocFields> docs) throws IOException {
         if (CommonUtils.isEmpty(docs)) return null;
-        BulkRequestBuilder bulkRequestBuilder = client.prepareBulk();
+        BulkRequestBuilder bulkRequestBuilder = tableInfo.getClient().prepareBulk();
+        IndexTypeDesc typeDesc = tableInfo.getType();
         for (DocFields f : docs) {
-            bulkRequestBuilder.add(client.prepareUpdate(type.getIndex(), type.getType(), idField)
+            bulkRequestBuilder.add(tableInfo.getClient().prepareUpdate(typeDesc.getIndex(), typeDesc.getType(), tableInfo.getIdField())
                     .setDoc(f.buildXContent(null)));
         }
         return bulkRequestBuilder.execute().actionGet();
@@ -160,23 +150,9 @@ public class UpdateRtCommandAction implements UpdateRtCommand {
     }
 
     @Override
-    public void addPreQuery(QueryBuilder queryBuilder) {
-        if (queryBuilder == null) return;
-        commonQueryCondition = new LinkedList<>();
-        commonQueryCondition.add(queryBuilder);
-    }
-
-    @Override
-    public void addPreFilter(FilterBuilder filterBuilder) {
-        if (filterBuilder == null) return;
-        commonFilterCondition = new LinkedList<>();
-        commonFilterCondition.add(filterBuilder);
-    }
-
-    @Override
     public boolean isInvalid() {
         return changeFieldMap.isEmpty() || (changeEntryQueryCount == 0
-                && commonQueryCondition == null && commonFilterCondition == null);
+                && super.isInvalid());
     }
 
 }

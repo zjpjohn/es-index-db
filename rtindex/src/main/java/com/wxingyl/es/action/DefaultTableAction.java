@@ -42,7 +42,7 @@ public class DefaultTableAction extends AbstractTableAction {
             insertCommand(type, rowData.getAfterColumnsList(), appendRet);
             return;
         }
-        RtCommand command = tableInfo.getTypeActionAdapt().createUpdateRtCommand(rowData);
+        UpdateRtCommand command = tableInfo.getTypeActionAdapt().createUpdateRtCommand(rowData);
         if (command != null) appendRet.add(command);
     }
 }

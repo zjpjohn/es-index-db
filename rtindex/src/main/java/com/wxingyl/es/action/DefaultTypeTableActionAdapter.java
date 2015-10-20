@@ -27,7 +27,7 @@ public class DefaultTypeTableActionAdapter extends AbstractTypeTableActionAdapte
     @Override
     public UpdateRtCommand createUpdateRtCommand(CanalEntry.RowData rowData) {
         final int count = rowData.getAfterColumnsCount();
-        UpdateRtCommand rtCommand = new UpdateRtCommandAction(tableInfo.getClient(), type, tableInfo.getIdField());
+        UpdateRtCommand rtCommand = new UpdateRtCommandAction(tableInfo);
         for (int i = 0; i < count; i++) {
             CanalEntry.Column afterColumn = rowData.getAfterColumns(i);
             if (afterColumn.getUpdated()) {

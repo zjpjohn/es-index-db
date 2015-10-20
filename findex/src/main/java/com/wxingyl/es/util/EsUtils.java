@@ -56,6 +56,7 @@ public abstract class EsUtils {
         findChildSource(sourceMap, fields, 0, child);
     }
 
+    @SuppressWarnings("unchecked")
     public static void findChildSource(Map<String, Object> sourceMap, String[] fields, int startIndex, List<Map<String, Object>> child) {
         final int length = fields.length - 1;
         for (int i = startIndex; i < length; i++) {

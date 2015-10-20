@@ -15,7 +15,7 @@ public interface TableAction {
 
     List<RtCommand> createCommand(IndexTypeDesc type, List<ChangeDataEntry> data);
 
-    void addIndexType(IndexTypeInfo.TableInfo tableInfo);
+    void addTypeTableInfo(IndexTypeInfo.TableInfo tableInfo);
 
     TableColumnIndex tableColumnIndex();
 
