@@ -1,0 +1,51 @@
+package com.wxingyl.es.command.insert;
+
+import com.wxingyl.es.action.IndexTypeInfo;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by xing on 15/10/21.
+ * BatchMasterInsertRtCommand Action
+ */
+public class BatchMasterInsertRtCommandAction extends AbstractMasterInsertRtCommand implements BatchMasterInsertRtCommand {
+
+    private List<Map<String, Object>> rowsData = new LinkedList<>();
+
+    public BatchMasterInsertRtCommandAction(IndexTypeInfo.TableInfo tableInfo) {
+        super(tableInfo);
+    }
+
+    @Override
+    protected List<Map<String, Object>> getTableResultData() {
+        return rowsData;
+    }
+
+    @Override
+    public boolean isInvalid() {
+        return rowsData.isEmpty();
+    }
+
+    @Override
+    public void mergeInsertRtCommand(SingleMasterInsertRtCommand rtCommand) {
+        rowsData.add(rtCommand.getTableRow());
+    }
+
+    @Override
+    public void mergeInsertRtCommand(BatchMasterInsertRtCommandAction rtCommand) {
+        rowsData.addAll(rtCommand.getRowsData());
+    }
+
+    @Override
+    public boolean mergeAccept(MasterInsertRtCommand rtCommand) {
+        return tableInfo.equals(rtCommand.getTableInfo());
+    }
+
+    @Override
+    public List<Map<String, Object>> getRowsData() {
+        return rowsData;
+    }
+
+}

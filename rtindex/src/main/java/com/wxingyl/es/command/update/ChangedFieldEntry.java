@@ -1,4 +1,4 @@
-package com.wxingyl.es.command;
+package com.wxingyl.es.command.update;
 
 import com.wxingyl.es.util.CommonUtils;
 

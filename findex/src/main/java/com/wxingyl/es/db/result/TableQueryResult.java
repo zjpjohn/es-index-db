@@ -38,9 +38,9 @@ public class TableQueryResult {
         return baseInfo;
     }
 
-    public TableQueryResult addPageResult(TableQueryResult slaveRet) {
-        if (!(slaveRet == null || this == slaveRet || slaveRet.isEmpty())) {
-            dbData.addAll(slaveRet.dbData);
+    public TableQueryResult addPageResult(TableQueryResult pageRet) {
+        if (!(pageRet == null || this == pageRet || pageRet.isEmpty())) {
+            dbData.addAll(pageRet.dbData);
         }
         return this;
     }

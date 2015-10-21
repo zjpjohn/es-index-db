@@ -1,26 +1,30 @@
 package com.wxingyl.es.action;
 
-import com.wxingyl.es.index.IndexTypeDesc;
+import com.alibaba.otter.canal.protocol.CanalEntry;
+import com.wxingyl.es.command.delete.DeleteRtCommand;
+
+import java.util.List;
 
 /**
  * Created by xing on 15/10/20.
  * abstract implement
  */
-public abstract class AbstractTypeTableActionAdapter implements TypeTableActionAdapt {
+public abstract class AbstractTypeTableActionAdapter implements TypeTableActionAdapter {
 
-    protected IndexTypeInfo.TableInfo tableInfo;
+    protected final IndexTypeInfo.TableInfo tableInfo;
 
-    protected TableColumnIndex tableColumnIndex;
-
-    protected final IndexTypeDesc type;
-
-    public AbstractTypeTableActionAdapter(IndexTypeDesc type) {
-        this.type = type;
+    public AbstractTypeTableActionAdapter(IndexTypeInfo.TableInfo tableInfo) {
+        this.tableInfo = tableInfo;
+        tableInfo.setActionAdapter(this);
     }
 
+
+    //TODO other delete need implement
     @Override
-    public void initTableAction(TableAction action) {
-        this.tableColumnIndex = action.tableColumnIndex();
-        this.tableInfo = action.getTableAction(type);
+    public DeleteRtCommand createDeleteRtCommand(List<CanalEntry.Column> list) {
+        if (tableInfo.isMasterTable()) {
+
+        }
+        return null;
     }
 }

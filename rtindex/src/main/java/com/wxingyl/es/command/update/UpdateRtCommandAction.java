@@ -1,6 +1,7 @@
-package com.wxingyl.es.command;
+package com.wxingyl.es.command.update;
 
 import com.wxingyl.es.action.IndexTypeInfo;
+import com.wxingyl.es.command.AbstractRtCommand;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.index.doc.DocFields;
 import com.wxingyl.es.util.CommonUtils;
@@ -43,7 +44,7 @@ public class UpdateRtCommandAction extends AbstractRtCommand implements UpdateRt
     }
 
     protected SearchRequestBuilder createSearchRequestBuilder() {
-        searchRequestBuilder = tableInfo.getClient().prepareSearch(tableInfo.getType().getIndex())
+        searchRequestBuilder = getClient().prepareSearch(tableInfo.getType().getIndex())
                 .setTypes(tableInfo.getType().getType());
         List<QueryBuilder> commonQueryCondition = getCommonQueryCondition();
         if (commonQueryCondition != null) {
@@ -135,10 +136,11 @@ public class UpdateRtCommandAction extends AbstractRtCommand implements UpdateRt
     @Override
     public BulkResponse updateDoc(List<DocFields> docs) throws IOException {
         if (CommonUtils.isEmpty(docs)) return null;
-        BulkRequestBuilder bulkRequestBuilder = tableInfo.getClient().prepareBulk();
+        BulkRequestBuilder bulkRequestBuilder = getClient().prepareBulk();
         IndexTypeDesc typeDesc = tableInfo.getType();
         for (DocFields f : docs) {
-            bulkRequestBuilder.add(tableInfo.getClient().prepareUpdate(typeDesc.getIndex(), typeDesc.getType(), tableInfo.getIdField())
+            bulkRequestBuilder.add(getClient().prepareUpdate(typeDesc.getIndex(), typeDesc.getType(),
+                    f.get(tableInfo.getIdField()).toString())
                     .setDoc(f.buildXContent(null)));
         }
         return bulkRequestBuilder.execute().actionGet();

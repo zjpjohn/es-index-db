@@ -1,6 +1,8 @@
 package com.wxingyl.es.index.doc;
 
+import com.wxingyl.es.db.result.TableQueryResult;
 import com.wxingyl.es.index.IndexTypeBean;
+import com.wxingyl.es.index.db.DbQueryDependResult;
 import com.wxingyl.es.index.db.TableQueryResultHandle;
 
 /**
@@ -17,6 +19,8 @@ public interface IndexDocTransfer {
      * @return create document iterator
      */
     PageDocumentIterator indexDocCreate(IndexTypeBean typeBean, int startPage, int endPage);
+
+    PageDocument indexDocCreate(IndexTypeBean typeBean, TableQueryResult queryResult);
 
     void registerDocPostProcessor(DocPostProcessor docPostProcessor);
 

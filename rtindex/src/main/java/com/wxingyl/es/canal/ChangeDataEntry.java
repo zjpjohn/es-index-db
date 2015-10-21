@@ -2,7 +2,10 @@ package com.wxingyl.es.canal;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.util.CommonUtils;
+import com.wxingyl.es.util.EsUtils;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -15,12 +18,19 @@ public class ChangeDataEntry {
 
     private CanalEntry.EventType eventType;
 
-    private List<CanalEntry.RowData> rowData;
+    private List<CanalEntry.RowData> rowData = new LinkedList<>();
 
-    public ChangeDataEntry(DbTableDesc table, CanalEntry.EventType eventType, List<CanalEntry.RowData> rowData) {
+    public ChangeDataEntry(DbTableDesc table, CanalEntry.EventType eventType) {
         this.eventType = eventType;
         this.table = table;
+    }
+
+    public void setRowData(List<CanalEntry.RowData> rowData) {
         this.rowData = rowData;
+    }
+
+    public void addRowData(List<CanalEntry.RowData> rowData) {
+        this.rowData.addAll(rowData);
     }
 
     public CanalEntry.EventType getEventType() {

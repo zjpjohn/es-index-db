@@ -123,6 +123,11 @@ public class IndexManagerImpl implements IndexManager {
     }
 
     @Override
+    public Client getClient() {
+        return client;
+    }
+
+    @Override
     public ConfigManager getConfigManager() {
         return configManager;
     }

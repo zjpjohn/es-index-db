@@ -28,23 +28,36 @@ public abstract class AbstractTableAction implements TableAction {
 
     public AbstractTableAction(DbTableDesc table, Map<String, StrValueConvert> valueConvertMap) {
         this.table = table;
-        this.valueConvertMap = new HashMap<>(valueConvertMap);
+        this.valueConvertMap = Collections.unmodifiableMap(new HashMap<>(valueConvertMap));
     }
 
     @Override
     public void addTypeTableInfo(IndexTypeInfo.TableInfo tableInfo) {
-        tableInfo.getTypeActionAdapt().initTableAction(this);
         typeInfoMap.put(tableInfo.getType(), tableInfo);
     }
 
     @Override
-    public TableColumnIndex tableColumnIndex() {
-        return tableColumnIndex;
+    public DbTableDesc getTable() {
+        return table;
     }
 
     @Override
-    public IndexTypeInfo.TableInfo getTableAction(IndexTypeDesc type) {
-        return typeInfoMap.get(type);
+    public Integer getColumnIndex(String column) {
+        return tableColumnIndex.getIndex(column);
+    }
+
+    @Override
+    public Map<String, Object> canalRowTransfer(List<CanalEntry.Column> list) {
+        Map<String, Object> ret = new HashMap<>();
+        for (CanalEntry.Column c : list) {
+            String name = c.getName();
+            if (valueConvertMap.get(name) == null) {
+                ret.put(name, c.getValue());
+            } else {
+                ret.put(name, valueConvertMap.get(name).convert(c.getValue()));
+            }
+        }
+        return ret;
     }
 
     /**

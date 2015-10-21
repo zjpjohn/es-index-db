@@ -1,13 +1,13 @@
 package com.wxingyl.es.action;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
-import com.wxingyl.es.command.RtCommand;
-import com.wxingyl.es.command.UpdateRtCommand;
-import com.wxingyl.es.command.UpdateRtCommandAction;
+import com.wxingyl.es.command.*;
+import com.wxingyl.es.command.delete.DeleteRtCommand;
+import com.wxingyl.es.command.insert.InsertRtCommand;
+import com.wxingyl.es.command.update.UpdateRtCommand;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.util.transfer.StrValueConvert;
-import org.elasticsearch.index.query.QueryBuilders;
 
 import java.util.List;
 import java.util.Map;
@@ -24,12 +24,14 @@ public class DefaultTableAction extends AbstractTableAction {
 
     @Override
     protected void deleteCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet) {
-        //TODO delete command
+        DeleteRtCommand command = typeInfoMap.get(type).getActionAdapter().createDeleteRtCommand(list);
+        if (isInvalid(command)) appendRet.add(command);
     }
 
     @Override
     protected void insertCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet) {
-        //TODO insert command
+        InsertRtCommand command = typeInfoMap.get(type).getActionAdapter().createInsertRtCommand(list);
+        if (isInvalid(command)) appendRet.add(command);
     }
 
     @Override
@@ -42,7 +44,11 @@ public class DefaultTableAction extends AbstractTableAction {
             insertCommand(type, rowData.getAfterColumnsList(), appendRet);
             return;
         }
-        UpdateRtCommand command = tableInfo.getTypeActionAdapt().createUpdateRtCommand(rowData);
-        if (command != null) appendRet.add(command);
+        UpdateRtCommand command = tableInfo.getActionAdapter().createUpdateRtCommand(rowData);
+        if (isInvalid(command)) appendRet.add(command);
+    }
+
+    private boolean isInvalid(RtCommand command) {
+        return command == null || command.isInvalid();
     }
 }

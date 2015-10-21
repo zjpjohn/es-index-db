@@ -2,7 +2,7 @@ package com.wxingyl.es.index.db;
 
 import com.wxingyl.es.db.query.QueryCondition;
 import com.wxingyl.es.db.query.SqlQueryOperator;
-import com.wxingyl.es.db.query.TableQueryInfo;
+import com.wxingyl.es.db.query.TableQueryBean;
 import com.wxingyl.es.util.CommonUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
@@ -24,11 +24,11 @@ public class SqlQueryParam {
 
     private ResultSetHandler<List<Map<String, Object>>> rsh;
 
-    public SqlQueryParam(TableQueryInfo tableQuery, int startPage) {
+    public SqlQueryParam(TableQueryBean tableQuery, int startPage) {
         this(tableQuery, startPage, null);
     }
 
-    public SqlQueryParam(TableQueryInfo tableQuery, int startPage, Collection list) {
+    public SqlQueryParam(TableQueryBean tableQuery, int startPage, Collection list) {
         queryCommon = tableQuery.getQueryCommon();
         rsh = tableQuery.getRsh();
         this.page = startPage;

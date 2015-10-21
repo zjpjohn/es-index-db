@@ -1,7 +1,7 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
-import com.wxingyl.es.db.query.TableQueryInfo;
+import com.wxingyl.es.db.query.TableQueryBean;
 import com.wxingyl.es.db.*;
 import com.wxingyl.es.db.query.SqlQueryHandle;
 import com.wxingyl.es.index.db.SqlQueryCommon;
@@ -19,7 +19,7 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
 
     private IndexTypeDesc type;
 
-    private TableQueryInfo masterTable;
+    private TableQueryBean masterTable;
 
     private Map<DbTableDesc, SqlQueryCommon> allTableQueryInfo;
 
@@ -31,12 +31,13 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
     }
 
     @Override
-    public TableQueryInfo getMasterTable() {
+    public TableQueryBean getMasterTable() {
         return masterTable;
     }
 
     @Override
     public SqlQueryCommon getTableQueryInfo(DbTableDesc table) {
+        if (allTableQueryInfo == null) initAllTableQueryInfo();
         return allTableQueryInfo.get(table);
     }
 
@@ -46,14 +47,18 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
     @Override
     public List<SqlQueryCommon> getAllTableQueryInfo() {
         if (allTableQueryInfo == null) {
-            List<SqlQueryCommon> list = new ArrayList<>();
-            masterTable.allSqlQueryCommon(list);
-            allTableQueryInfo = new HashMap<>();
-            for (SqlQueryCommon common : list) {
-                allTableQueryInfo.put(common.getTable(), common);
-            }
+            initAllTableQueryInfo();
         }
         return Collections.unmodifiableList(new ArrayList<>(allTableQueryInfo.values()));
+    }
+
+    private void initAllTableQueryInfo() {
+        List<SqlQueryCommon> list = new ArrayList<>();
+        masterTable.allSqlQueryCommon(list);
+        allTableQueryInfo = new HashMap<>();
+        for (SqlQueryCommon common : list) {
+            allTableQueryInfo.put(common.getTable(), common);
+        }
     }
 
     @Override
@@ -90,7 +95,7 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
 
         private IndexTypeDesc type;
 
-        private Map<DbTableDesc, Tuple<TableQueryInfo.Builder, DbTableFieldDesc>> tableMap = new HashMap<>();
+        private Map<DbTableDesc, Tuple<TableQueryBean.Builder, DbTableFieldDesc>> tableMap = new HashMap<>();
 
         private int priority;
 
@@ -106,7 +111,7 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
 
         public Builder addTableQuery(SqlQueryHandle queryHandler, DbTableConfigInfo tableInfo,
                                      ResultSetHandler<List<Map<String, Object>>> rsh) {
-            TableQueryInfo.Builder queryBuilder = TableQueryInfo.build();
+            TableQueryBean.Builder queryBuilder = TableQueryBean.build();
             queryBuilder.queryHandler(queryHandler)
                     .queryCommon(queryHandler.createPrepareSqlQuery(tableInfo))
                     .rsh(rsh);
@@ -115,14 +120,14 @@ public class DefaultIndexTypeBean implements IndexTypeBean {
         }
 
         public IndexTypeBean build(DbTableDesc masterTable,
-                                   BiConsumer<TableQueryInfo, List<String>> masterAliasVerify) {
+                                   BiConsumer<TableQueryBean, List<String>> masterAliasVerify) {
             DefaultIndexTypeBean bean = new DefaultIndexTypeBean();
             bean.type = type;
-            for (Tuple<TableQueryInfo.Builder, DbTableFieldDesc> v : tableMap.values()) {
+            for (Tuple<TableQueryBean.Builder, DbTableFieldDesc> v : tableMap.values()) {
                 v.v1().masterAliasVerify(masterAliasVerify);
                 DbTableFieldDesc field = v.v2();
                 if (field == null) continue;
-                TableQueryInfo.Builder builder = tableMap.get(field.getTableDesc()).v1();
+                TableQueryBean.Builder builder = tableMap.get(field.getTableDesc()).v1();
                 builder.addSlave(v.v1(), field.getField());
             }
             bean.masterTable = tableMap.get(masterTable).v1().build();

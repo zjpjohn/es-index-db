@@ -2,9 +2,10 @@ package com.wxingyl.es.action;
 
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.query.QueryCondition;
+import com.wxingyl.es.index.IndexManager;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
-import org.elasticsearch.client.Client;
+import com.wxingyl.es.index.db.SqlQueryCommon;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,33 +17,23 @@ import java.util.Set;
  */
 public class IndexTypeInfo {
 
-    private IndexTypeBean type;
+    private IndexTypeBean typeBean;
 
-    private Client client;
+    private IndexManager indexManager;
 
     private String idField;
 
     private Map<DbTableDesc, TableInfo> tableInfoMap = new HashMap<>();
 
-    public IndexTypeInfo(Client client, String idField, IndexTypeBean type) {
-        this.client = client;
+    public IndexTypeInfo(IndexManager indexManager, String idField, IndexTypeBean typeBean) {
+        this.indexManager = indexManager;
         this.idField = idField;
-        this.type = type;
+        this.typeBean = typeBean;
     }
 
-    public void addTableInfo(TableInfo tableInfo) {
-        tableInfoMap.put(tableInfo.getTable(), tableInfo);
-    }
-
-    public TableInfo addTableInfo(DbTableDesc table, Map<String, String> dbDocFieldMap) {
-        TableInfo info = new TableInfo(table, dbDocFieldMap);
-        tableInfoMap.put(table, info);
-        return info;
-    }
-
-    public TableInfo addTableInfo(DbTableDesc table, TypeTableActionAdapt typeActionAdapt) {
-        TableInfo info = new TableInfo(table, typeActionAdapt);
-        tableInfoMap.put(table, info);
+    public TableInfo addTableInfo(TableAction tableAction) {
+        TableInfo info = new TableInfo(tableAction);
+        tableInfoMap.put(tableAction.getTable(), info);
         return info;
     }
 
@@ -52,23 +43,21 @@ public class IndexTypeInfo {
 
     public class TableInfo {
 
-        private DbTableDesc table;
-
+        //cache variable
         private String keyField;
 
-        private Set<QueryCondition> queryCondition;
+        private TableAction tableAction;
 
-        private TypeTableActionAdapt typeActionAdapt;
+        private TypeTableActionAdapter actionAdapter;
 
-        public TableInfo(DbTableDesc table, Map<String, String> dbDocFieldMap) {
-            this(table, new DefaultTypeTableActionAdapter(type.getType(), dbDocFieldMap));
-        }
+        private final boolean isMasterTable;
 
-        public TableInfo(DbTableDesc table, TypeTableActionAdapt typeActionAdapt) {
-            this.table = table;
-            keyField = type.getTableQueryInfo(table).getBaseInfo().getKeyField();
-            queryCondition = type.getTableQueryInfo(table).getConditions();
-            this.typeActionAdapt = typeActionAdapt;
+        public TableInfo(TableAction tableAction) {
+            DbTableDesc table = tableAction.getTable();
+            keyField = typeBean.getTableQueryInfo(table).getBaseInfo().getKeyField();
+            this.tableAction = tableAction;
+            tableAction.addTypeTableInfo(this);
+            isMasterTable = table.equals(typeBean.getMasterTable().getQueryCommon().getBaseInfo().getTable());
         }
 
         public String getKeyField() {
@@ -76,27 +65,59 @@ public class IndexTypeInfo {
         }
 
         public Set<QueryCondition> getQueryCondition() {
-            return queryCondition;
+            return typeBean.getTableQueryInfo(tableAction.getTable()).getConditions();
         }
 
-        public Client getClient() {
-            return client;
+        public IndexManager getIndexManager() {
+            return indexManager;
         }
 
         public String getIdField() {
             return idField;
         }
 
+        public IndexTypeBean getTypeBean() {
+            return typeBean;
+        }
+
         public IndexTypeDesc getType() {
-            return type.getType();
+            return typeBean.getType();
         }
 
-        public TypeTableActionAdapt getTypeActionAdapt() {
-            return typeActionAdapt;
+        public TableAction getTableAction() {
+            return tableAction;
         }
 
-        public DbTableDesc getTable() {
-            return table;
+        public SqlQueryCommon getSqlQueryInfo() {
+            return typeBean.getTableQueryInfo(tableAction.getTable());
+        }
+
+        void setActionAdapter(TypeTableActionAdapter actionAdapter) {
+            this.actionAdapter = actionAdapter;
+        }
+
+        public TypeTableActionAdapter getActionAdapter() {
+            return actionAdapter;
+        }
+
+        public boolean isMasterTable() {
+            return isMasterTable;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof TableInfo)) return false;
+
+            TableInfo tableInfo = (TableInfo) o;
+
+            return (tableAction == tableInfo.tableAction || tableAction.getTable().equals(tableInfo.tableAction.getTable()))
+                    && (typeBean == tableInfo.getTypeBean() || typeBean.getType().equals(tableInfo.getType()));
+        }
+
+        @Override
+        public int hashCode() {
+            return keyField != null ? keyField.hashCode() : 0;
         }
     }
 

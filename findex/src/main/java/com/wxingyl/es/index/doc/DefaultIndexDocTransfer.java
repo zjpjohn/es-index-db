@@ -4,7 +4,12 @@ import com.wxingyl.es.db.result.TableQueryResult;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.index.db.DbQueryDependResult;
+import com.wxingyl.es.index.db.KeyFieldBatchDependQuery;
+import com.wxingyl.es.index.db.TableDependQuery;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -24,24 +29,78 @@ public class DefaultIndexDocTransfer extends AbstractIndexDocTransfer {
         return new DefaultItr(typeBean, startPage, endPage);
     }
 
-    class DefaultItr extends Itr {
-
-        DefaultItr(IndexTypeBean typeBean, int startPage, int endPage) {
-            super(typeBean, startPage, endPage);
-            if (docPostProcessor == null) {
-                docPostProcessor = defaultDocPostProcessor;
-            }
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("remove");
-        }
+    @Override
+    public PageDocument indexDocCreate(IndexTypeBean typeBean, TableQueryResult queryResult) {
+        KeyFieldBatchDependQuery dependQuery = new KeyFieldBatchDependQuery(typeBean.getMasterTable()
+                .getTableQueryBean(queryResult.getBaseInfo().getTable()));
+        return transferDoc(typeBean.getType(), dependQuery.query(queryResult), getDocPostProcessor(typeBean.getType()));
     }
 
     @Override
     public void registerDocPostProcessor(DocPostProcessor docPostProcessor) {
         super.registerDocPostProcessor(new DocPostProcessorWrapper(docPostProcessor));
+    }
+
+    @Override
+    protected DocPostProcessor getDocPostProcessor(IndexTypeDesc type) {
+        DocPostProcessor processor = super.getDocPostProcessor(type);
+        return processor == null ? defaultDocPostProcessor : processor;
+    }
+
+    private PageDocument transferDoc(IndexTypeDesc type, DbQueryDependResult dependResult, DocPostProcessor docPostProcessor) {
+        notifyTableQueryResultHandler(type, dependResult.getAllTableResult());
+
+        PageDocument pageDocument = docPostProcessor.postProcessor(dependResult);
+
+        if (pageDocument == null) {
+            if (dependResult.getSlaveResult() == null) {
+                pageDocument = docPostProcessor.initMasterPageDoc(dependResult.getTableQueryResult());
+            } else {
+                pageDocument = document(null, dependResult, docPostProcessor);
+            }
+        }
+        return pageDocument;
+    }
+
+    private PageDocument document(PageDocument pageDocument, DbQueryDependResult queryResult, DocPostProcessor docPostProcessor) {
+        for (Map.Entry<String, DbQueryDependResult> e : queryResult.getSlaveResult().entries()) {
+            DbQueryDependResult result = e.getValue();
+            if (pageDocument == null) {
+                pageDocument = docPostProcessor.initMasterPageDoc(queryResult.getTableQueryResult());
+            }
+            Objects.requireNonNull(pageDocument);
+            String masterField = e.getKey();
+            if (result.getSlaveResult() == null) {
+                pageDocument = docPostProcessor.applyTableQueryResult(pageDocument, masterField, result.getTableQueryResult());
+            } else {
+                PageDocument childDocument = document(null, result, docPostProcessor);
+                if (childDocument != null) {
+                    pageDocument = docPostProcessor.mergeChildPageDoc(pageDocument, masterField, childDocument);
+                }
+            }
+        }
+        return pageDocument;
+    }
+
+    class DefaultItr extends Itr {
+
+        private final Iterator<DbQueryDependResult> query;
+
+        DefaultItr(IndexTypeBean typeBean, int startPage, int endPage) {
+            super(typeBean);
+            query = new TableDependQuery(typeBean.getMasterTable(), startPage, endPage);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return query.hasNext();
+        }
+
+        @Override
+        public PageDocument next() {
+            return transferDoc(type, query.next(), docPostProcessor);
+        }
+
     }
 
     private class DocPostProcessorWrapper implements DocPostProcessor {

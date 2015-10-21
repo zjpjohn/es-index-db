@@ -1,13 +1,15 @@
 package com.wxingyl.es.action;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
-import com.wxingyl.es.command.ChangedFieldEntry;
-import com.wxingyl.es.command.UpdateRtCommand;
-import com.wxingyl.es.command.UpdateRtCommandAction;
-import com.wxingyl.es.index.IndexTypeDesc;
+import com.wxingyl.es.command.insert.InsertRtCommand;
+import com.wxingyl.es.command.insert.SingleMasterInsertRtCommandAction;
+import com.wxingyl.es.command.update.ChangedFieldEntry;
+import com.wxingyl.es.command.update.UpdateRtCommand;
+import com.wxingyl.es.command.update.UpdateRtCommandAction;
 import org.elasticsearch.index.query.QueryBuilders;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,10 +20,19 @@ public class DefaultTypeTableActionAdapter extends AbstractTypeTableActionAdapte
 
     private Map<String, String> dbDocFieldMap;
 
-    public DefaultTypeTableActionAdapter(IndexTypeDesc type, Map<String, String> dbDocFieldMap) {
-        super(type);
+    public DefaultTypeTableActionAdapter(IndexTypeInfo.TableInfo tableInfo, Map<String, String> dbDocFieldMap) {
+        super(tableInfo);
         this.dbDocFieldMap = new HashMap<>();
         this.dbDocFieldMap.putAll(dbDocFieldMap);
+    }
+
+    @Override
+    public InsertRtCommand createInsertRtCommand(List<CanalEntry.Column> list) {
+        if (tableInfo.isMasterTable()) {
+            return new SingleMasterInsertRtCommandAction(tableInfo, tableInfo.getTableAction().canalRowTransfer(list));
+        }
+        //TODO other insert need implement
+        return null;
     }
 
     @Override
@@ -37,7 +48,7 @@ public class DefaultTypeTableActionAdapter extends AbstractTypeTableActionAdapte
         }
         String keyField = tableInfo.getKeyField();
         rtCommand.addPreQuery(QueryBuilders.termQuery(dbDocFieldMap.get(keyField),
-                rowData.getBeforeColumns(tableColumnIndex.getIndex(keyField)).getValue()));
-        return rtCommand.isInvalid() ? null : rtCommand;
+                rowData.getBeforeColumns(tableInfo.getTableAction().getColumnIndex(keyField)).getValue()));
+        return rtCommand;
     }
 }

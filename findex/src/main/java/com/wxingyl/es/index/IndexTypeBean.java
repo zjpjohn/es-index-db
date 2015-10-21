@@ -1,8 +1,7 @@
 package com.wxingyl.es.index;
 
 import com.wxingyl.es.db.DbTableDesc;
-import com.wxingyl.es.db.TableBaseInfo;
-import com.wxingyl.es.db.query.TableQueryInfo;
+import com.wxingyl.es.db.query.TableQueryBean;
 import com.wxingyl.es.index.db.SqlQueryCommon;
 
 import java.util.List;
@@ -15,7 +14,7 @@ public interface IndexTypeBean extends Comparable<IndexTypeBean> {
 
     IndexTypeDesc getType();
 
-    TableQueryInfo getMasterTable();
+    TableQueryBean getMasterTable();
 
     SqlQueryCommon getTableQueryInfo(DbTableDesc table);
 

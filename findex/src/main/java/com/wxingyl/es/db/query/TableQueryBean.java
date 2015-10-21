@@ -1,6 +1,7 @@
 package com.wxingyl.es.db.query;
 
 import com.wxingyl.es.conf.index.DbTableConfigInfo;
+import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.db.SqlQueryCommon;
 import com.wxingyl.es.util.BiConsumer;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -16,7 +17,7 @@ import java.util.Map;
  * Created by xing on 15/9/1.
  * field of indexTypeBean, table query info
  */
-public class TableQueryInfo {
+public class TableQueryBean {
 
     private SqlQueryHandle queryHandler;
 
@@ -32,9 +33,9 @@ public class TableQueryInfo {
      * key: salve table, value: field
      * unmodifiableMap
      */
-    private ImmutableMultimap<String, TableQueryInfo> slaveQuery;
+    private ImmutableMultimap<String, TableQueryBean> slaveQuery;
 
-    private TableQueryInfo() {
+    private TableQueryBean() {
     }
 
     public SqlQueryHandle getQueryHandler() {
@@ -48,7 +49,7 @@ public class TableQueryInfo {
     /**
      * @return unmodifiableMap
      */
-    public ImmutableMultimap<String, TableQueryInfo> getSlaveQuery() {
+    public ImmutableMultimap<String, TableQueryBean> getSlaveQuery() {
         return slaveQuery;
     }
 
@@ -60,9 +61,23 @@ public class TableQueryInfo {
         if (list == null) return;
         list.add(queryCommon);
         if (slaveQuery != null) {
-            for (TableQueryInfo v : slaveQuery.values()) {
+            for (TableQueryBean v : slaveQuery.values()) {
                 v.allSqlQueryCommon(list);
             }
+        }
+    }
+
+    public TableQueryBean getTableQueryBean(final DbTableDesc table) {
+        if (queryCommon.getBaseInfo().getTable().equals(table)) {
+            return this;
+        } else if (slaveQuery != null) {
+            for (TableQueryBean v : slaveQuery.values()) {
+                TableQueryBean ret = v.getTableQueryBean(table);
+                if (ret != null) return ret;
+            }
+            return null;
+        } else {
+            return null;
         }
     }
 
@@ -80,9 +95,9 @@ public class TableQueryInfo {
 
         private Map<Builder, String> slaveMap = new HashMap<>();
 
-        private BiConsumer<TableQueryInfo, List<String>> masterAliasVerify;
+        private BiConsumer<TableQueryBean, List<String>> masterAliasVerify;
 
-        private TableQueryInfo obj;
+        private TableQueryBean obj;
 
         public Builder queryHandler(SqlQueryHandle handle) {
             this.queryHandler = handle;
@@ -106,20 +121,20 @@ public class TableQueryInfo {
             return this;
         }
 
-        public Builder masterAliasVerify(BiConsumer<TableQueryInfo, List<String>> verify) {
+        public Builder masterAliasVerify(BiConsumer<TableQueryBean, List<String>> verify) {
             masterAliasVerify = verify;
             return this;
         }
 
-        public TableQueryInfo build() {
+        public TableQueryBean build() {
             if (obj != null) return obj;
-            obj = new TableQueryInfo();
+            obj = new TableQueryBean();
             obj.queryCommon = queryCommon;
             obj.queryHandler = queryHandler;
             obj.rsh = rsh;
             if (!slaveMap.isEmpty()) {
                 List<String> masterAlias = new ArrayList<>(slaveMap.size());
-                ImmutableListMultimap.Builder<String, TableQueryInfo> mapBuilder = ImmutableListMultimap.builder();
+                ImmutableListMultimap.Builder<String, TableQueryBean> mapBuilder = ImmutableListMultimap.builder();
                 for (Map.Entry<Builder, String> e : slaveMap.entrySet()) {
                     mapBuilder.put(e.getValue(), e.getKey().build());
                     masterAlias.add(e.getKey().queryCommon.getBaseInfo().getMasterAlias());

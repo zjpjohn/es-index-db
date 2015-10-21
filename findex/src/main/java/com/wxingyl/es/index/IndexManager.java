@@ -5,6 +5,7 @@ import com.wxingyl.es.index.doc.IndexDocTransfer;
 import com.wxingyl.es.index.generator.BulkIndexGenerate;
 import com.wxingyl.es.index.version.IndexVersionManager;
 import com.wxingyl.es.util.Listener;
+import org.elasticsearch.client.Client;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -24,6 +25,8 @@ public interface IndexManager {
     void registerIndexVersionManager(IndexVersionManager indexVersionManager);
 
     void registerIndexEventListener(Listener<IndexTypeEvent> listener);
+
+    Client getClient();
 
     ConfigManager getConfigManager();
 

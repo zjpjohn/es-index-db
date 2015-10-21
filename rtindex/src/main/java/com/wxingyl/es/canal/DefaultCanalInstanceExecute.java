@@ -50,7 +50,7 @@ public class DefaultCanalInstanceExecute implements CanalInstanceExecute {
         this.canalConnector = canalConnector;
         this.configManager = (RtIndexConfigManager) indexManager.getConfigManager();
         this.indexManager = indexManager;
-        instanceName = canalConnector.getDestination();
+        this.instanceName = canalConnector.getDestination();
         this.indexManager.registerIndexEventListener(this);
     }
 
@@ -282,16 +282,24 @@ public class DefaultCanalInstanceExecute implements CanalInstanceExecute {
                             dataList.remove(r);
                         }
                     }
-                    if (dataList == null) {
-                        actionInfo.addActionData(table, e);
-                    } else if (!dataList.isEmpty()) {
-                        actionInfo.addActionData(table, new ChangeDataEntry(table, CanalEntry.EventType.UPDATE,
-                                Collections.unmodifiableList(dataList)));
+                    if (dataList != null) {
+                        if (dataList.isEmpty()) continue;
+                        else {
+                            e.setRowData(dataList);
+                        }
                     }
-                } else {
-                    actionInfo.addActionData(table, e);
+                }
+                actionInfo.addActionData(table, e);
+            }
+        }
+
+        private ChangeDataEntry getChangeDataEntry(DbTableDesc table, CanalEntry.EventType eventType) {
+            for (ChangeDataEntry e : dataList) {
+                if (e.getTable().equals(table) && e.getEventType() == eventType) {
+                    return e;
                 }
             }
+            return new ChangeDataEntry(table, eventType);
         }
 
         @Override
@@ -302,7 +310,9 @@ public class DefaultCanalInstanceExecute implements CanalInstanceExecute {
                     for (CanalEntry.Entry e : message.getEntries()) {
                         Tuple<DbTableDesc, List<CanalEntry.RowData>> tuple = canalConnector.filterEntry(e);
                         if (tuple == null) continue;
-                        dataList.add(new ChangeDataEntry(tuple.v1(), e.getHeader().getEventType(), tuple.v2()));
+                        ChangeDataEntry entry = getChangeDataEntry(tuple.v1(), e.getHeader().getEventType());
+                        entry.addRowData(tuple.v2());
+                        dataList.add(entry);
                     }
                     //init action
                     for (TypeRtIndexActionInfo actionInfo : actions) {

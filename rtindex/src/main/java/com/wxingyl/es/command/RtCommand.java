@@ -1,5 +1,6 @@
 package com.wxingyl.es.command;
 
+import com.wxingyl.es.action.IndexTypeInfo;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 

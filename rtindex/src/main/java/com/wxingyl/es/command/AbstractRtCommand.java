@@ -1,6 +1,7 @@
 package com.wxingyl.es.command;
 
 import com.wxingyl.es.action.IndexTypeInfo;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 
@@ -11,7 +12,7 @@ import java.util.List;
  * Created by xing on 15/10/21.
  * abstract RtCommand implement
  */
-public class AbstractRtCommand implements RtCommand {
+public abstract class AbstractRtCommand implements RtCommand {
 
     protected final IndexTypeInfo.TableInfo tableInfo;
 
@@ -48,5 +49,9 @@ public class AbstractRtCommand implements RtCommand {
 
     public List<QueryBuilder> getCommonQueryCondition() {
         return commonQueryCondition;
+    }
+
+    protected Client getClient() {
+        return tableInfo.getIndexManager().getClient();
     }
 }

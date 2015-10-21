@@ -1,7 +1,7 @@
 package com.wxingyl.es.index.version;
 
 import com.wxingyl.es.db.DbTableDesc;
-import com.wxingyl.es.db.query.TableQueryInfo;
+import com.wxingyl.es.db.query.TableQueryBean;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.index.db.SqlQueryCommon;
@@ -43,7 +43,7 @@ public class VersionIndexTypeBean implements IndexTypeBean {
     }
 
     @Override
-    public TableQueryInfo getMasterTable() {
+    public TableQueryBean getMasterTable() {
         return indexTypeBean.getMasterTable();
     }
 

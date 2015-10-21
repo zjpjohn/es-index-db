@@ -1,5 +1,6 @@
-package com.wxingyl.es.command;
+package com.wxingyl.es.command.update;
 
+import com.wxingyl.es.command.RtCommand;
 import com.wxingyl.es.index.doc.DocFields;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchResponse;

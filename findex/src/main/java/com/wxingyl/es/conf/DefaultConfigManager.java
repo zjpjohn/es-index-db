@@ -10,7 +10,7 @@ import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.query.SqlQueryHandle;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.DefaultIndexTypeBean;
-import com.wxingyl.es.db.query.TableQueryInfo;
+import com.wxingyl.es.db.query.TableQueryBean;
 import com.wxingyl.es.util.BiConsumer;
 import com.wxingyl.es.util.CommonUtils;
 
@@ -29,7 +29,7 @@ public class DefaultConfigManager extends AbstractConfigManager {
 
     private ResultSetHandlerFactory resultSetHandlerFactory;
 
-    private BiConsumer<TableQueryInfo, List<String>> masterAliasVerify;
+    private BiConsumer<TableQueryBean, List<String>> masterAliasVerify;
 
     /**
      * default add mysql parser
@@ -39,10 +39,10 @@ public class DefaultConfigManager extends AbstractConfigManager {
         dataSourceConfigFactory = new DataSourceParseFactory();
         dataSourceConfigFactory.addDataSourceConfigParser(new MysqlDataSourceConfigParser());
         resultSetHandlerFactory = DefaultResultSetHandlerFactory.INSTANCE;
-        masterAliasVerify = new BiConsumer<TableQueryInfo, List<String>>() {
+        masterAliasVerify = new BiConsumer<TableQueryBean, List<String>>() {
             @Override
-            public void accept(TableQueryInfo tableQueryInfo, List<String> list) {
-                verifyMasterAliasRepeat(tableQueryInfo, list);
+            public void accept(TableQueryBean tableQueryBean, List<String> list) {
+                verifyMasterAliasRepeat(tableQueryBean, list);
             }
         };
     }
@@ -90,11 +90,11 @@ public class DefaultConfigManager extends AbstractConfigManager {
         return handle;
     }
 
-    protected void verifyMasterAliasRepeat(TableQueryInfo tableQueryInfo, List<String> aliasList) {
+    protected void verifyMasterAliasRepeat(TableQueryBean tableQueryBean, List<String> aliasList) {
         final Set<String> allField;
-        DbTableDesc table = tableQueryInfo.getQueryCommon().getTable();
+        DbTableDesc table = tableQueryBean.getQueryCommon().getTable();
         try {
-            allField = tableQueryInfo.getQueryHandler().getAllFields(table);
+            allField = tableQueryBean.getQueryHandler().getAllFields(table);
         } catch (ExecutionException e) {
             throw new IndexConfigException("get table: " + table + " fields have crash: " + e.getMessage(), e);
         }
