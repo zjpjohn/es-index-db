@@ -6,6 +6,7 @@ import com.wxingyl.es.index.IndexManager;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.index.db.SqlQueryCommon;
+import com.wxingyl.es.util.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,8 +32,8 @@ public class IndexTypeInfo {
         this.typeBean = typeBean;
     }
 
-    public TableInfo addTableInfo(TableAction tableAction) {
-        TableInfo info = new TableInfo(tableAction);
+    public TableInfo addTableInfo(TableAction tableAction, Map<String, String> dbDocFieldMap) {
+        TableInfo info = new TableInfo(tableAction, dbDocFieldMap);
         tableInfoMap.put(tableAction.getTable(), info);
         return info;
     }
@@ -44,20 +45,32 @@ public class IndexTypeInfo {
     public class TableInfo {
 
         //cache variable
-        private String keyField;
+        private final String keyField;
 
-        private TableAction tableAction;
-
-        private TypeTableActionAdapter actionAdapter;
+        private final TableAction tableAction;
 
         private final boolean isMasterTable;
 
-        public TableInfo(TableAction tableAction) {
-            DbTableDesc table = tableAction.getTable();
-            keyField = typeBean.getTableQueryInfo(table).getBaseInfo().getKeyField();
+        private final Map<String, String> dbDocFieldMap;
+
+        private TypeTableActionAdapter actionAdapter;
+
+        public TableInfo(TableAction tableAction, Map<String, String> dbDocFieldMap) {
             this.tableAction = tableAction;
+            this.dbDocFieldMap = new HashMap<>();
+            this.dbDocFieldMap.putAll(dbDocFieldMap);
+            DbTableDesc table = tableAction.getTable();
+            this.keyField = typeBean.getTableQueryInfo(table).getBaseInfo().getKeyField();
             tableAction.addTypeTableInfo(this);
-            isMasterTable = table.equals(typeBean.getMasterTable().getQueryCommon().getBaseInfo().getTable());
+            this.isMasterTable = table.equals(typeBean.getMasterTable().getQueryCommon().getBaseInfo().getTable());
+        }
+
+        public String getDocField(String column) {
+            return CommonUtils.getOrDefault(dbDocFieldMap, column, column);
+        }
+
+        public String getDocKeyField() {
+            return CommonUtils.getOrDefault(dbDocFieldMap, keyField, keyField);
         }
 
         public String getKeyField() {
@@ -86,6 +99,14 @@ public class IndexTypeInfo {
 
         public TableAction getTableAction() {
             return tableAction;
+        }
+
+        public DbTableDesc getTable() {
+            return tableAction.getTable();
+        }
+
+        public Integer getKeyFieldIndex() {
+            return tableAction.getColumnIndex(keyField);
         }
 
         public SqlQueryCommon getSqlQueryInfo() {

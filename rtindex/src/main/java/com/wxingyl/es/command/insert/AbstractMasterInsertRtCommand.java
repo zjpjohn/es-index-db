@@ -5,6 +5,8 @@ import com.wxingyl.es.command.AbstractRtCommand;
 import com.wxingyl.es.db.result.TableQueryResult;
 import com.wxingyl.es.index.doc.IndexDocTransfer;
 import com.wxingyl.es.index.doc.PageDocument;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,8 @@ public abstract class AbstractMasterInsertRtCommand extends AbstractRtCommand im
 
     protected abstract List<Map<String, Object>> getTableResultData();
 
+    public abstract boolean isInvalid();
+
     @Override
     public PageDocument docCreate() {
         if (isInvalid()) return null;
@@ -30,6 +34,16 @@ public abstract class AbstractMasterInsertRtCommand extends AbstractRtCommand im
                         .dbData(getTableResultData())
                         .build(tableInfo.getSqlQueryInfo()));
         return document == null ? null : document;
+    }
+
+    @Override
+    public void addPreFilter(FilterBuilder filterBuilder) {
+        throw new UnsupportedOperationException("MasterInsertRtCommand add filter is useless");
+    }
+
+    @Override
+    public void addPreQuery(QueryBuilder queryBuilder) {
+        throw new UnsupportedOperationException("MasterInsertRtCommand can query is useless");
     }
 
     @Override

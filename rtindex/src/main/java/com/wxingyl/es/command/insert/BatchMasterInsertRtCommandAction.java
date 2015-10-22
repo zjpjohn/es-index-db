@@ -39,8 +39,8 @@ public class BatchMasterInsertRtCommandAction extends AbstractMasterInsertRtComm
     }
 
     @Override
-    public boolean mergeAccept(MasterInsertRtCommand rtCommand) {
-        return tableInfo.equals(rtCommand.getTableInfo());
+    public boolean acceptMerge(MasterInsertRtCommand rtCommand) {
+        return tableInfo.equals(rtCommand.getTableInfo()) && !rtCommand.isInvalid();
     }
 
     @Override

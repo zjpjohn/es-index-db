@@ -13,7 +13,7 @@ public interface BatchMasterInsertRtCommand extends MasterInsertRtCommand {
 
     void mergeInsertRtCommand(BatchMasterInsertRtCommandAction rtCommand);
 
-    boolean mergeAccept(MasterInsertRtCommand rtCommand);
+    boolean acceptMerge(MasterInsertRtCommand rtCommand);
 
     List<Map<String, Object>> getRowsData();
 
