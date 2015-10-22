@@ -1,5 +1,6 @@
-package com.wxingyl.es.action;
+package com.wxingyl.es.action.adapter;
 
+import com.wxingyl.es.action.TableAction;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.query.QueryCondition;
 import com.wxingyl.es.index.IndexManager;
@@ -14,7 +15,7 @@ import java.util.Set;
 
 /**
  * Created by xing on 15/10/19.
- * index type info
+ * index type info, contain every table info in this index/type
  */
 public class IndexTypeInfo {
 
@@ -53,7 +54,7 @@ public class IndexTypeInfo {
 
         private final Map<String, String> dbDocFieldMap;
 
-        private TypeTableActionAdapter actionAdapter;
+        private TableActionAdapter actionAdapter;
 
         public TableInfo(TableAction tableAction, Map<String, String> dbDocFieldMap) {
             this.tableAction = tableAction;
@@ -113,11 +114,11 @@ public class IndexTypeInfo {
             return typeBean.getTableQueryInfo(tableAction.getTable());
         }
 
-        void setActionAdapter(TypeTableActionAdapter actionAdapter) {
+        void setActionAdapter(TableActionAdapter actionAdapter) {
             this.actionAdapter = actionAdapter;
         }
 
-        public TypeTableActionAdapter getActionAdapter() {
+        public TableActionAdapter getActionAdapter() {
             return actionAdapter;
         }
 

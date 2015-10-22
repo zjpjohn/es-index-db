@@ -20,8 +20,7 @@ import java.util.Set;
 public class DefaultBulkIndexGenerator extends AbstractBulkIndexGenerator {
 
     public DefaultBulkIndexGenerator() {
-        super();
-        setDateConvert(DefaultDateConvert.INSTANCE);
+        super(DefaultDateConvert.INSTANCE);
     }
 
     @Override

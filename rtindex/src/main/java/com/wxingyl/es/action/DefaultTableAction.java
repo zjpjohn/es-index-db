@@ -1,6 +1,7 @@
 package com.wxingyl.es.action;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
+import com.wxingyl.es.action.adapter.IndexTypeInfo;
 import com.wxingyl.es.command.*;
 import com.wxingyl.es.command.delete.DeleteRtCommand;
 import com.wxingyl.es.command.insert.InsertRtCommand;
@@ -23,18 +24,6 @@ public class DefaultTableAction extends AbstractTableAction {
     }
 
     @Override
-    protected void deleteCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet) {
-        DeleteRtCommand command = typeInfoMap.get(type).getActionAdapter().createDeleteRtCommand(list);
-        if (isInvalid(command)) appendRet.add(command);
-    }
-
-    @Override
-    protected void insertCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet) {
-        InsertRtCommand command = typeInfoMap.get(type).getActionAdapter().createInsertRtCommand(list);
-        if (isInvalid(command)) appendRet.add(command);
-    }
-
-    @Override
     protected void updateCommand(IndexTypeDesc type, CanalEntry.RowData rowData, List<RtCommand> appendRet) {
         IndexTypeInfo.TableInfo tableInfo = typeInfoMap.get(type);
         String keyField = tableInfo.getKeyField();
@@ -44,11 +33,8 @@ public class DefaultTableAction extends AbstractTableAction {
             insertCommand(type, rowData.getAfterColumnsList(), appendRet);
             return;
         }
-        UpdateRtCommand command = tableInfo.getActionAdapter().createUpdateRtCommand(rowData);
+        RtCommand command = tableInfo.getActionAdapter().createUpdateRtCommand(rowData);
         if (isInvalid(command)) appendRet.add(command);
     }
 
-    private boolean isInvalid(RtCommand command) {
-        return command == null || command.isInvalid();
-    }
 }

@@ -1,6 +1,8 @@
 package com.wxingyl.es.command.delete;
 
-import com.wxingyl.es.action.IndexTypeInfo;
+import com.wxingyl.es.action.adapter.IndexTypeInfo;
+import com.wxingyl.es.command.AbstractRtCommand;
+import com.wxingyl.es.command.MasterRtCommand;
 import com.wxingyl.es.util.CommonUtils;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 
@@ -8,14 +10,13 @@ import org.elasticsearch.action.delete.DeleteRequestBuilder;
  * Created by xing on 15/10/21.
  * master delete rtCommand action
  */
-public class SingleMasterDeleteRtCommandAction extends AbstractMasterDeleteRtCommand implements SingleMasterDeleteRtCommand {
-
+public class MasterDeleteRtCommandAction extends AbstractRtCommand implements MasterRtCommand {
 
     private final DeleteRequestBuilder requestBuilder;
 
-    public SingleMasterDeleteRtCommandAction(IndexTypeInfo.TableInfo tableInfo, String idVal) {
+    public MasterDeleteRtCommandAction(IndexTypeInfo.TableInfo tableInfo, String idVal) {
         super(tableInfo);
-        requestBuilder = tableInfo.getIndexManager().getClient().prepareDelete(tableInfo.getType().getIndex(),
+        requestBuilder = getClient().prepareDelete(tableInfo.getType().getIndex(),
                 tableInfo.getType().getType(), idVal);
     }
 
@@ -25,12 +26,13 @@ public class SingleMasterDeleteRtCommandAction extends AbstractMasterDeleteRtCom
     }
 
     @Override
-    public int deleteDoc() {
-        return getDeleteRequest().get().isFound() ? 1 : 0;
+    public IndexTypeInfo.TableInfo getTableInfo() {
+        return tableInfo;
     }
 
     @Override
-    public DeleteRequestBuilder getDeleteRequest() {
+    public DeleteRequestBuilder makeRequest() {
         return requestBuilder;
     }
+
 }

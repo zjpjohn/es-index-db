@@ -32,6 +32,8 @@ public interface IndexManager {
 
     IndexDocTransfer getIndexDocTransfer();
 
+    BulkIndexGenerate getBulkIndexGenerate(IndexTypeDesc type);
+
     long indexFill(String index, String type);
 
     Map<String, Long> indexFill(String index);

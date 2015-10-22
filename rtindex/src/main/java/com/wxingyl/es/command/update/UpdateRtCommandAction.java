@@ -1,13 +1,14 @@
 package com.wxingyl.es.command.update;
 
-import com.wxingyl.es.action.IndexTypeInfo;
-import com.wxingyl.es.command.AbstractRtCommand;
+import com.wxingyl.es.action.adapter.IndexTypeInfo;
+import com.wxingyl.es.command.AbstractModifiableRtCommand;
+import com.wxingyl.es.exception.RtDocConvertJsonException;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.index.doc.DocFields;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.EsUtils;
+import org.elasticsearch.action.ActionRequestBuilder;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.*;
@@ -21,7 +22,7 @@ import java.util.*;
  * Created by xing on 15/10/10.
  * update real time command action
  */
-public class UpdateRtCommandAction extends AbstractRtCommand implements UpdateRtCommand {
+public class UpdateRtCommandAction extends AbstractModifiableRtCommand implements UpdateRtCommand {
 
     private SearchRequestBuilder searchRequestBuilder;
 
@@ -31,21 +32,24 @@ public class UpdateRtCommandAction extends AbstractRtCommand implements UpdateRt
 
     private boolean needContinue = true;
 
+    /**
+     * operator document max number in a page
+     */
+    private final int pageSize;
+
     public UpdateRtCommandAction(IndexTypeInfo.TableInfo tableInfo) {
+        this(tableInfo, 100);
+    }
+
+    public UpdateRtCommandAction(IndexTypeInfo.TableInfo tableInfo, int pageSize) {
         super(tableInfo);
+        this.pageSize = pageSize;
     }
 
-    @Override
-    public void addChangeField(ChangedFieldEntry entry) {
-        if (entry == null) return;
-        if (changeFieldMap.put(entry.getDocFieldName(), entry) == null && !entry.isOnlyReplaceVal()) {
-            changeEntryQueryCount++;
-        }
-    }
-
-    protected SearchRequestBuilder createSearchRequestBuilder() {
+    private void initSearchRequestBuilder() {
+        if (searchRequestBuilder != null) return;
         searchRequestBuilder = getClient().prepareSearch(tableInfo.getType().getIndex())
-                .setTypes(tableInfo.getType().getType());
+                .setTypes(tableInfo.getType().getType()).setSize(pageSize);
         List<QueryBuilder> commonQueryCondition = getCommonQueryCondition();
         if (commonQueryCondition != null) {
             if (commonQueryCondition.size() == 1) {
@@ -74,30 +78,27 @@ public class UpdateRtCommandAction extends AbstractRtCommand implements UpdateRt
             }
             searchRequestBuilder.setPostFilter(andFilterBuilder);
         }
-        return searchRequestBuilder;
-    }
-
-
-    @Override
-    public SearchResponse query(int pageSize) {
-        if (isInvalid()) return null;
-        if (searchRequestBuilder == null) {
-            createSearchRequestBuilder();
-        }
-        searchRequestBuilder.setSize(pageSize);
-        SearchResponse response = searchRequestBuilder.execute().actionGet();
-        needContinue = response.getHits().getTotalHits() > pageSize;
-        return response;
     }
 
     private FilterBuilder builderFilter(String field, Object value) {
         return value == null ? FilterBuilders.missingFilter(field) : FilterBuilders.termFilter(field, value);
     }
 
-    @Override
-    public List<DocFields> replaceChange(SearchResponse queryResponse) {
+    private void replaceDoc(Map<String, Object> doc, ChangedFieldEntry entry) {
+        String docFieldName = entry.getFieldSplit() == null ? entry.getDocFieldName() :
+                entry.getFieldSplit()[entry.getFieldSplit().length - 1];
+        if (!Objects.equals(entry.getBeforeValue(), doc.get(docFieldName))) return;
+        if (entry.getAfterValue() == null) {
+            doc.remove(docFieldName);
+        } else {
+            doc.put(docFieldName, entry.getAfterValue());
+        }
+    }
+
+    private List<DocFields> getDocFields(SearchResponse queryResponse) {
         SearchHits searchHits = queryResponse.getHits();
-        List<DocFields> retDocs = new ArrayList<>(searchHits.hits().length);
+        List<DocFields> docs = new ArrayList<>(searchHits.hits().length);
+        //this is only a local variate
         List<Map<String, Object>> child = new LinkedList<>();
         for (SearchHit e : searchHits) {
             Map<String, Object> map = e.getSource();
@@ -117,33 +118,36 @@ public class UpdateRtCommandAction extends AbstractRtCommand implements UpdateRt
                 }
             }
             DocFields docFields = new DocFields(map);
-            retDocs.add(docFields);
+            docs.add(docFields);
         }
-        return retDocs;
+        return docs;
     }
 
-    private void replaceDoc(Map<String, Object> doc, ChangedFieldEntry entry) {
-        String docFieldName = entry.getFieldSplit() == null ? entry.getDocFieldName() :
-                entry.getFieldSplit()[entry.getFieldSplit().length - 1];
-        if (!Objects.equals(entry.getBeforeValue(), doc.get(docFieldName))) return;
-        if (entry.getAfterValue() == null) {
-            doc.remove(docFieldName);
-        } else {
-            doc.put(docFieldName, entry.getAfterValue());
+    @Override
+    public void addChangeField(ChangedFieldEntry entry) {
+        if (entry == null) return;
+        if (!entry.isOnlyReplaceVal() && searchRequestBuilder != null) {
+            throw new IllegalStateException(getTypeTableMsg() + ": searchRequestBuilder had created, can not add more queryChange");
+        }
+        if (changeFieldMap.put(entry.getDocFieldName(), entry) == null && !entry.isOnlyReplaceVal()) {
+            changeEntryQueryCount++;
         }
     }
 
     @Override
-    public BulkResponse updateDoc(List<DocFields> docs) throws IOException {
-        if (CommonUtils.isEmpty(docs)) return null;
-        BulkRequestBuilder bulkRequestBuilder = getClient().prepareBulk();
-        IndexTypeDesc typeDesc = tableInfo.getType();
-        for (DocFields f : docs) {
-            bulkRequestBuilder.add(getClient().prepareUpdate(typeDesc.getIndex(), typeDesc.getType(),
-                    f.get(tableInfo.getIdField()).toString())
-                    .setDoc(f.buildXContent(null)));
+    public void addPreFilter(FilterBuilder filterBuilder) {
+        if (searchRequestBuilder != null) {
+            throw new IllegalStateException(getTypeTableMsg() + ": searchRequestBuilder had created, can not add more filter");
         }
-        return bulkRequestBuilder.execute().actionGet();
+        super.addPreFilter(filterBuilder);
+    }
+
+    @Override
+    public void addPreQuery(QueryBuilder queryBuilder) {
+        if (searchRequestBuilder != null) {
+            throw new IllegalStateException(getTypeTableMsg() + ": searchRequestBuilder had created, can not add more query");
+        }
+        super.addPreQuery(queryBuilder);
     }
 
     @Override
@@ -155,6 +159,27 @@ public class UpdateRtCommandAction extends AbstractRtCommand implements UpdateRt
     public boolean isInvalid() {
         return changeFieldMap.isEmpty() || (changeEntryQueryCount == 0
                 && super.isInvalid());
+    }
+
+    @Override
+    public ActionRequestBuilder makeRequest() {
+        initSearchRequestBuilder();
+        SearchResponse queryResponse = searchRequestBuilder.execute().actionGet();
+        needContinue = queryResponse.getHits().getTotalHits() > pageSize;
+        List<DocFields> docs = getDocFields(queryResponse);
+        if (CommonUtils.isEmpty(docs)) return null;
+        BulkRequestBuilder bulkRequestBuilder = getClient().prepareBulk();
+        IndexTypeDesc typeDesc = tableInfo.getType();
+        for (DocFields f : docs) {
+            try {
+                bulkRequestBuilder.add(getClient().prepareUpdate(typeDesc.getIndex(), typeDesc.getType(),
+                        f.get(tableInfo.getIdField()).toString())
+                        .setDoc(f.buildXContent(null)));
+            } catch (IOException e) {
+                throw new RtDocConvertJsonException(getTypeTableMsg(), e);
+            }
+        }
+        return bulkRequestBuilder;
     }
 
 }

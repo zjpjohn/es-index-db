@@ -138,6 +138,11 @@ public class IndexManagerImpl implements IndexManager {
     }
 
     @Override
+    public BulkIndexGenerate getBulkIndexGenerate(IndexTypeDesc type) {
+        return CommonUtils.getOrDefault(bulkIndexGeneratorMap, type, defaultBulkIndexGenerator);
+    }
+
+    @Override
     public long indexFill(String index, String type) {
         Objects.requireNonNull(type);
         Map<String, Long> numMap = indexFill(index, type, 1);

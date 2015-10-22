@@ -1,12 +1,16 @@
 package com.wxingyl.es.command.insert;
 
-import com.wxingyl.es.action.IndexTypeInfo;
+import com.wxingyl.es.action.adapter.IndexTypeInfo;
 import com.wxingyl.es.command.AbstractRtCommand;
+import com.wxingyl.es.command.MasterRtCommand;
 import com.wxingyl.es.db.result.TableQueryResult;
 import com.wxingyl.es.index.doc.IndexDocTransfer;
 import com.wxingyl.es.index.doc.PageDocument;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
+import com.wxingyl.es.index.generator.BulkIndexGenerate;
+import com.wxingyl.es.util.CommonUtils;
+import org.elasticsearch.action.ActionRequestBuilder;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.index.IndexRequestBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +19,7 @@ import java.util.Map;
  * Created by xing on 15/10/21.
  * abstract MasterInsertRtCommand
  */
-public abstract class AbstractMasterInsertRtCommand extends AbstractRtCommand implements MasterInsertRtCommand {
+public abstract class AbstractMasterInsertRtCommand extends AbstractRtCommand implements MasterRtCommand {
 
     public AbstractMasterInsertRtCommand(IndexTypeInfo.TableInfo tableInfo) {
         super(tableInfo);
@@ -26,24 +30,24 @@ public abstract class AbstractMasterInsertRtCommand extends AbstractRtCommand im
     public abstract boolean isInvalid();
 
     @Override
-    public PageDocument docCreate() {
-        if (isInvalid()) return null;
+    public ActionRequestBuilder makeRequest() {
         IndexDocTransfer transfer = tableInfo.getIndexManager().getIndexDocTransfer();
         PageDocument document = transfer.indexDocCreate(tableInfo.getTypeBean(),
                 TableQueryResult.build()
                         .dbData(getTableResultData())
                         .build(tableInfo.getSqlQueryInfo()));
-        return document == null ? null : document;
-    }
-
-    @Override
-    public void addPreFilter(FilterBuilder filterBuilder) {
-        throw new UnsupportedOperationException("MasterInsertRtCommand add filter is useless");
-    }
-
-    @Override
-    public void addPreQuery(QueryBuilder queryBuilder) {
-        throw new UnsupportedOperationException("MasterInsertRtCommand can query is useless");
+        if (document == null || document.size() == 0) return null;
+        BulkIndexGenerate bulkIndexGenerate = tableInfo.getIndexManager().getBulkIndexGenerate(tableInfo.getType());
+        List<IndexRequestBuilder> list = bulkIndexGenerate.buildIndexRequest(getClient(), document);
+        if (CommonUtils.isEmpty(list)) return null;
+        else if (list.size() == 1) return list.get(0);
+        else {
+            BulkRequestBuilder bulkRequest = getClient().prepareBulk();
+            for (IndexRequestBuilder b : list) {
+                bulkRequest.add(b);
+            }
+            return bulkRequest;
+        }
     }
 
     @Override

@@ -61,8 +61,11 @@ public class PageDocument implements Iterable<DocFields> {
         return docs.iterator();
     }
 
-    public List<DocFields> getDocFields() {
-        return docs;
+    public DocFields getDocFields(int index) {
+        return docs.get(index);
     }
 
+    public int size() {
+        return docs.size();
+    }
 }

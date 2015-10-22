@@ -2,7 +2,7 @@ package com.wxingyl.es.canal;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.Message;
-import com.wxingyl.es.action.RtIndexAction;
+import com.wxingyl.es.handle.RtIndexHandle;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.exception.RtIndexDealException;
 import com.wxingyl.es.index.*;
@@ -94,12 +94,12 @@ public class DefaultCanalInstanceExecute implements CanalInstanceExecute {
     }
 
     /**
-     * register rtIndex action, if {@link RtIndexAction#supportTable(String)} have change, you can recall this function,
+     * register rtIndex action, if {@link RtIndexHandle#supportTable(String)} have change, you can recall this function,
      * it will replace action
      * @param action reIndex action, deal data change, if you recall this function, action obj should same obj of first call
      */
     @Override
-    public void registerTypeRtIndexAction(RtIndexAction action) {
+    public void registerTypeRtIndexAction(RtIndexHandle action) {
         final TypeRtIndexActionInfo actionInfo = initActionInfo(action);
         typeActionInfoLock.writeOp(new Function<Set<TypeRtIndexActionInfo>, Void>() {
             @Override
@@ -114,7 +114,7 @@ public class DefaultCanalInstanceExecute implements CanalInstanceExecute {
      * @return true: had replace, false: before can not find, curAction not add
      */
     @Override
-    public boolean replaceTypeRtIndexAction(final RtIndexAction before, RtIndexAction curAction) {
+    public boolean replaceTypeRtIndexAction(final RtIndexHandle before, RtIndexHandle curAction) {
         final TypeRtIndexActionInfo actionInfo = initActionInfo(curAction);
         return typeActionInfoLock.writeOp(new Function<Set<TypeRtIndexActionInfo>, Boolean>() {
             @Override
@@ -166,7 +166,7 @@ public class DefaultCanalInstanceExecute implements CanalInstanceExecute {
         });
     }
 
-    private TypeRtIndexActionInfo initActionInfo(RtIndexAction action) {
+    private TypeRtIndexActionInfo initActionInfo(RtIndexHandle action) {
         Objects.requireNonNull(action);
         IndexTypeBean type = action.supportType(instanceName);
         Objects.requireNonNull(type);
@@ -187,7 +187,7 @@ public class DefaultCanalInstanceExecute implements CanalInstanceExecute {
 
     private class TypeRtIndexActionInfo implements Callable<Void> {
 
-        RtIndexAction action;
+        RtIndexHandle action;
 
         IndexTypeDesc type;
 
@@ -212,7 +212,7 @@ public class DefaultCanalInstanceExecute implements CanalInstanceExecute {
             return null;
         }
 
-        TypeRtIndexActionInfo(RtIndexAction action, IndexTypeDesc type) {
+        TypeRtIndexActionInfo(RtIndexHandle action, IndexTypeDesc type) {
             this.action = action;
             this.type = type;
         }

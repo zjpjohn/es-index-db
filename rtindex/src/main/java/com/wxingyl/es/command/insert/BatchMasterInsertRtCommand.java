@@ -1,5 +1,7 @@
 package com.wxingyl.es.command.insert;
 
+import com.wxingyl.es.command.MasterRtCommand;
+
 import java.util.List;
 import java.util.Map;
 
@@ -7,13 +9,13 @@ import java.util.Map;
  * Created by xing on 15/10/21.
  * batch master insert RtCommand
  */
-public interface BatchMasterInsertRtCommand extends MasterInsertRtCommand {
+public interface BatchMasterInsertRtCommand extends MasterRtCommand {
 
     void mergeInsertRtCommand(SingleMasterInsertRtCommand rtCommand);
 
     void mergeInsertRtCommand(BatchMasterInsertRtCommandAction rtCommand);
 
-    boolean acceptMerge(MasterInsertRtCommand rtCommand);
+    boolean acceptMerge(MasterRtCommand rtCommand);
 
     List<Map<String, Object>> getRowsData();
 

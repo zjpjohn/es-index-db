@@ -1,5 +1,6 @@
-package com.wxingyl.es.action;
+package com.wxingyl.es.handle;
 
+import com.wxingyl.es.action.TableAction;
 import com.wxingyl.es.canal.ChangeDataEntry;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.IndexTypeBean;
@@ -13,7 +14,7 @@ import java.util.*;
  * MultiTypeRtIndexAction, In this Action, a canal instance only one index/type, but a type can have more than one
  * canal instance, if a canal instance need more than one index/type, you should create other RtIndexAction object
  */
-public class MultiTypeRtIndexAction implements MultiTypeModifiableRtIndexAction {
+public class MultiTypeRtIndexHandler implements MultiTypeModifiableRtIndexHandle {
 
     /**
      * In an action, a canal instance should only one index/type

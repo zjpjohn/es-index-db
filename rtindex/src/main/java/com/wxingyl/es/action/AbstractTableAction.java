@@ -1,6 +1,7 @@
 package com.wxingyl.es.action;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
+import com.wxingyl.es.action.adapter.IndexTypeInfo;
 import com.wxingyl.es.canal.ChangeDataEntry;
 import com.wxingyl.es.command.RtCommand;
 import com.wxingyl.es.db.DbTableDesc;
@@ -31,35 +32,6 @@ public abstract class AbstractTableAction implements TableAction {
         this.valueConvertMap = Collections.unmodifiableMap(new HashMap<>(valueConvertMap));
     }
 
-    @Override
-    public void addTypeTableInfo(IndexTypeInfo.TableInfo tableInfo) {
-        typeInfoMap.put(tableInfo.getType(), tableInfo);
-    }
-
-    @Override
-    public DbTableDesc getTable() {
-        return table;
-    }
-
-    @Override
-    public Integer getColumnIndex(String column) {
-        return tableColumnIndex.getIndex(column);
-    }
-
-    @Override
-    public Map<String, Object> canalRowTransfer(List<CanalEntry.Column> list) {
-        Map<String, Object> ret = new HashMap<>();
-        for (CanalEntry.Column c : list) {
-            String name = c.getName();
-            if (valueConvertMap.get(name) == null) {
-                ret.put(name, c.getValue());
-            } else {
-                ret.put(name, valueConvertMap.get(name).convert(c.getValue()));
-            }
-        }
-        return ret;
-    }
-
     /**
      * @param type index/type name
      * @param list db data
@@ -84,11 +56,21 @@ public abstract class AbstractTableAction implements TableAction {
         return true;
     }
 
-    protected abstract void deleteCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet);
-
-    protected abstract void insertCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet);
-
     protected abstract void updateCommand(IndexTypeDesc type, CanalEntry.RowData rowData, List<RtCommand> appendRet);
+
+    protected void deleteCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet) {
+        RtCommand command = typeInfoMap.get(type).getActionAdapter().createDeleteRtCommand(list);
+        if (isInvalid(command)) appendRet.add(command);
+    }
+
+    protected void insertCommand(IndexTypeDesc type, List<CanalEntry.Column> list, List<RtCommand> appendRet) {
+        RtCommand command = typeInfoMap.get(type).getActionAdapter().createInsertRtCommand(list);
+        if (isInvalid(command)) appendRet.add(command);
+    }
+
+    protected boolean isInvalid(RtCommand command) {
+        return command == null || command.isInvalid();
+    }
 
     @Override
     public List<RtCommand> createCommand(IndexTypeDesc type, List<ChangeDataEntry> data) {
@@ -120,6 +102,35 @@ public abstract class AbstractTableAction implements TableAction {
                         insertCommand(type, r.getAfterColumnsList(), ret);
                     }
                 }
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public void addTypeTableInfo(IndexTypeInfo.TableInfo tableInfo) {
+        typeInfoMap.put(tableInfo.getType(), tableInfo);
+    }
+
+    @Override
+    public DbTableDesc getTable() {
+        return table;
+    }
+
+    @Override
+    public Integer getColumnIndex(String column) {
+        return tableColumnIndex.getIndex(column);
+    }
+
+    @Override
+    public Map<String, Object> canalRowTransfer(List<CanalEntry.Column> list) {
+        Map<String, Object> ret = new HashMap<>();
+        for (CanalEntry.Column c : list) {
+            String name = c.getName();
+            if (valueConvertMap.get(name) == null) {
+                ret.put(name, c.getValue());
+            } else {
+                ret.put(name, valueConvertMap.get(name).convert(c.getValue()));
             }
         }
         return ret;

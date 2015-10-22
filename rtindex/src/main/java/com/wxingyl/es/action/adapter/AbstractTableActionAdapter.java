@@ -1,4 +1,4 @@
-package com.wxingyl.es.action;
+package com.wxingyl.es.action.adapter;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.wxingyl.es.command.update.ChangedFieldEntry;
@@ -10,11 +10,11 @@ import org.elasticsearch.index.query.QueryBuilders;
  * Created by xing on 15/10/20.
  * abstract implement
  */
-public abstract class AbstractTypeTableActionAdapter implements TypeTableActionAdapter {
+public abstract class AbstractTableActionAdapter implements TableActionAdapter {
 
     protected final IndexTypeInfo.TableInfo tableInfo;
 
-    public AbstractTypeTableActionAdapter(IndexTypeInfo.TableInfo tableInfo) {
+    public AbstractTableActionAdapter(IndexTypeInfo.TableInfo tableInfo) {
         this.tableInfo = tableInfo;
         tableInfo.setActionAdapter(this);
     }

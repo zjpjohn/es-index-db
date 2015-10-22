@@ -1,16 +1,18 @@
 package com.wxingyl.es.index.generator;
 
 import com.wxingyl.es.exception.IndexDocException;
-import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.index.doc.DocFields;
 import com.wxingyl.es.index.TypeBaseInfo;
+import com.wxingyl.es.index.doc.DocFields;
 import com.wxingyl.es.index.doc.PageDocument;
 import com.wxingyl.es.util.DateConvert;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by xing on 15/9/7.
@@ -18,60 +20,45 @@ import java.io.IOException;
  */
 public abstract class AbstractBulkIndexGenerator implements BulkIndexGenerate {
 
-    protected static final int DEFAULT_BULK_BATCH_SIZE = 2000;
+    protected final DateConvert dateConvert;
 
-    private DateConvert dateConvert;
-
-    private int bulkRequestBatchSize = DEFAULT_BULK_BATCH_SIZE;
-
-    protected void setDateConvert(DateConvert dateConvert) {
+    public AbstractBulkIndexGenerator(DateConvert dateConvert) {
         this.dateConvert = dateConvert;
-    }
-
-    protected void setBulkRequestBatchSize(int bulkRequestBatchSize) {
-        this.bulkRequestBatchSize = bulkRequestBatchSize;
-    }
-
-    protected DateConvert getDateConvert() {
-        return dateConvert;
-    }
-
-    protected int getBulkRequestBatchSize() {
-        return bulkRequestBatchSize;
     }
 
     protected abstract String getDocId(TypeBaseInfo baseInfo, DocFields doc);
 
     @Override
-    public int bulkInsert(Client client, PageDocument pageDocument) {
-        BulkRequestBuilder bulkRequest = client.prepareBulk();
-        int count = 0, ret = 0;
-        TypeBaseInfo baseInfo = pageDocument.getBaseInfo();
-        IndexTypeDesc type = baseInfo.getType();
+    public List<IndexRequestBuilder> buildIndexRequest(Client client, PageDocument pageDocument) {
+        final TypeBaseInfo baseInfo = pageDocument.getBaseInfo();
+        final String index = baseInfo.getType().getIndex();
+        final String type = baseInfo.getType().getType();
+        List<IndexRequestBuilder> retList = new ArrayList<>(pageDocument.size());
         for (DocFields doc : pageDocument) {
             try {
-                bulkRequest.add(client.prepareIndex(type.getIndex(), type.getType(), getDocId(baseInfo, doc))
+                retList.add(client.prepareIndex(index, type, getDocId(baseInfo, doc))
                         .setSource(doc.buildXContent(dateConvert)));
             } catch (IOException e) {
                 throw new IndexDocException("create XContentBuilder error", e);
             }
-            count++;
-            if (count >= bulkRequestBatchSize) {
-                ret += executeIndexRequest(bulkRequest);
-                bulkRequest = client.prepareBulk();
-                count = 0;
-            }
         }
-        if (count > 0) {
-            ret += executeIndexRequest(bulkRequest);
+        return retList;
+    }
+
+    @Override
+    public int bulkInsert(Client client, PageDocument pageDocument) {
+        if (pageDocument.size() == 0) return 0;
+        BulkRequestBuilder bulkRequest = client.prepareBulk();
+        for (IndexRequestBuilder b : buildIndexRequest(client, pageDocument)) {
+            bulkRequest.add(b);
         }
-        return ret;
+        return executeIndexRequest(bulkRequest);
     }
 
     /**
      * @return return succeed request num
      */
-    protected int executeIndexRequest(BulkRequestBuilder bulkRequest) {
+    private int executeIndexRequest(BulkRequestBuilder bulkRequest) {
         BulkResponse response = bulkRequest.execute().actionGet();
         if (response.hasFailures()) {
             return bulkRequest.numberOfActions() - handleFailed(bulkRequest, response);

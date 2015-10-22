@@ -1,4 +1,4 @@
-package com.wxingyl.es.action;
+package com.wxingyl.es.handle;
 
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.IndexTypeBean;
@@ -11,7 +11,7 @@ import java.util.Map;
  * Created by xing on 15/9/24.
  * index type real time index action to deal data change
  */
-public interface RtIndexAction {
+public interface RtIndexHandle {
 
     /**
      * Note: if return Empty or null, will user {@link IndexTypeBean#getAllTableQueryInfo()}

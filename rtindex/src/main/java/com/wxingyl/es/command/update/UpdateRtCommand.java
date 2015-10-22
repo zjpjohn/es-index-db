@@ -1,26 +1,14 @@
 package com.wxingyl.es.command.update;
 
-import com.wxingyl.es.command.RtCommand;
-import com.wxingyl.es.index.doc.DocFields;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.search.SearchResponse;
-
-import java.io.IOException;
-import java.util.List;
+import com.wxingyl.es.command.ModifiableRtCommand;
 
 /**
  * Created by xing on 15/10/8.
  * update RtCommand
  */
-public interface UpdateRtCommand extends RtCommand {
+public interface UpdateRtCommand extends ModifiableRtCommand {
 
     void addChangeField(ChangedFieldEntry entry);
-
-    SearchResponse query(int pageSize);
-
-    List<DocFields> replaceChange(SearchResponse queryResponse);
-
-    BulkResponse updateDoc(List<DocFields> docs) throws IOException;
 
     boolean needContinue();
 

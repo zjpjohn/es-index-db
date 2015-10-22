@@ -1,5 +1,6 @@
-package com.wxingyl.es.action;
+package com.wxingyl.es.handle;
 
+import com.wxingyl.es.action.TableAction;
 import com.wxingyl.es.canal.ChangeDataEntry;
 import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.index.IndexTypeBean;
@@ -11,7 +12,7 @@ import java.util.*;
  * Created by xing on 15/9/29.
  * SingleTypeDeployRtIndexAction, this action only have one index/type, but it may have more than one canal instances
  */
-public class SingleTypeRtIndexAction implements SingleTypeModifiableRtIndexAction {
+public class SingleTypeRtIndexHandler implements SingleTypeModifiableRtIndexHandle {
 
     private IndexTypeBean type;
 
@@ -22,7 +23,7 @@ public class SingleTypeRtIndexAction implements SingleTypeModifiableRtIndexActio
 
     protected Map<DbTableDesc, TableAction> tableActionMap = new HashMap<>();
 
-    public SingleTypeRtIndexAction(IndexTypeBean type) {
+    public SingleTypeRtIndexHandler(IndexTypeBean type) {
         this.type = type;
     }
 

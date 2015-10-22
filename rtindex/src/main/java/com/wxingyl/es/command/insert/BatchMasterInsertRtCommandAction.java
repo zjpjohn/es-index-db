@@ -1,6 +1,7 @@
 package com.wxingyl.es.command.insert;
 
-import com.wxingyl.es.action.IndexTypeInfo;
+import com.wxingyl.es.action.adapter.IndexTypeInfo;
+import com.wxingyl.es.command.MasterRtCommand;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class BatchMasterInsertRtCommandAction extends AbstractMasterInsertRtComm
     }
 
     @Override
-    public boolean acceptMerge(MasterInsertRtCommand rtCommand) {
+    public boolean acceptMerge(MasterRtCommand rtCommand) {
         return tableInfo.equals(rtCommand.getTableInfo()) && !rtCommand.isInvalid();
     }
 

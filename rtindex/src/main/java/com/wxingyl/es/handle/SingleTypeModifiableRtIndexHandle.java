@@ -1,5 +1,6 @@
-package com.wxingyl.es.action;
+package com.wxingyl.es.handle;
 
+import com.wxingyl.es.action.TableAction;
 import com.wxingyl.es.db.DbTableDesc;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
  * Created by xing on 15/9/29.
  * this action only have a index/type
  */
-public interface SingleTypeModifiableRtIndexAction extends RtIndexAction {
+public interface SingleTypeModifiableRtIndexHandle extends RtIndexHandle {
 
     void registerTable(String instance, List<DbTableDesc> tables);
 

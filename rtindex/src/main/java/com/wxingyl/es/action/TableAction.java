@@ -1,19 +1,20 @@
 package com.wxingyl.es.action;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
+import com.wxingyl.es.action.adapter.IndexTypeInfo;
+import com.wxingyl.es.action.adapter.TableActionAdapter;
 import com.wxingyl.es.canal.ChangeDataEntry;
 import com.wxingyl.es.command.RtCommand;
 import com.wxingyl.es.db.DbTableDesc;
-import com.wxingyl.es.db.result.TableQueryResult;
 import com.wxingyl.es.index.IndexTypeDesc;
-import com.wxingyl.es.index.db.SqlQueryCommon;
 
 import java.util.List;
 import java.util.Map;
 
 /**
  * Created by xing on 15/9/30.
- * table deal change
+ * table deal change, will chose mapping {@link TableActionAdapter}
+ * to create {@link RtCommand}
  * every table should have an one, different also should have different obj
  */
 public interface TableAction {
