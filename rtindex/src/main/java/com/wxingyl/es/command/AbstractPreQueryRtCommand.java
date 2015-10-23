@@ -9,15 +9,15 @@ import java.util.List;
 
 /**
  * Created by xing on 15/10/23.
- * abstract class
+ * abstract PreQueryRtCommand
  */
-public abstract class AbstractModifiableRtCommand extends AbstractRtCommand implements ModifiableRtCommand {
+public abstract class AbstractPreQueryRtCommand extends AbstractRtCommand implements PreQueryRtCommand {
 
     private List<QueryBuilder> commonQueryCondition;
 
     private List<FilterBuilder> commonFilterCondition;
 
-    public AbstractModifiableRtCommand(IndexTypeInfo.TableInfo tableInfo) {
+    public AbstractPreQueryRtCommand(IndexTypeInfo.TableInfo tableInfo) {
         super(tableInfo);
     }
 

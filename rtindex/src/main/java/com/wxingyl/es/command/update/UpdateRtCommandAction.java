@@ -1,7 +1,7 @@
 package com.wxingyl.es.command.update;
 
 import com.wxingyl.es.action.adapter.IndexTypeInfo;
-import com.wxingyl.es.command.AbstractModifiableRtCommand;
+import com.wxingyl.es.command.AbstractPreQueryRtCommand;
 import com.wxingyl.es.exception.RtDocConvertJsonException;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.index.doc.DocFields;
@@ -22,7 +22,7 @@ import java.util.*;
  * Created by xing on 15/10/10.
  * update real time command action
  */
-public class UpdateRtCommandAction extends AbstractModifiableRtCommand implements UpdateRtCommand {
+public class UpdateRtCommandAction extends AbstractPreQueryRtCommand implements UpdateRtCommand {
 
     private SearchRequestBuilder searchRequestBuilder;
 
