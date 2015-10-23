@@ -1,9 +1,8 @@
 package com.wxingyl.es.action.adapter;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
-import com.wxingyl.es.command.delete.DeleteRtCommand;
+import com.wxingyl.es.command.RtCommand;
 import com.wxingyl.es.command.delete.MasterDeleteRtCommandAction;
-import com.wxingyl.es.command.insert.InsertRtCommand;
 import com.wxingyl.es.command.insert.SingleMasterInsertRtCommandAction;
 
 import java.util.List;
@@ -23,12 +22,12 @@ public class MasterTableActionAdapter extends AbstractTableActionAdapter {
     }
 
     @Override
-    public InsertRtCommand createInsertRtCommand(List<CanalEntry.Column> list) {
+    public RtCommand createInsertRtCommand(List<CanalEntry.Column> list) {
         return new SingleMasterInsertRtCommandAction(tableInfo, tableInfo.getTableAction().canalRowTransfer(list));
     }
 
     @Override
-    public DeleteRtCommand createDeleteRtCommand(List<CanalEntry.Column> list) {
+    public RtCommand createDeleteRtCommand(List<CanalEntry.Column> list) {
         return new MasterDeleteRtCommandAction(tableInfo, list.get(tableInfo.getKeyFieldIndex()).getValue());
     }
 

@@ -2,9 +2,6 @@ package com.wxingyl.es.action.adapter;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.wxingyl.es.command.RtCommand;
-import com.wxingyl.es.command.delete.DeleteRtCommand;
-import com.wxingyl.es.command.insert.InsertRtCommand;
-import com.wxingyl.es.command.update.UpdateRtCommand;
 
 import java.util.List;
 

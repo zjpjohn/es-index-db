@@ -1,6 +1,7 @@
 package com.wxingyl.es.action.adapter;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
+import com.wxingyl.es.command.RtCommand;
 import com.wxingyl.es.command.update.ChangedFieldEntry;
 import com.wxingyl.es.command.update.UpdateRtCommand;
 import com.wxingyl.es.command.update.UpdateRtCommandAction;
@@ -24,7 +25,7 @@ public abstract class AbstractTableActionAdapter implements TableActionAdapter {
      * default updateRtCommand implement
      */
     @Override
-    public UpdateRtCommand createUpdateRtCommand(CanalEntry.RowData rowData) {
+    public RtCommand createUpdateRtCommand(CanalEntry.RowData rowData) {
         final int count = rowData.getAfterColumnsCount();
         UpdateRtCommand rtCommand = new UpdateRtCommandAction(tableInfo);
         for (int i = 0; i < count; i++) {
