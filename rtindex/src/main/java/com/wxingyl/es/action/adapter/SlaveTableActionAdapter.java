@@ -22,6 +22,7 @@ public class SlaveTableActionAdapter extends AbstractTableActionAdapter {
     //TODO need implement
     @Override
     public RtCommand createInsertRtCommand(List<CanalEntry.Column> list) {
+
         return null;
     }
 

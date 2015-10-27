@@ -8,7 +8,7 @@ import com.wxingyl.es.db.DbTableDesc;
 import com.wxingyl.es.db.query.QueryCondition;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.util.CommonUtils;
-import com.wxingyl.es.util.transfer.StrValConverts;
+import com.wxingyl.es.util.transfer.StrValueConverts;
 import com.wxingyl.es.util.transfer.StrValueConvert;
 
 import java.util.*;
@@ -48,7 +48,7 @@ public abstract class AbstractTableAction implements TableAction {
         }
         for (QueryCondition qc : typeInfoMap.get(type).getQueryCondition()) {
             if (!qc.verifyValue(list.get(tableColumnIndex.getIndex(qc.getField())).getValue(),
-                    valueConvertMap.get(qc.getField()) == null ? StrValConverts.stringConvert()
+                    valueConvertMap.get(qc.getField()) == null ? StrValueConverts.stringConvert()
                             : valueConvertMap.get(qc.getField()))) {
                 return false;
             }

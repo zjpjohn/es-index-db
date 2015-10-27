@@ -31,7 +31,7 @@ public abstract class AbstractTableActionAdapter implements TableActionAdapter {
         for (int i = 0; i < count; i++) {
             CanalEntry.Column afterColumn = rowData.getAfterColumns(i);
             if (afterColumn.getUpdated()) {
-                rtCommand.addChangeField(new ChangedFieldEntry(tableInfo.getDocField(afterColumn.getName()),
+                rtCommand.addChangeField(tableInfo.getDocField(afterColumn.getName()), new ChangedFieldEntry(
                         rowData.getBeforeColumns(i).getValue(), afterColumn.getValue()));
             }
         }

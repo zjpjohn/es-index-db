@@ -23,13 +23,13 @@ public class IndexTypeInfo {
 
     private IndexManager indexManager;
 
-    private String idField;
+    private String docIdField;
 
     private Map<DbTableDesc, TableInfo> tableInfoMap = new HashMap<>();
 
-    public IndexTypeInfo(IndexManager indexManager, String idField, IndexTypeBean typeBean) {
+    public IndexTypeInfo(IndexManager indexManager, String docIdField, IndexTypeBean typeBean) {
         this.indexManager = indexManager;
-        this.idField = idField;
+        this.docIdField = docIdField;
         this.typeBean = typeBean;
     }
 
@@ -86,8 +86,8 @@ public class IndexTypeInfo {
             return indexManager;
         }
 
-        public String getIdField() {
-            return idField;
+        public String getDocIdField() {
+            return docIdField;
         }
 
         public IndexTypeBean getTypeBean() {

@@ -9,7 +9,7 @@ import java.util.Date;
  * Created by xing on 15/9/30.
  * string value transfer builder
  */
-public abstract class StrValConverts {
+public abstract class StrValueConverts {
 
     @SuppressWarnings("unchecked")
     public static <T> StrValueConvert<T> getConvert(Class<T> cls) {

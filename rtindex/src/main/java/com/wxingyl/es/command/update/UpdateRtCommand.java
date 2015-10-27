@@ -8,6 +8,6 @@ import com.wxingyl.es.command.PreQueryRtCommand;
  */
 public interface UpdateRtCommand extends PreQueryRtCommand {
 
-    void addChangeField(ChangedFieldEntry entry);
+    void addChangeField(String docFieldName, ChangedFieldEntry entry);
 
 }

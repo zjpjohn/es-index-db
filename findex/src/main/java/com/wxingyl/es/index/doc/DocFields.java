@@ -5,6 +5,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -89,6 +90,9 @@ public class DocFields {
             fillXContentBuilder(builder, (Map) val);
         } else if (val instanceof Date && dateConvertLocal.get() != null) {
             builder.value(dateConvertLocal.get().format((Date) val));
+        } else if (val instanceof BigDecimal){
+            //BigDecimal convert to json is string
+            builder.value(((BigDecimal) val).doubleValue());
         } else {
             builder.value(val);
         }
