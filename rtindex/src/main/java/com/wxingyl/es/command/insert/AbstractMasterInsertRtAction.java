@@ -1,7 +1,7 @@
 package com.wxingyl.es.command.insert;
 
 import com.wxingyl.es.action.adapter.IndexTypeInfo;
-import com.wxingyl.es.command.AbstractRtCommand;
+import com.wxingyl.es.command.AbstractRtAction;
 import com.wxingyl.es.command.MasterRtCommand;
 import com.wxingyl.es.db.result.TableQueryResult;
 import com.wxingyl.es.index.doc.IndexDocTransfer;
@@ -19,9 +19,9 @@ import java.util.Map;
  * Created by xing on 15/10/21.
  * abstract MasterInsertRtCommand
  */
-public abstract class AbstractMasterInsertRtCommand extends AbstractRtCommand implements MasterRtCommand {
+public abstract class AbstractMasterInsertRtAction extends AbstractRtAction implements MasterRtCommand {
 
-    public AbstractMasterInsertRtCommand(IndexTypeInfo.TableInfo tableInfo) {
+    public AbstractMasterInsertRtAction(IndexTypeInfo.TableInfo tableInfo) {
         super(tableInfo);
     }
 

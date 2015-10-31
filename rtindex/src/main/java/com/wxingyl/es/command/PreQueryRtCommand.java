@@ -19,4 +19,5 @@ public interface PreQueryRtCommand extends RtCommand {
      * have query, we must need pageSize
      */
     boolean needContinue();
+
 }

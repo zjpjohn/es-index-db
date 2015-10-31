@@ -11,11 +11,11 @@ import java.util.Map;
  * Created by xing on 15/10/21.
  * BatchMasterInsertRtCommand Action
  */
-public class BatchMasterInsertRtCommandAction extends AbstractMasterInsertRtCommand implements BatchMasterInsertRtCommand {
+public class BatchMasterInsertRtAction extends AbstractMasterInsertRtAction implements BatchMasterInsertRtCommand {
 
     private List<Map<String, Object>> rowsData = new LinkedList<>();
 
-    public BatchMasterInsertRtCommandAction(IndexTypeInfo.TableInfo tableInfo) {
+    public BatchMasterInsertRtAction(IndexTypeInfo.TableInfo tableInfo) {
         super(tableInfo);
     }
 
@@ -35,7 +35,7 @@ public class BatchMasterInsertRtCommandAction extends AbstractMasterInsertRtComm
     }
 
     @Override
-    public void mergeInsertRtCommand(BatchMasterInsertRtCommandAction rtCommand) {
+    public void mergeInsertRtCommand(BatchMasterInsertRtAction rtCommand) {
         rowsData.addAll(rtCommand.getRowsData());
     }
 

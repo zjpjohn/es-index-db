@@ -11,11 +11,11 @@ import java.util.Map;
  * Created by xing on 15/10/21.
  * master insert rt  command action
  */
-public class SingleMasterInsertRtCommandAction extends AbstractMasterInsertRtCommand implements SingleMasterInsertRtCommand {
+public class SingleMasterInsertRtAction extends AbstractMasterInsertRtAction implements SingleMasterInsertRtCommand {
 
     private Map<String, Object> rowData;
 
-    public SingleMasterInsertRtCommandAction(IndexTypeInfo.TableInfo tableInfo, Map<String, Object> rowData) {
+    public SingleMasterInsertRtAction(IndexTypeInfo.TableInfo tableInfo, Map<String, Object> rowData) {
         super(tableInfo);
         this.rowData = rowData;
     }

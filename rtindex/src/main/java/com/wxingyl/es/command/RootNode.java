@@ -20,6 +20,7 @@ public class RootNode {
     }
 
     public Node addNode(String docField) {
+        if ((docField = CommonUtils.emptyTrim(docField)) == null) return null;
         String[] fieldSplit = CommonUtils.split(docField, '.');
         return fieldSplit.length == 0 ? null : root.addNode(fieldSplit);
     }
@@ -33,9 +34,7 @@ public class RootNode {
         final private String field;
 
         private List<Node> child;
-        /**
-         * start form 1, not 0
-         */
+
         final private int deep;
 
         private boolean isEnd;
@@ -66,7 +65,7 @@ public class RootNode {
          * @param array split array, array.length > this.level
          * @return add node obj
          */
-        public Node addNode(String[] array) {
+        private Node addNode(String[] array) {
             if (this.child == null) {
                 this.child = new ArrayList<>();
             }
@@ -121,6 +120,12 @@ public class RootNode {
             return fullName;
         }
 
+        /**
+         * get parent obj which class type is one of {@link Map<String, Object>} and {@link List<Map<String, Object>>}
+         *
+         * @param source searchHit return document
+         * @return return val maybe is null
+         */
         public Object getSourceMap(Map<String, Object> source) {
             if (deep == 1) return source;
             return sourceMap(source, deep);
@@ -145,7 +150,6 @@ public class RootNode {
                     return ((Map<String, Object>) obj).get(field);
                 }
             }
-
         }
 
         @Override

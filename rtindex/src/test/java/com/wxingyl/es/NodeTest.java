@@ -25,4 +25,17 @@ public class NodeTest {
         String listStr = list.toString();
         Assert.assertTrue("rootNode: " + rootStr + ", list: " + listStr, rootStr.equals(listStr));
     }
+
+    @Test
+    public void fullNameTest() {
+        RootNode rootNode = new RootNode();
+        RootNode.Node node = rootNode.addNode(" ");
+        Assert.assertNull(node);
+        node = rootNode.addNode("xing");
+        Assert.assertEquals(node.fullName(), "xing");
+        node = rootNode.addNode("xing.wang");
+        Assert.assertEquals(node.fullName(), "xing.wang");
+        node = rootNode.addNode("wang.xing.xing");
+        Assert.assertEquals(node.fullName(), "wang.xing.xing");
+    }
 }

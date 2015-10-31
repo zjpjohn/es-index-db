@@ -1,10 +1,10 @@
 package com.wxingyl.es.action.adapter;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
+import com.wxingyl.es.command.EntryPreQueryRtCommand;
 import com.wxingyl.es.command.RtCommand;
-import com.wxingyl.es.command.update.ChangedFieldEntry;
-import com.wxingyl.es.command.update.UpdateRtCommand;
-import com.wxingyl.es.command.update.UpdateRtCommandAction;
+import com.wxingyl.es.command.update.DefaultUpdateRtAction;
+import com.wxingyl.es.command.update.UpdateFieldEntry;
 import org.elasticsearch.index.query.QueryBuilders;
 
 /**
@@ -27,12 +27,15 @@ public abstract class AbstractTableActionAdapter implements TableActionAdapter {
     @Override
     public RtCommand createUpdateRtCommand(CanalEntry.RowData rowData) {
         final int count = rowData.getAfterColumnsCount();
-        UpdateRtCommand rtCommand = new UpdateRtCommandAction(tableInfo);
+        EntryPreQueryRtCommand<UpdateFieldEntry> rtCommand = new DefaultUpdateRtAction(tableInfo);
         for (int i = 0; i < count; i++) {
             CanalEntry.Column afterColumn = rowData.getAfterColumns(i);
             if (afterColumn.getUpdated()) {
-                rtCommand.addChangeField(tableInfo.getDocField(afterColumn.getName()), new ChangedFieldEntry(
-                        rowData.getBeforeColumns(i).getValue(), afterColumn.getValue()));
+                rtCommand.addFieldEntry(tableInfo.getDocField(afterColumn.getName()), UpdateFieldEntry.build()
+                        .beforeValue(rowData.getBeforeColumns(i).getValue())
+                        .afterValue(afterColumn.getValue())
+                        .isQueryCondition(true)
+                        .build());
             }
         }
         rtCommand.addPreQuery(QueryBuilders.termQuery(tableInfo.getDocKeyField(),

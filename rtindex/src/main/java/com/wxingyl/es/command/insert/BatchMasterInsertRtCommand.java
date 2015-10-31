@@ -13,7 +13,7 @@ public interface BatchMasterInsertRtCommand extends MasterRtCommand {
 
     void mergeInsertRtCommand(SingleMasterInsertRtCommand rtCommand);
 
-    void mergeInsertRtCommand(BatchMasterInsertRtCommandAction rtCommand);
+    void mergeInsertRtCommand(BatchMasterInsertRtAction rtCommand);
 
     boolean acceptMerge(MasterRtCommand rtCommand);
 
