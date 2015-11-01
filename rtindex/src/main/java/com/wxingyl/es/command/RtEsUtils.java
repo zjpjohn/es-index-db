@@ -5,6 +5,7 @@ import com.wxingyl.es.index.IndexTypeDesc;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,15 +43,15 @@ public abstract class RtEsUtils {
      * replace a field value in source document
      *
      * @param parentObj searchHit return document
-     * @param field     document field
+     * @param field     child document field, not full-path
      * @param destObj   dest object which need to change value
      * @param newObj    new object value, if newObj == null, will remove [doc.remove(docFieldName)],
      *                  is not [doc.put(docFieldName, null)]
      */
     @SuppressWarnings("unchecked")
     public static void replaceDocField(final Object parentObj, final String field, Object destObj, Object newObj) {
-        if (parentObj instanceof List) {
-            for (Map<String, Object> m : (List<Map<String, Object>>) parentObj) {
+        if (parentObj instanceof Collection) {
+            for (Map<String, Object> m : (Collection<Map<String, Object>>) parentObj) {
                 replaceDoc(m, field, destObj, newObj);
             }
         } else {

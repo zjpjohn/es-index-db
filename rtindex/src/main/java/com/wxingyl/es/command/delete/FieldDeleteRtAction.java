@@ -3,6 +3,7 @@ package com.wxingyl.es.command.delete;
 import com.wxingyl.es.action.adapter.IndexTypeInfo;
 import com.wxingyl.es.command.AbstractEntryPreQueryRtAction;
 import com.wxingyl.es.command.RootNode;
+import com.wxingyl.es.command.RtEsUtils;
 
 /**
  * Created by xing on 15/10/28.
@@ -20,6 +21,6 @@ public class FieldDeleteRtAction extends AbstractEntryPreQueryRtAction<DeleteFie
 
     @Override
     protected void replaceDocField(Object parentMap, RootNode.Node node, DeleteFieldEntry entry) {
-
+        RtEsUtils.replaceDocField(parentMap, node.field(), entry.getSrcValue(), null);
     }
 }

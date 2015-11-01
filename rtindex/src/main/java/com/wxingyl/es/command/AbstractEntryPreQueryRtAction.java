@@ -90,7 +90,6 @@ public abstract class AbstractEntryPreQueryRtAction<T extends FieldEntry> extend
                     } else {
                         entry.getDocConsumer().accept(obj, node);
                     }
-
                 }
             }
             docs.add(source);
