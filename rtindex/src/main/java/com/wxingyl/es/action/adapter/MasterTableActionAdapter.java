@@ -23,7 +23,7 @@ public class MasterTableActionAdapter extends AbstractTableActionAdapter {
 
     @Override
     public RtCommand createInsertRtCommand(List<CanalEntry.Column> list) {
-        return new SingleMasterInsertRtAction(tableInfo, tableInfo.getTableAction().canalRowTransfer(list));
+        return new SingleMasterInsertRtAction(tableInfo, action().canalRowTransfer(list));
     }
 
     @Override

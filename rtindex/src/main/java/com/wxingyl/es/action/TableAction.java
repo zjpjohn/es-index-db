@@ -28,4 +28,6 @@ public interface TableAction {
     Integer getColumnIndex(String column);
 
     Map<String, Object> canalRowTransfer(List<CanalEntry.Column> list);
+
+    Object canalValueTransfer(String dbFieldName, String strValue);
 }

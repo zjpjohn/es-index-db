@@ -1,6 +1,7 @@
 package com.wxingyl.es.action.adapter;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
+import com.wxingyl.es.action.TableAction;
 import com.wxingyl.es.command.EntryPreQueryRtCommand;
 import com.wxingyl.es.command.RtCommand;
 import com.wxingyl.es.command.update.DefaultUpdateRtAction;
@@ -42,4 +43,9 @@ public abstract class AbstractTableActionAdapter implements TableActionAdapter {
                 rowData.getBeforeColumns(tableInfo.getKeyFieldIndex()).getValue()));
         return rtCommand;
     }
+
+    protected TableAction action() {
+        return tableInfo.getTableAction();
+    }
+
 }

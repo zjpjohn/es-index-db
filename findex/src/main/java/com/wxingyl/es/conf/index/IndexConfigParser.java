@@ -7,6 +7,7 @@ import com.wxingyl.es.db.DbTableFieldDesc;
 import com.wxingyl.es.util.BiConsumer;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.DefaultValueParser;
+import com.wxingyl.es.util.TypeDescCache;
 import org.elasticsearch.common.base.Supplier;
 
 import java.util.*;
@@ -141,7 +142,7 @@ public class IndexConfigParser implements IndexConfigParse {
                 throw new IndexConfigException("index: " + index + " type config there is a type no have "
                         + INDEX_TYPE_TYPE + " value");
             }
-            IndexTypeDesc typeDesc = new IndexTypeDesc(index, type);
+            IndexTypeDesc typeDesc = TypeDescCache.getTypeDesc(index, type);
             TypeConfigInfo typeInfo = parseType(typeDesc, typeConfig);
             if (typeInfo != null) result.add(typeInfo);
         }

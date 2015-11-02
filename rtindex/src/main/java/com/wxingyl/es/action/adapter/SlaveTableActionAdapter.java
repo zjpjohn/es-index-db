@@ -2,6 +2,8 @@ package com.wxingyl.es.action.adapter;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.wxingyl.es.command.RtCommand;
+import com.wxingyl.es.command.delete.DeleteFieldEntry;
+import com.wxingyl.es.command.delete.FieldDeleteRtAction;
 
 import java.util.List;
 
@@ -26,9 +28,14 @@ public class SlaveTableActionAdapter extends AbstractTableActionAdapter {
         return null;
     }
 
-    //TODO need implement
     @Override
     public RtCommand createDeleteRtCommand(List<CanalEntry.Column> list) {
-        return null;
+        String strValue = list.get(tableInfo.getKeyFieldIndex()).getValue();
+        FieldDeleteRtAction deleteAction = new FieldDeleteRtAction(tableInfo);
+        deleteAction.addFieldEntry(tableInfo.getParentDocField(), DeleteFieldEntry.build()
+                .objectFieldDocConsumer(tableInfo.getDocKeyField(),
+                        action().canalValueTransfer(tableInfo.getKeyField(), strValue))
+                .build());
+        return deleteAction;
     }
 }

@@ -5,6 +5,7 @@ import com.wxingyl.es.db.query.TableQueryBean;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
 import com.wxingyl.es.index.db.SqlQueryCommon;
+import com.wxingyl.es.util.TypeDescCache;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class VersionIndexTypeBean implements IndexTypeBean {
 
     public void setIndexTypeBean(IndexTypeBean typeBean) {
         indexTypeBean = typeBean;
-        aliasType = new IndexTypeDesc(versionIndex.getVersionIndexName(), typeBean.getType().getType());
+        aliasType = TypeDescCache.getTypeDesc(versionIndex.getVersionIndexName(), typeBean.getType().getType());
     }
 
     public VersionIndex getVersionIndex() {

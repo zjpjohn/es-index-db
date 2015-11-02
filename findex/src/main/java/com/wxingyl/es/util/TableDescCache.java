@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Created by xing on 15/10/8.
- * DbTableDesc obj cache
+ * {@link DbTableDesc} obj cache
  */
 public final class TableDescCache {
 
@@ -22,7 +22,7 @@ public final class TableDescCache {
     private TableDescCache() {
     }
 
-    private DbTableDesc get(final String schema, String table) {
+    private DbTableDesc get(final String schema, final String table) {
         LoadingCache<String, DbTableDesc> cache = tableCache.get(schema);
         if (cache == null) {
             tableCache.put(schema, cache = CacheBuilder.newBuilder().weakValues()

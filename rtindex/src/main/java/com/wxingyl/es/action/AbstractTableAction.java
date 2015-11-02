@@ -136,4 +136,9 @@ public abstract class AbstractTableAction implements TableAction {
         return ret;
     }
 
+    @Override
+    public Object canalValueTransfer(String dbFieldName, String strValue) {
+        if (valueConvertMap.get(dbFieldName) == null) return strValue;
+        else return valueConvertMap.get(dbFieldName).convert(strValue);
+    }
 }

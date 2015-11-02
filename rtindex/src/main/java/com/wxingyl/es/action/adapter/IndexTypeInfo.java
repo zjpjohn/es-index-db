@@ -19,17 +19,19 @@ import java.util.Set;
  */
 public class IndexTypeInfo {
 
+    public static final String OBJ_DOCUMENT_PARENT_FIELD_KEY = "-1";
+
     private IndexTypeBean typeBean;
 
     private IndexManager indexManager;
 
-    private String docIdField;
+    private String typeDocIdField;
 
     private Map<DbTableDesc, TableInfo> tableInfoMap = new HashMap<>();
 
-    public IndexTypeInfo(IndexManager indexManager, String docIdField, IndexTypeBean typeBean) {
+    public IndexTypeInfo(IndexManager indexManager, String typeDocIdField, IndexTypeBean typeBean) {
         this.indexManager = indexManager;
-        this.docIdField = docIdField;
+        this.typeDocIdField = typeDocIdField;
         this.typeBean = typeBean;
     }
 
@@ -45,7 +47,7 @@ public class IndexTypeInfo {
 
     public class TableInfo {
 
-        //cache variable
+        //cache variable, for db_key_field
         private final String keyField;
 
         private final TableAction tableAction;
@@ -64,6 +66,10 @@ public class IndexTypeInfo {
             this.keyField = typeBean.getTableQueryInfo(table).getBaseInfo().getKeyField();
             tableAction.addTypeTableInfo(this);
             this.isMasterTable = table.equals(typeBean.getMasterTable().getQueryCommon().getBaseInfo().getTable());
+        }
+
+        public String getParentDocField() {
+            return dbDocFieldMap.get(OBJ_DOCUMENT_PARENT_FIELD_KEY);
         }
 
         public String getDocField(String column) {
@@ -87,7 +93,7 @@ public class IndexTypeInfo {
         }
 
         public String getDocIdField() {
-            return docIdField;
+            return typeDocIdField;
         }
 
         public IndexTypeBean getTypeBean() {

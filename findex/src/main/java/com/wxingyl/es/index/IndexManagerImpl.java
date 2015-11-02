@@ -17,6 +17,7 @@ import com.wxingyl.es.index.version.VersionIndexTypeBean;
 import com.wxingyl.es.util.CommonUtils;
 import com.wxingyl.es.util.Listener;
 import com.wxingyl.es.util.RwLock;
+import com.wxingyl.es.util.TypeDescCache;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.base.Function;
 import org.elasticsearch.common.base.Supplier;
@@ -172,7 +173,7 @@ public class IndexManagerImpl implements IndexManager {
         if (type == null) {
             typeBeanSet = configManager.findIndexTypeBean(index);
         } else {
-            IndexTypeBean bean = configManager.findIndexTypeBean(new IndexTypeDesc(index, type));
+            IndexTypeBean bean = configManager.findIndexTypeBean(TypeDescCache.getTypeDesc(index, type));
             if (bean != null) {
                 typeBeanSet = new HashSet<>();
                 typeBeanSet.add(bean);

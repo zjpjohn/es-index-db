@@ -5,6 +5,7 @@ import com.wxingyl.es.db.query.QueryCondition;
 import com.wxingyl.es.db.query.SqlQueryOperator;
 import com.wxingyl.es.index.IndexTypeBean;
 import com.wxingyl.es.index.IndexTypeDesc;
+import com.wxingyl.es.util.TypeDescCache;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.junit.Assert;
 import org.junit.Test;
@@ -19,7 +20,7 @@ public class IndexDbTest extends AbstractIndexDbTest {
 
     @Test
     public void createIndex() throws SQLException {
-        IndexTypeDesc typeDesc = new IndexTypeDesc("local_order", "order_info");
+        IndexTypeDesc typeDesc = TypeDescCache.getTypeDesc("local_order", "order_info");
         IndexTypeBean typeBean = indexManager.getConfigManager().findIndexTypeBean(typeDesc);
         Assert.assertNotNull("can't find " + typeDesc + " config", typeBean);
 
