@@ -2,6 +2,7 @@ package com.wxingyl.es.action.adapter;
 
 import com.wxingyl.es.action.TableAction;
 import com.wxingyl.es.db.DbTableDesc;
+import com.wxingyl.es.db.TableBaseInfo;
 import com.wxingyl.es.db.query.QueryCondition;
 import com.wxingyl.es.index.IndexManager;
 import com.wxingyl.es.index.IndexTypeBean;
@@ -63,7 +64,11 @@ public class IndexTypeInfo {
             this.dbDocFieldMap = new HashMap<>();
             this.dbDocFieldMap.putAll(dbDocFieldMap);
             DbTableDesc table = tableAction.getTable();
-            this.keyField = typeBean.getTableQueryInfo(table).getBaseInfo().getKeyField();
+            TableBaseInfo baseInfo = typeBean.getTableQueryInfo(table).getBaseInfo();
+            this.keyField = baseInfo.getKeyField();
+            if (baseInfo.getMasterAlias() != null && this.dbDocFieldMap.get(OBJ_DOCUMENT_PARENT_FIELD_KEY) == null) {
+                this.dbDocFieldMap.put(OBJ_DOCUMENT_PARENT_FIELD_KEY, baseInfo.getMasterAlias());
+            }
             tableAction.addTypeTableInfo(this);
             this.isMasterTable = table.equals(typeBean.getMasterTable().getQueryCommon().getBaseInfo().getTable());
         }

@@ -81,7 +81,7 @@ public class IndexConfigParser implements IndexConfigParse {
         }
         Map<DbTableDesc, DbTableConfigInfo> tableInfoMap = new HashMap<>();
         DbTableConfigInfo masterTableInfo = null;
-        Map<DbTableConfigInfo, String> tableMasterFiledMap = new HashMap<>();
+        Map<DbTableConfigInfo, String> slaveTableMasterFieldMap = new HashMap<>();
         for (Map<String, Object> conf : tablesConf) {
             DbTableConfigInfo info = new DbTableConfigInfo();
             info.initValue(typeInfo, conf, stringDefaultValueParser.get(), integerDefaultValueParser.get());
@@ -99,7 +99,7 @@ public class IndexConfigParser implements IndexConfigParse {
                     masterTable = tableDesc;
                 }
             } else {
-                tableMasterFiledMap.put(info, CommonUtils.getStringVal(conf, INDEX_TABLE_MASTER_FIELD));
+                slaveTableMasterFieldMap.put(info, CommonUtils.getStringVal(conf, INDEX_TABLE_MASTER_FIELD));
             }
             tableInfoMap.put(tableDesc, info);
         }
@@ -107,7 +107,7 @@ public class IndexConfigParser implements IndexConfigParse {
             throw new IndexConfigException(typeInfo + " config, can't find a master-table");
         }
         typeInfo.setMasterTable(masterTable);
-        for (Map.Entry<DbTableConfigInfo, String> e : tableMasterFiledMap.entrySet()) {
+        for (Map.Entry<DbTableConfigInfo, String> e : slaveTableMasterFieldMap.entrySet()) {
             DbTableFieldDesc masterField;
             if (e.getValue() == null) {
                 masterField = new DbTableFieldDesc(masterTable,

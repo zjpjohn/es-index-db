@@ -40,7 +40,7 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
     /**
      * time unit is ms
      */
-    private Long timeout = 500l;
+    private Long timeout = 500L;
 
     private long startRtIndexTime;
 
@@ -83,6 +83,7 @@ public class SimpleCanalConnectorAdapter implements CanalConnectorAdapter {
 
     @Override
     public void disConnect() throws CanalClientException {
+        canalConnector.unsubscribe();
         canalConnector.disconnect();
     }
 

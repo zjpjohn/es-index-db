@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Created by xing on 15/9/29.
- *
+ * multi type RtIndexHandle and is modifiable
  */
 public interface MultiTypeModifiableRtIndexHandle extends RtIndexHandle {
 
