@@ -25,6 +25,6 @@
 
 [Here](https://github.com/wxingyl/db-river-elasticsearch/wiki)
 
-
+注意，该项目已经废弃，不再维护了~~~~
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/wxingyl/es-index-db/trend.png)](https://bitdeli.com/free"Bitdeli Badge")
